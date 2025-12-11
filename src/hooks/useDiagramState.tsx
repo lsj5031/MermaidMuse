@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { SAMPLE_MERMAID_DIAGRAM } from '@theme/constants';
-import { ValidationResult, validateMermaidSyntax, debouncedValidation } from '@utils/validation';
+import { ValidationResult, validateMermaidSyntax, debounce } from '@utils/validation';
 
 export interface DiagramState {
   id: string;
@@ -53,33 +53,40 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     }));
     
     // Trigger debounced validation for new content
-    debouncedValidation(content).then((result) => {
-      setCurrentDiagram((prev) => ({
-        ...prev,
-        validation: result,
-        isValidating: false,
-      }));
-    }).catch((error) => {
-      console.error('Validation error:', error);
-      setCurrentDiagram((prev) => ({
-        ...prev,
-        validation: {
-          isValid: false,
-          errors: [{
-            line: 1,
-            column: 1,
-            message: 'Failed to validate diagram',
-            severity: 'error',
-            startLineNumber: 1,
-            endLineNumber: 1,
-            startColumn: 1,
-            endColumn: 1
-          }],
-          warnings: []
-        },
-        isValidating: false,
-      }));
-    });
+    const validateContent = async () => {
+      try {
+        const result = await validateMermaidSyntax(content);
+        setCurrentDiagram((prev) => ({
+          ...prev,
+          validation: result,
+          isValidating: false,
+        }));
+      } catch (error) {
+        console.error('Validation error:', error);
+        setCurrentDiagram((prev) => ({
+          ...prev,
+          validation: {
+            isValid: false,
+            errors: [{
+              line: 1,
+              column: 1,
+              message: 'Failed to validate diagram',
+              severity: 'error',
+              startLineNumber: 1,
+              endLineNumber: 1,
+              startColumn: 1,
+              endColumn: 1
+            }],
+            warnings: []
+          },
+          isValidating: false,
+        }));
+      }
+    };
+    
+    // Apply debounced validation
+    const debouncedValidate = debounce(validateContent, 500);
+    debouncedValidate();
   }, []);
 
   const validateDiagram = useCallback(async (content?: string) => {
@@ -144,7 +151,7 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
   // Initial validation on mount
   useEffect(() => {
     validateDiagram();
-  }, []);
+  }, [validateDiagram]);
 
   const canExport = currentDiagram.validation.isValid && !currentDiagram.isValidating;
   const canRender = currentDiagram.validation.isValid && !currentDiagram.isValidating;

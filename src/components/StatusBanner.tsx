@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle, Clock, X } from 'lucide-react';
-import { ValidationResult } from '@utils/validation';
+// import { ValidationResult } from '@utils/validation';
 import { useDiagramState } from '@hooks/useDiagramState';
 
 interface StatusBannerProps {
