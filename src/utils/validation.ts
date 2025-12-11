@@ -20,12 +20,12 @@ export interface ValidationResult {
 
 const DEBOUNCE_DELAY = 500;
 
-export const debounce = <T extends (...args: any[]) => void>(
-  func: T,
+export const debounce = (
+  func: (...args: string[]) => void | Promise<void>,
   delay: number
-): ((...args: Parameters<T>) => void) => {
-  let timeoutId: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+): ((...args: string[]) => void) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: string[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
   };
@@ -41,15 +41,6 @@ export const validateMermaidSyntax = async (content: string): Promise<Validation
   }
 
   try {
-    // Initialize mermaid if not already initialized
-    if (!mermaid.internalAPI) {
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: 'loose',
-        theme: 'dark'
-      });
-    }
-
     // Try to parse the content
     await mermaid.parse(content);
     
@@ -59,17 +50,17 @@ export const validateMermaidSyntax = async (content: string): Promise<Validation
       warnings: []
     };
   } catch (error) {
-    const mermaidError = error as any;
-    console.error('Mermaid validation error:', mermaidError);
+    const err = error as { str?: string; message?: string };
+    console.error('Mermaid validation error:', error);
     
     // Parse mermaid error to extract line/column information
-    const errors = parseMermaidError(mermaidError.str || mermaidError.message || 'Unknown syntax error');
+    const errors = parseMermaidError(err.str || err.message || 'Unknown syntax error');
     
     return {
       isValid: false,
       errors,
       warnings: [],
-      mermaidError: mermaidError.str || mermaidError.message
+      mermaidError: err.str || err.message
     };
   }
 };
@@ -104,7 +95,7 @@ const parseMermaidError = (errorMessage: string): ValidationError[] => {
   return errors;
 };
 
-export const debouncedValidation = debounce(validateMermaidSyntax, DEBOUNCE_DELAY);
+// Removed - now handled inline with proper debouncing in useDiagramState
 
 export const isOfflineValidationFallback = (error: string): boolean => {
   return error.toLowerCase().includes('network') || 
