@@ -1,6 +1,7 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import './styles/validation.css';
 
 /* Global styles for cyberpunk theme */
 * {
