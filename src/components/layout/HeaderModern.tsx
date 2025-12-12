@@ -3,8 +3,8 @@ import { Download, Share2, RotateCcw, Palette } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
+import { UserButton, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 import html2canvas from 'html2canvas';
-import Button from './Button';
 
 const Header: React.FC = () => {
   const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
@@ -239,6 +239,18 @@ const Header: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
+          <div className="border-l border-gray-300 pl-4 ml-2 flex items-center">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className={actionButtonClass(true)}>
+                  Sign In
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
+          </div>
         </div>
       </div>
 

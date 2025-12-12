@@ -19,6 +19,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.58.1",
     "@monaco-editor/react": "^4.6.0",
     "@stripe/react-stripe-js": "^2.7.0",
     "@stripe/stripe-js": "^2.1.0",

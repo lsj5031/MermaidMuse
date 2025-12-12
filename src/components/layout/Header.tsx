@@ -15,7 +15,7 @@ const buildShareUrl = (content: string): string => {
 };
 
 export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderProps) {
-  const { currentDiagram, canExport, resetDiagram, theme, updateDiagramTitle } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle } = useDiagramState();
 
   const [toast, setToast] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);

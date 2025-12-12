@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { fireEvent, render, screen, cleanup } from '@testing-library/react';
 
 vi.mock('@stripe/react-stripe-js', () => ({
   Elements: ({ children }: { children: ReactNode }) => (
@@ -18,8 +18,18 @@ vi.mock('@stripe/stripe-js', () => ({
 import StripeTeaser from '@components/ProUpsell/StripeTeaser';
 import ProGate from '@components/ProUpsell/ProGate';
 import { ProProvider } from '@hooks/usePro';
+import * as envHelpers from '@utils/environmentHelpers';
 
 describe('Pro upsell / Stripe teaser', () => {
+  beforeEach(() => {
+    vi.spyOn(envHelpers, 'getStripePublishableKey').mockReturnValue('pk_test_mock');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cleanup();
+  });
+
   it('shows a configuration fallback when no publishable key is provided', () => {
     render(<StripeTeaser publishableKey="" />);
     expect(screen.getByText(/Stripe is not configured/i)).toBeInTheDocument();

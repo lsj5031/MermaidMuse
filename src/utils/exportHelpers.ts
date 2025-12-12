@@ -117,7 +117,7 @@ export async function exportMermaidAsSVG(
   content: string,
   filename: string,
   options: ExportSvgOptions = {},
-  theme: DiagramTheme = 'cyber'
+  _theme: DiagramTheme = 'cyber'
 ): Promise<void> {
   const { watermarkText = 'MermaidMuse', watermarkColor } = options;
 
