@@ -55,7 +55,7 @@ const Preview: React.FC = () => {
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom(prev => {
       const newZoom = direction === 'in' ? prev + 10 : prev - 10;
-      return Math.max(25, Math.min(newZoom, 200));
+      return Math.max(25, Math.min(newZoom, 800));
     });
   };
 
@@ -64,11 +64,15 @@ const Preview: React.FC = () => {
     setPan({ x: 0, y: 0 });
   };
 
+  const handleDoubleClick = () => {
+    setZoom(prev => Math.min(prev + 50, 800));
+  };
+
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
     setZoom(prev => {
       const newZoom = e.deltaY > 0 ? prev - 10 : prev + 10;
-      return Math.max(25, Math.min(newZoom, 200));
+       return Math.max(25, Math.min(newZoom, 800));
     });
   };
 
@@ -142,6 +146,7 @@ const Preview: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onDoubleClick={handleDoubleClick}
       >
         {error ? (
           <div className="absolute inset-0 flex items-center justify-center bg-red-50/50">
