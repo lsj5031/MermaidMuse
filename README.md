@@ -44,8 +44,15 @@ cp .env.example .env.local
 4. Update `.env.local` with your configuration:
 
 ```env
+# Client-side (exposed to the browser)
 VITE_API_URL=http://localhost:3000
-VITE_STRIPE_KEY=pk_test_your_key_here
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+VITE_MOCK_PRO=false
+
+# Server-side (used by /api/fix)
+XAI_API_KEY=your_xai_key_here
+XAI_MODEL=grok-beta
+XAI_BASE_URL=https://api.x.ai/v1
 ```
 
 ## 📖 Available Scripts
@@ -92,6 +99,13 @@ npm run format:check     # Check if formatting is needed
 
 ```bash
 npm run type-check      # Check TypeScript types
+```
+
+### Tests
+
+```bash
+npm run test            # Run integration-ish checks (validation, error states, mocked pro flow)
+npm run test:watch      # Watch mode
 ```
 
 ## 🎨 Project Structure
@@ -170,17 +184,39 @@ Customize colors in:
 Create a `.env.local` file (use `.env.example` as template):
 
 ```env
-# API Configuration
+# Client-side (exposed to the browser)
 VITE_API_URL=http://localhost:3000
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+VITE_MOCK_PRO=false
 
-# Stripe Configuration
-VITE_STRIPE_KEY=pk_test_your_key_here
-
-# Environment (set automatically by Vite)
-NODE_ENV=development
+# Server-side (used by serverless functions)
+XAI_API_KEY=your_xai_key_here
+XAI_MODEL=grok-beta
+XAI_BASE_URL=https://api.x.ai/v1
 ```
 
-All environment variables must be prefixed with `VITE_` to be exposed to the client.
+Only variables prefixed with `VITE_` are exposed to the client. `XAI_*` variables are intended for serverless runtimes (Vercel/Netlify functions).
+
+## 🔌 Serverless API (`/api/fix`)
+
+A Vercel-style serverless function is provided at `api/fix.ts`.
+
+- **POST** `/api/fix`
+- **Body**: `{ "diagramText": "..." }`
+- **Response**: `{ ok, fixedText, suggestions, error? }`
+
+Example:
+
+```bash
+curl -s http://localhost:8888/api/fix \
+  -H 'Content-Type: application/json' \
+  -d '{"diagramText":"graph TD\nA -->"}' | jq
+```
+
+Local notes:
+
+- Vite's dev server does **not** run serverless functions.
+- To run functions locally, use either `vercel dev` or `netlify dev` (depending on your target).
 
 ## 🚀 Deployment
 
@@ -198,9 +234,38 @@ The `dist/` directory is ready to be deployed to:
 - GitHub Pages
 - Any static hosting provider
 
+### Vercel
+
+- This repo includes `vercel.json` for SPA routing + `/api/*` preservation.
+- Add the environment variables listed below.
+- Deploy via the Vercel dashboard (Import Project) or CLI (`vercel`).
+
+### Netlify
+
+- This repo includes `netlify.toml` which:
+  - publishes `dist/`
+  - redirects `/api/*` to `/.netlify/functions/*`
+  - provides an SPA fallback to `/index.html`
+- Add the environment variables listed below.
+
+### Custom domain steps (high level)
+
+1. Deploy once on your platform.
+2. In the platform dashboard, add your domain (e.g. `app.example.com`).
+3. Update DNS:
+   - **Subdomain**: CNAME to the platform-provided hostname
+   - **Apex/root**: use A/ALIAS/ANAME records as instructed by the platform
+4. Wait for DNS + TLS to provision, then set the domain as the primary.
+
 ### Environment Variables in Production
 
-Set `VITE_API_URL` and `VITE_STRIPE_KEY` in your deployment platform's environment variable settings.
+Set these in your deployment platform's environment variable settings:
+
+- `VITE_API_URL` (optional)
+- `VITE_STRIPE_PUBLISHABLE_KEY` (client-side upsell teaser)
+- `XAI_API_KEY` (serverless `/api/fix`)
+- `XAI_MODEL` (optional, defaults to `grok-beta`)
+- `XAI_BASE_URL` (optional, defaults to `https://api.x.ai/v1`)
 
 ## 💡 Usage Examples
 

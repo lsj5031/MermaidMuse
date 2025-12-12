@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Deployment artifacts
+.netlify
+.vercel
+
 # Environment variables
 .env
 .env.local

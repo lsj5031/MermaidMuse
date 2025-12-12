@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { DIAGRAM_TYPES } from '@theme/constants';
 import { useDiagramState } from '@hooks/useDiagramState';
+import ProGate from '@components/ProUpsell/ProGate';
 
 interface SidebarProps {
   onToggle: () => void;
@@ -38,13 +39,25 @@ export default function Sidebar({ onToggle }: SidebarProps) {
         ))}
       </div>
 
-      <div className="border-t border-dark-border p-4 space-y-2">
+      <div className="border-t border-dark-border p-4 space-y-3">
         <button
           onClick={resetDiagram}
           className="w-full px-4 py-2 bg-neon-purple hover:bg-opacity-80 text-white rounded font-semibold transition-all"
         >
           Reset
         </button>
+
+        <div className="space-y-2">
+          <div className="text-xs text-gray-400">Pro</div>
+          <ProGate>
+            <div className="rounded border border-dark-border bg-dark-surface2 p-3">
+              <div className="text-xs font-semibold text-neon-cyan">Pro unlocked</div>
+              <div className="mt-1 text-[11px] text-gray-400">
+                Pro is enabled (mock). Future pro-only features can be gated behind this.
+              </div>
+            </div>
+          </ProGate>
+        </div>
       </div>
     </aside>
   );
