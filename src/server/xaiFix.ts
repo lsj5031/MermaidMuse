@@ -1,6 +1,6 @@
 export interface FixSyntaxResponse {
   ok: boolean;
-  provider: 'xai' | 'fallback';
+  provider: 'openapi' | 'xai' | 'fallback';
   fixedText: string | null;
   suggestions: string[];
   error?: {
@@ -17,8 +17,8 @@ export interface FixSyntaxOptions {
   timeoutMs?: number;
 }
 
-const DEFAULT_BASE_URL = 'https://api.x.ai/v1';
-const DEFAULT_MODEL = 'grok-beta';
+const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
+const DEFAULT_MODEL = 'gpt-4o';
 
 const SYSTEM_PROMPT =
   'You are a meticulous Mermaid syntax expert. Fix ONLY syntax errors and preserve intent. ' +
@@ -65,9 +65,9 @@ export async function fixMermaidSyntaxWithXai(
       | Record<string, string | undefined>
       | undefined) ?? {};
 
-  const apiKey = options.apiKey ?? env.XAI_API_KEY;
-  const baseUrl = options.baseUrl ?? env.XAI_BASE_URL ?? DEFAULT_BASE_URL;
-  const model = options.model ?? env.XAI_MODEL ?? DEFAULT_MODEL;
+  const apiKey = options.apiKey ?? env.OPENAPI_API_KEY ?? env.XAI_API_KEY;
+  const baseUrl = options.baseUrl ?? env.OPENAPI_BASE_URL ?? env.XAI_BASE_URL ?? DEFAULT_BASE_URL;
+  const model = options.model ?? env.OPENAPI_MODEL ?? env.XAI_MODEL ?? DEFAULT_MODEL;
   const timeoutMs = options.timeoutMs ?? 15000;
 
   if (!diagramText.trim()) {
@@ -84,10 +84,10 @@ export async function fixMermaidSyntaxWithXai(
       ok: false,
       provider: 'fallback',
       fixedText: null,
-      suggestions: ['Set XAI_API_KEY to enable AI syntax fixing.'],
+      suggestions: ['Set OPENAPI_API_KEY to enable AI syntax fixing.'],
       error: {
         code: 'NOT_CONFIGURED',
-        message: 'XAI_API_KEY is not configured.',
+        message: 'OPENAPI_API_KEY is not configured.',
       },
     };
   }
@@ -127,15 +127,15 @@ export async function fixMermaidSyntaxWithXai(
       const message =
         (errorRecord && typeof errorRecord.message === 'string' && errorRecord.message) ||
         (rawRecord && typeof rawRecord.message === 'string' && rawRecord.message) ||
-        `xAI request failed with status ${response.status}`;
+        `OpenAPI request failed with status ${response.status}`;
 
       return {
         ok: false,
-        provider: 'xai',
+        provider: 'openapi',
         fixedText: null,
         suggestions: [],
         error: {
-          code: 'XAI_REQUEST_FAILED',
+          code: 'OPENAPI_REQUEST_FAILED',
           message,
         },
         raw,
@@ -155,12 +155,12 @@ export async function fixMermaidSyntaxWithXai(
     if (typeof content !== 'string' || !content.trim()) {
       return {
         ok: false,
-        provider: 'xai',
+        provider: 'openapi',
         fixedText: null,
         suggestions: [],
         error: {
           code: 'EMPTY_RESPONSE',
-          message: 'xAI returned an empty response.',
+          message: 'OpenAPI endpoint returned an empty response.',
         },
         raw,
       };
@@ -178,7 +178,7 @@ export async function fixMermaidSyntaxWithXai(
     if (!fixedText) {
       return {
         ok: true,
-        provider: 'xai',
+        provider: 'openapi',
         fixedText: null,
         suggestions: suggestions.length ? suggestions : [content.trim()],
         raw,
@@ -187,7 +187,7 @@ export async function fixMermaidSyntaxWithXai(
 
     return {
       ok: true,
-      provider: 'xai',
+      provider: 'openapi',
       fixedText,
       suggestions,
       raw,
@@ -197,11 +197,11 @@ export async function fixMermaidSyntaxWithXai(
 
     return {
       ok: false,
-      provider: 'xai',
+      provider: 'openapi',
       fixedText: null,
       suggestions: [],
       error: {
-        code: 'XAI_NETWORK_ERROR',
+        code: 'OPENAPI_NETWORK_ERROR',
         message,
       },
     };

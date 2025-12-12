@@ -1,0 +1,15 @@
+# Cloudflare Pages Configuration
+name = "diagram-maker"
+compatibility_date = "2024-01-15"
+
+[build]
+command = "npm run build"
+output_directory = "dist"
+
+[env.development]
+compatibility_date = "2024-01-15"
+vars = {OPENAPI_MODEL = "gpt-4o", OPENAPI_BASE_URL = "https://api.openai.com/v1"}
+
+[env.production]
+compatibility_date = "2024-01-15"
+vars = {OPENAPI_MODEL = "gpt-4o", OPENAPI_BASE_URL = "https://api.openai.com/v1"}
