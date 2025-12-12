@@ -1,17 +1,17 @@
 import React from 'react';
-import { ChevronDown, Download, Share2, RotateCcw } from 'lucide-react';
+import { Download, Share2, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
-import { type DiagramTheme } from '@theme/diagramThemes';
+import html2canvas from 'html2canvas';
 import Button from './Button';
 
 const Header: React.FC = () => {
-  const { currentDiagram, canExport, resetDiagram, theme, setTheme } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram } = useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
 
   const handleExportSvg = async () => {
     try {
-      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, theme, {
+      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, {
         watermarkText: 'MermaidMuse',
       });
       showToast('SVG downloaded');
@@ -21,26 +21,104 @@ const Header: React.FC = () => {
     }
   };
 
+  const handleExportPng = async () => {
+    try {
+      // Find the SVG in the preview
+      const svgElement = document.querySelector('.mermaid-output svg');
+      if (!svgElement) {
+        showToast('No diagram to export');
+        return;
+      }
+
+      // Clone the SVG to add watermark
+      const svgClone = svgElement.cloneNode(true) as SVGElement;
+      
+      // Add watermark to SVG
+      const ns = 'http://www.w3.org/2000/svg';
+      const group = document.createElementNS(ns, 'g');
+      group.setAttribute('pointer-events', 'none');
+      
+      const text = document.createElementNS(ns, 'text');
+      text.textContent = 'MermaidMuse';
+      text.setAttribute('x', '99%');
+      text.setAttribute('y', '99%');
+      text.setAttribute('text-anchor', 'end');
+      text.setAttribute('dominant-baseline', 'auto');
+      text.setAttribute('fill', '#2d2d2d');
+      text.setAttribute('opacity', '0.85');
+      text.setAttribute(
+        'style',
+        'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; paint-order: stroke; stroke: rgba(255,255,255,0.6); stroke-width: 0.5px;'
+      );
+      group.appendChild(text);
+      svgClone.appendChild(group);
+
+      // Create a temporary container
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '-9999px';
+      container.style.backgroundColor = '#ffffff';
+      container.appendChild(svgClone);
+      document.body.appendChild(container);
+
+      // Convert to canvas
+      const canvas = await html2canvas(container, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+      });
+
+      // Clean up
+      document.body.removeChild(container);
+
+      // Download PNG
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `${currentDiagram.title || 'diagram'}.png`;
+      link.click();
+      
+      showToast('PNG downloaded');
+    } catch (err) {
+      console.error(err);
+      showToast('PNG export failed');
+    }
+  };
+
   const handleShare = async () => {
     const url = new URL(window.location.href);
     url.hash = `mmd=${encodeURIComponent(currentDiagram.content)}`;
+    
     try {
-      const shareData = {
-        title: currentDiagram.title,
-        text: 'Mermaid diagram (paste into MermaidMuse):',
-        url: url.toString(),
-      };
-
       if (navigator.share) {
+        const shareData = {
+          title: currentDiagram.title,
+          text: 'Mermaid diagram (paste into MermaidMuse):',
+          url: url.toString(),
+        };
         await navigator.share(shareData);
         showToast('Share sheet opened');
         return;
       }
 
-      await navigator.clipboard.writeText(url.toString());
-      showToast('Share link copied');
+      // Fallback to clipboard
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url.toString());
+        showToast(`Link copied: ${url.toString().slice(0, 50)}...`);
+        return;
+      }
+
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url.toString();
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showToast(`Link copied: ${url.toString().slice(0, 50)}...`);
     } catch (err) {
-      console.error(err);
+      console.error('Share error:', err);
       showToast('Share failed');
     }
   };
@@ -58,27 +136,10 @@ const Header: React.FC = () => {
     }`;
 
   return (
-    <header className="bg-[#E6F7E5] shadow-sm flex items-center justify-between px-4 py-3 flex-shrink-0 z-10 border-b-2 border-gray-200 border-dashed">
+    <header className="bg-[#E6F7E5] shadow-sm flex items-center justify-between px-4 py-3 flex-shrink-0 z-10 border-b-2 border-gray-200 border-dashed relative">
       <h1 className="text-2xl font-headline text-gray-800 tracking-wide">MermaidMuse</h1>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 hidden sm:flex">
-          <label htmlFor="theme-select" className="text-sm font-medium text-gray-600">Theme:</label>
-          <div className="relative">
-            <select 
-              id="theme-select"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as DiagramTheme)}
-              className="appearance-none border-sketch bg-white pl-3 pr-8 py-1.5 text-sm font-medium focus:outline-none cursor-pointer text-gray-700"
-            >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="cyber">Cyber</option>
-            </select>
-            <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
-          </div>
-        </div>
-
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportSvg}
@@ -88,6 +149,15 @@ const Header: React.FC = () => {
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">SVG</span>
+          </button>
+          <button
+            onClick={handleExportPng}
+            disabled={!canExport}
+            className={actionButtonClass(canExport)}
+            title={canExport ? 'Download a watermarked PNG' : 'Fix errors to export'}
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">PNG</span>
           </button>
           <button
             onClick={handleShare}
@@ -105,11 +175,11 @@ const Header: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
-        </div>
-      </div>
+          </div>
+          </div>
 
-      {toast && (
-        <div className="absolute right-4 top-full mt-2 bg-white border border-sketch rounded px-3 py-2 text-xs text-gray-700 shadow-lg">
+          {toast && (
+        <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded px-4 py-3 text-sm text-gray-700 shadow-lg z-50">
           {toast}
         </div>
       )}

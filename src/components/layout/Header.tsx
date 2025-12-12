@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { type DiagramTheme } from '@theme/diagramThemes';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { Menu, Download, Share2, RotateCcw, Edit3 } from 'lucide-react';
 
@@ -16,7 +15,7 @@ const buildShareUrl = (content: string): string => {
 };
 
 export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderProps) {
-  const { currentDiagram, canExport, resetDiagram, theme, setTheme, updateDiagramTitle } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram, theme, updateDiagramTitle } = useDiagramState();
 
   const [toast, setToast] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
@@ -75,7 +74,7 @@ export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderPro
 
   const handleExportSvg = async () => {
     try {
-      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, theme, {
+      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, {
         watermarkText: 'Diagram Maker',
       });
       showToast('SVG downloaded');
@@ -174,20 +173,6 @@ export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderPro
             Offline
           </span>
         )}
-
-        <label className="flex items-center gap-2 text-xs text-gray-400">
-          <span className="hidden sm:inline">Theme</span>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value as DiagramTheme)}
-            className="text-xs px-2 py-1"
-            title="Syncs Mermaid + 3D palette"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="cyber">Cyber</option>
-          </select>
-        </label>
 
         <button
           onClick={handleExportSvg}

@@ -9,7 +9,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import { SAMPLE_MERMAID_DIAGRAM } from '@theme/constants';
-import { type DiagramTheme } from '@theme/diagramThemes';
+import { type DiagramTheme, getThemeIds, hasTheme } from '@theme/themeRegistry';
 import { type ValidationResult, validateMermaidSyntax, debounce } from '@utils/validation';
 
 export interface DiagramState {
@@ -74,8 +74,14 @@ const getSharedContentFromHash = (): string | null => {
 
 const getInitialTheme = (): DiagramTheme => {
   const stored = localStorage.getItem(STORAGE_KEYS.theme);
-  if (stored === 'light' || stored === 'dark' || stored === 'cyber') return stored;
-  return 'cyber';
+  const themeIds = getThemeIds();
+  
+  if (stored && hasTheme(stored)) {
+    return stored;
+  }
+  
+  // Fallback to first available theme, or 'cyber'
+  return themeIds.length > 0 ? themeIds[0] : 'cyber';
 };
 
 const getInitialDiagram = (): DiagramState => {
@@ -115,13 +121,14 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
   const validateContent = useCallback(async (content: string) => {
     try {
       const result = await validateMermaidSyntax(content);
+      console.log('[useDiagramState] Validation result:', result);
       setCurrentDiagram((prev) => ({
         ...prev,
         validation: result,
         isValidating: false,
       }));
     } catch (error) {
-      console.error('Validation error:', error);
+      console.error('[useDiagramState] Validation error:', error);
       setCurrentDiagram((prev) => ({
         ...prev,
         validation: {

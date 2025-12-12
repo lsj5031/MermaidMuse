@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import mermaid from 'mermaid';
-import { getMermaidConfigForTheme, type DiagramTheme } from '@theme/diagramThemes';
+import type { DiagramTheme } from '@theme/themeRegistry';
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -98,10 +98,10 @@ const addSvgWatermark = (svg: string, watermarkText: string, watermarkColor: str
     text.setAttribute('text-anchor', 'end');
     text.setAttribute('dominant-baseline', 'auto');
     text.setAttribute('fill', watermarkColor);
-    text.setAttribute('opacity', '0.55');
+    text.setAttribute('opacity', '0.85');
     text.setAttribute(
       'style',
-      'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 12px; paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 3px;'
+      'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; paint-order: stroke; stroke: rgba(255,255,255,0.6); stroke-width: 0.5px;'
     );
 
     group.appendChild(text);
@@ -116,19 +116,33 @@ const addSvgWatermark = (svg: string, watermarkText: string, watermarkColor: str
 export async function exportMermaidAsSVG(
   content: string,
   filename: string,
-  theme: DiagramTheme,
-  options: ExportSvgOptions = {}
+  options: ExportSvgOptions = {},
+  theme: DiagramTheme = 'cyber'
 ): Promise<void> {
-  const { watermarkText = 'Diagram Studio', watermarkColor } = options;
+  const { watermarkText = 'MermaidMuse', watermarkColor } = options;
 
-  mermaid.initialize(getMermaidConfigForTheme(theme));
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      fontFamily: 'Comic Neue',
+      fontSize: '16px',
+      primaryColor: '#E6F7E5',
+      primaryBorderColor: '#2d2d2d',
+      primaryTextColor: '#2d2d2d',
+      lineColor: '#2d2d2d',
+      secondaryColor: '#FCFBF5',
+      tertiaryColor: '#fff',
+    },
+    securityLevel: 'loose',
+  });
 
   const { svg } = await mermaid.mermaidAPI.render(`export-${Date.now()}`, content);
 
   const colored = addSvgWatermark(
     svg,
     watermarkText,
-    watermarkColor ?? (theme === 'light' ? '#0f172a' : '#ffffff')
+    watermarkColor ?? '#2d2d2d'
   );
 
   downloadBlob(new Blob([colored], { type: 'image/svg+xml;charset=utf-8' }), `${filename}.svg`);

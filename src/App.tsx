@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { ProProvider } from '@hooks/usePro';
 import { useDiagramState } from '@hooks/useDiagramState';
+import { initializeDefaultThemes } from '@theme/defaultThemes';
 import './App.css';
+
+// Initialize themes on app startup
+initializeDefaultThemes();
 
 function AppContent() {
   const { currentDiagram } = useDiagramState();

@@ -31,7 +31,10 @@ export default function PreviewPanel() {
       }
 
       try {
-        mermaid.initialize(getMermaidConfigForTheme(theme));
+        const config = getMermaidConfigForTheme(theme);
+        if (config) {
+          mermaid.initialize(config);
+        }
         
         containerRef.current.innerHTML = '';
 

@@ -42,6 +42,7 @@ export const validateMermaidSyntax = async (content: string): Promise<Validation
     // Try to parse the content
     await mermaid.parse(content);
     
+    console.log('[Validation] Diagram is VALID');
     return {
       isValid: true,
       errors: [],
@@ -49,11 +50,12 @@ export const validateMermaidSyntax = async (content: string): Promise<Validation
     };
   } catch (error) {
     const err = error as { str?: string; message?: string };
-    console.error('Mermaid validation error:', error);
+    console.error('[Validation] Mermaid validation error:', error);
     
     // Parse mermaid error to extract line/column information
     const errors = parseMermaidError(err.str || err.message || 'Unknown syntax error');
     
+    console.log('[Validation] Parsed errors:', errors);
     return {
       isValid: false,
       errors,

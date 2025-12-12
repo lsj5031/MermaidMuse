@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
-import { Box, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import Button from './Button';
 
 const Preview: React.FC = () => {
-  const { currentDiagram } = useDiagramState();
-  const [viewMode, setViewMode] = useState<'2D' | '3D'>('2D');
+  const { currentDiagram, theme } = useDiagramState();
   const containerRef = useRef<HTMLDivElement>(null);
   const diagramRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
@@ -106,50 +105,33 @@ const Preview: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={() => handleZoom('out')} 
-            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            icon={<ZoomOut size={14} />}
-            title="Zoom out"
-          >
-            <span className="sr-only">Zoom out</span>
-          </Button>
-          <span className="text-xs font-semibold text-gray-700 min-w-[3rem] text-center">{zoom}%</span>
-          <Button 
-            onClick={() => handleZoom('in')} 
-            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            icon={<ZoomIn size={14} />}
-            title="Zoom in"
-          >
-            <span className="sr-only">Zoom in</span>
-          </Button>
-          <Button 
-            onClick={handleResetZoom} 
-            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-            icon={<RotateCcw size={14} />}
-            title="Reset zoom"
-          >
-            <span className="sr-only">Reset zoom</span>
-          </Button>
-          
-          <div className="w-px h-6 bg-gray-300"></div>
-          
-          <Button 
-            onClick={() => setViewMode('3D')} 
-            className={`px-3 py-1.5 text-xs font-semibold border-2 border-gray-300 ${viewMode === '3D' ? 'bg-brand-blue text-white border-brand-blue ring-2 ring-offset-1 ring-blue-200' : 'bg-white text-gray-700'}`}
-            icon={<Box size={14} />}
-          >
-            3D Scene
-          </Button>
-          <Button 
-            onClick={() => setViewMode('2D')} 
-            className={`px-3 py-1.5 text-xs font-semibold border-2 border-gray-300 ${viewMode === '2D' ? 'bg-brand-magenta text-white border-brand-magenta ring-2 ring-offset-1 ring-pink-200' : 'bg-white text-gray-700'}`}
-            icon={<Layers size={14} />}
-          >
-            2D Mermaid
-          </Button>
-        </div>
-      </div>
+           <Button 
+             onClick={() => handleZoom('out')} 
+             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+             icon={<ZoomOut size={14} />}
+             title="Zoom out"
+           >
+             <span className="sr-only">Zoom out</span>
+           </Button>
+           <span className="text-xs font-semibold text-gray-700 min-w-[3rem] text-center">{zoom}%</span>
+           <Button 
+             onClick={() => handleZoom('in')} 
+             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+             icon={<ZoomIn size={14} />}
+             title="Zoom in"
+           >
+             <span className="sr-only">Zoom in</span>
+           </Button>
+           <Button 
+             onClick={handleResetZoom} 
+             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+             icon={<RotateCcw size={14} />}
+             title="Reset zoom"
+           >
+             <span className="sr-only">Reset zoom</span>
+           </Button>
+           </div>
+           </div>
 
       {/* Canvas Area */}
       <div 
