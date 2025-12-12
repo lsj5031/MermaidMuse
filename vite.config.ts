@@ -22,10 +22,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'http://localhost:3000'),
-      'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY': JSON.stringify(
-        env.VITE_STRIPE_PUBLISHABLE_KEY || ''
-      ),
+      // For Cloudflare Pages + Workers, we usually call same-origin (/api/*).
+      // Leave empty unless explicitly configured so runtime can default to window.location.origin.
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || ''),
+      'import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY': JSON.stringify(env.VITE_STRIPE_PUBLISHABLE_KEY || ''),
       'import.meta.env.VITE_STRIPE_KEY': JSON.stringify(env.VITE_STRIPE_KEY || ''),
       'import.meta.env.VITE_MOCK_PRO': JSON.stringify(env.VITE_MOCK_PRO || ''),
     },

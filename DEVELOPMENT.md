@@ -228,12 +228,12 @@ npm run build
 
 ## Deployment
 
-### Vercel / Netlify
+### Cloudflare Pages + Workers
 
-1. Connect repository to platform
-2. Set build command: `npm run build`
-3. Set output directory: `dist`
-4. Add environment variables (VITE_API_URL, VITE_STRIPE_KEY)
+This repo is intended to run as **Cloudflare Pages (frontend)** + **Cloudflare Worker (API)**.
+
+- Frontend: `npm run build` → deploy `dist/` to Cloudflare Pages
+- API: `npm run deploy:workers`
 
 ### Docker
 

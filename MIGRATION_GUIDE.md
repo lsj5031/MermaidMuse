@@ -8,7 +8,7 @@ The project has been updated to use OpenAPI-compatible endpoints instead of the 
 
 ✅ **Increases flexibility** - Support for any OpenAI-compatible API (OpenAI, Groq, etc.)
 ✅ **Reduces vendor lock-in** - Switch providers without code changes
-✅ **Simplifies deployment** - Uses Cloudflare Workers instead of Netlify/Vercel specific functions
+✅ **Simplifies deployment** - Uses Cloudflare Workers for serverless API routes
 ✅ **Maintains backward compatibility** - Old xAI variables still work as fallback
 ❌ **Requires configuration update** - Environment variables need to be updated
 
@@ -113,19 +113,9 @@ OPENAPI_BASE_URL=https://api.openai.com/v1
    OPENAPI_BASE_URL=https://api.openai.com/v1
    ```
 
-#### Production (Netlify/Vercel - Legacy)
+#### Production
 
-Still supported! The old `XAI_*` variables still work as fallback.
-
-**Netlify**:
-
-1. Go to Site settings > Build & deploy > Environment
-2. Update environment variables
-
-**Vercel**:
-
-1. Go to Settings > Environment Variables
-2. Update environment variables
+Set the `OPENAPI_*` variables in your Cloudflare Worker environment.
 
 ### Step 4: Test the Configuration
 
@@ -167,9 +157,7 @@ npm run deploy:workers
 
 See [CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md) for detailed instructions.
 
-#### For Netlify/Vercel (Legacy)
 
-No changes needed! Continue using your existing deployment method. The old code still works with `XAI_*` variables.
 
 ## Configuration Examples
 

@@ -4,6 +4,7 @@ import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
 import { UserButton, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
+import CreditsWidget from '@components/Credits/CreditsWidget';
 import html2canvas from 'html2canvas';
 
 const Header: React.FC = () => {
@@ -239,6 +240,9 @@ const Header: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
+
+          <CreditsWidget />
+
           <div className="border-l border-gray-300 pl-4 ml-2 flex items-center">
             <SignedOut>
               <SignInButton mode="modal">

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes all changes made to migrate from xAI API to OpenAPI-compatible endpoints and from Netlify/Vercel to Cloudflare deployment.
+This document summarizes changes made to migrate from xAI API to OpenAPI-compatible endpoints and to deploy on Cloudflare Pages + Workers.
 
 ---
 
@@ -33,12 +33,11 @@ This document summarizes all changes made to migrate from xAI API to OpenAPI-com
 
 ---
 
-### 2. **Deployment: Netlify/Vercel → Cloudflare Workers**
+### 2. **Deployment: Cloudflare Pages + Workers**
 
 #### What Changed:
-- Added Cloudflare Workers support for serverless functions
-- Created unified deployment configuration
-- Maintained backward compatibility with Netlify/Vercel
+- Added Cloudflare Workers support for serverless API routes
+- Created unified deployment configuration for Pages (frontend) + Workers (API)
 
 #### New Files Created:
 
@@ -55,14 +54,13 @@ This document summarizes all changes made to migrate from xAI API to OpenAPI-com
 
 **`src/workers/index.ts`** (New Cloudflare Workers handler)
 - Implements `/api/fix` endpoint for Cloudflare Workers
-- Follows same API contract as Netlify/Vercel functions
+- Follows the same API contract the frontend expects
 - CORS handling built-in
 - Calls `fixMermaidSyntaxWithXai()` with Cloudflare environment variables
 
-#### Legacy Deployment Preserved:
-✅ `api/fix.ts` (Vercel) - unchanged, still works
-✅ `netlify/functions/fix.ts` (Netlify) - unchanged, still works
-✅ Both continue to work with new OpenAPI endpoints
+#### Legacy Deployment
+
+This repo focuses on Cloudflare Pages + Workers as the supported deployment target.
 
 ---
 
@@ -211,9 +209,9 @@ All with zero configuration changes (just set environment variables):
 
 ---
 
-## Deployment Options
+## Deployment
 
-### Cloudflare Workers (Recommended) ⭐
+This repo is designed for **Cloudflare Pages (frontend) + Cloudflare Workers (API)**.
 
 ```bash
 npm run deploy:workers
@@ -224,23 +222,6 @@ npm run deploy:workers
 - ✅ Free tier: 100K requests/day
 - ✅ Unified Pages + Workers deployment
 - ✅ Simple environment variable management
-- ✅ Zero cold starts on some tiers
-
-### Vercel (Legacy Support)
-
-```bash
-vercel deploy
-```
-
-Still fully supported via `api/fix.ts`
-
-### Netlify (Legacy Support)
-
-```bash
-netlify deploy
-```
-
-Still fully supported via `netlify/functions/fix.ts`
 
 ---
 
@@ -252,7 +233,6 @@ Still fully supported via `netlify/functions/fix.ts`
 - ✅ Old environment variables still work as fallback
 - ✅ Function signatures unchanged
 - ✅ API responses mostly unchanged (provider field updated)
-- ✅ Netlify and Vercel deployments still work
 
 ---
 
@@ -265,7 +245,7 @@ For existing deployments migrating from xAI to OpenAPI:
 - [ ] Get API key from provider
 - [ ] Update environment variables in deployment platform
 - [ ] Test with `npm run dev:workers`
-- [ ] Deploy using `npm run deploy:workers` (or stick with Netlify/Vercel)
+- [ ] Deploy using `npm run deploy:workers`
 - [ ] Verify `/api/fix` endpoint works
 - [ ] Remove old XAI_* environment variables (optional)
 
@@ -344,8 +324,7 @@ curl -X POST http://localhost:8787/api/fix \
 8. `CHANGES_SUMMARY.md` - This file
 
 ### Preserved Files:
-- ✅ `api/fix.ts` - Vercel support maintained
-- ✅ `netlify/functions/fix.ts` - Netlify support maintained
+- ✅ `src/workers/index.ts` - Single Cloudflare Worker handler for `/api/*`
 
 ---
 

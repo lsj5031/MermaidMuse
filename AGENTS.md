@@ -24,8 +24,9 @@ npm run format          # Prettier formatting
 - `src/theme/` - Design tokens (colors, constants)
 - `src/types/` - TypeScript type definitions
 - `src/test/` - Test setup & utilities
-- `api/` & `server/` - Backend API endpoints (Stripe, diagram operations)
-- `netlify/` & `.github/workflows/` - Deployment configuration
+- `src/server/` - Server-side helpers (Clerk, Stripe, credits)
+- `src/workers/` - Cloudflare Worker entrypoint (`/api/*` routes)
+- `.github/workflows/` - Deployment configuration
 
 **Key Dependencies**: Mermaid (diagrams), @monaco-editor/react (code editor), html2canvas (PNG export), Stripe (payments), lucide-react (icons)
 

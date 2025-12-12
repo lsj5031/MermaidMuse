@@ -1,5 +1,12 @@
 export function getApiUrl(): string {
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const configured = import.meta.env.VITE_API_URL;
+  if (configured) return configured;
+
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8787';
+  }
+
+  return window.location.origin;
 }
 
 export function getStripePublishableKey(): string {
