@@ -32,7 +32,7 @@ export default {
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Comic Neue', 'system-ui', 'sans-serif'],
         mono: ['Fira Code', 'monospace'],
       },
       boxShadow: {

@@ -63,7 +63,7 @@ export const DIAGRAM_THEME_CONFIG: Record<DiagramTheme, DiagramThemeConfig> = {
       theme: 'base',
       securityLevel: 'loose',
       themeVariables: {
-        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+        fontFamily: '"Comic Neue", system-ui, -apple-system, sans-serif',
         primaryColor: '#1a1f3a',
         primaryTextColor: '#e0e0ff',
         primaryBorderColor: '#00f5ff',

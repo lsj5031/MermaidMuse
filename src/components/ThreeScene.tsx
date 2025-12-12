@@ -417,7 +417,7 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
 
       clearGraphObjects();
 
-      if (domElement && container) {
+      if (domElement && container && container.contains(domElement)) {
         container.removeChild(domElement);
       }
 

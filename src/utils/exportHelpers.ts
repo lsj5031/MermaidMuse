@@ -36,7 +36,7 @@ export async function exportElementAsPNG(element: HTMLElement, filename: string,
       ctx.save();
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = watermarkColor ?? '#ffffff';
-      ctx.font = `${Math.round(14 * scale)}px Inter, system-ui, -apple-system, sans-serif`;
+      ctx.font = `${Math.round(14 * scale)}px "Comic Neue", system-ui, -apple-system, sans-serif`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(watermarkText, canvas.width - padding, canvas.height - padding);
@@ -101,7 +101,7 @@ const addSvgWatermark = (svg: string, watermarkText: string, watermarkColor: str
     text.setAttribute('opacity', '0.55');
     text.setAttribute(
       'style',
-      'font-family: Inter, system-ui, -apple-system, sans-serif; font-size: 12px; paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 3px;'
+      'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 12px; paint-order: stroke; stroke: rgba(0,0,0,0.35); stroke-width: 3px;'
     );
 
     group.appendChild(text);
