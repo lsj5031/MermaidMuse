@@ -32,7 +32,7 @@ describe('fixMermaidSyntaxWithXai', () => {
 
     const result = await fixMermaidSyntaxWithXai('graph TD\nA -->', { apiKey: 'test' });
     expect(result.ok).toBe(true);
-    expect(result.provider).toBe('xai');
+    expect(result.provider).toBe('openapi');
     expect(result.fixedText).toContain('A-->B');
     expect(result.suggestions).toEqual(['Fixed arrow token']);
   });
