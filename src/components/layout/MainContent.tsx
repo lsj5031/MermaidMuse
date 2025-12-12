@@ -5,7 +5,7 @@ import ThreeScenePanel from '@components/preview/ThreeScenePanel';
 import StatusBanner from '@components/StatusBanner';
 import ProblemsPanel from '@components/ProblemsPanel';
 import { useSplitLayout } from '@hooks/useResponsive';
-import { Settings, PanelRightClose, PanelRightOpen, Box, FileText } from 'lucide-react';
+import { Settings, Box, FileText } from 'lucide-react';
 
 export default function MainContent() {
   const { shouldStackLayout } = useSplitLayout();
@@ -23,7 +23,7 @@ export default function MainContent() {
       {/* Status Banner */}
       <StatusBanner onProblemsClick={toggleProblemsPanel} />
       
-      <div className="flex h-full">
+      <div id="workspace-capture" className="flex h-full">
         {splitMode ? (
           <>
             {/* Main Editor/Preview Area */}

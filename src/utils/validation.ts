@@ -18,8 +18,6 @@ export interface ValidationResult {
   mermaidError?: string;
 }
 
-const DEBOUNCE_DELAY = 500;
-
 export const debounce = (
   func: (...args: string[]) => void | Promise<void>,
   delay: number

@@ -1,8 +1,15 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { parseMermaidDiagram, GraphData, calculateOptimalCamera, GraphNode, GraphEdge } from '@utils/mermaidParser';
+import {
+  parseMermaidDiagram,
+  type GraphData,
+  calculateOptimalCamera,
+  type GraphNode,
+  type GraphEdge,
+} from '@utils/mermaidParser';
+import { DIAGRAM_THEME_CONFIG, type ThreePalette } from '@theme/diagramThemes';
 import { colors } from '@theme/colors';
 import '../styles/three-scene.css';
 
@@ -17,36 +24,93 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const animationRef = useRef<number | null>(null);
-  const graphObjectsRef = useRef<{ nodes: THREE.Group[], edges: THREE.Line[] }>({ nodes: [], edges: [] });
-  
-  const { currentDiagram, canRender } = useDiagramState();
+
+  const graphObjectsRef = useRef<{ nodes: THREE.Group[]; edges: THREE.Line[] }>({ nodes: [], edges: [] });
+  const lightsGroupRef = useRef<THREE.Group | null>(null);
+
+  const { currentDiagram, canRender, theme } = useDiagramState();
   const { isValidating, content } = currentDiagram;
-  
+
+  const palette = useMemo(() => DIAGRAM_THEME_CONFIG[theme].three, [theme]);
+  const labelColor = theme === 'light' ? '#0f172a' : colors.white;
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize Three.js scene
-  const initializeScene = useCallback(() => {
-    if (!containerRef.current) return;
+  const startRenderLoop = useCallback(() => {
+    const animate = () => {
+      animationRef.current = requestAnimationFrame(animate);
 
-    // Create scene
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
+
+      if (rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
+    };
+
+    animate();
+  }, []);
+
+  const addLights = useCallback((scene: THREE.Scene, themePalette: ThreePalette) => {
+    if (lightsGroupRef.current) {
+      scene.remove(lightsGroupRef.current);
+      lightsGroupRef.current = null;
+    }
+
+    const group = new THREE.Group();
+
+    const ambientLight = new THREE.AmbientLight(
+      themePalette.ambientLight.color,
+      themePalette.ambientLight.intensity
+    );
+    group.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(
+      themePalette.keyLight.color,
+      themePalette.keyLight.intensity
+    );
+    directionalLight.position.set(...themePalette.keyLight.position);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
+    group.add(directionalLight);
+
+    const accent1 = new THREE.DirectionalLight(
+      themePalette.accentLight1.color,
+      themePalette.accentLight1.intensity
+    );
+    accent1.position.set(...themePalette.accentLight1.position);
+    group.add(accent1);
+
+    const accent2 = new THREE.DirectionalLight(
+      themePalette.accentLight2.color,
+      themePalette.accentLight2.intensity
+    );
+    accent2.position.set(...themePalette.accentLight2.position);
+    group.add(accent2);
+
+    scene.add(group);
+    lightsGroupRef.current = group;
+  }, []);
+
+  const initializeScene = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(colors.dark.bg);
+    scene.background = new THREE.Color(palette.background);
     sceneRef.current = scene;
 
-    // Create camera
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000
-    );
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 0, 10);
     cameraRef.current = camera;
 
-    // Create renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -54,10 +118,8 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
     renderer.toneMappingExposure = 1;
     rendererRef.current = renderer;
 
-    // Add lights
-    addLights(scene);
+    addLights(scene, palette);
 
-    // Create controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -65,71 +127,21 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
     controls.minDistance = 1;
     controlsRef.current = controls;
 
-    // Add renderer to DOM
-    containerRef.current.appendChild(renderer.domElement);
-
-    // Start render loop
+    container.appendChild(renderer.domElement);
     startRenderLoop();
-  }, []);
+  }, [addLights, palette, startRenderLoop]);
 
-  // Add lights to scene
-  const addLights = (scene: THREE.Scene) => {
-    // Ambient light
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    scene.add(ambientLight);
-
-    // Main directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(10, 10, 5);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 50;
-    scene.add(directionalLight);
-
-    // Fill lights with theme colors
-    const neonCyan = new THREE.DirectionalLight(0x00f5ff, 0.5);
-    neonCyan.position.set(-10, 0, 10);
-    scene.add(neonCyan);
-
-    const neonPurple = new THREE.DirectionalLight(0xb537f2, 0.3);
-    neonPurple.position.set(0, -10, -5);
-    scene.add(neonPurple);
-  };
-
-  // Start render loop
-  const startRenderLoop = useCallback(() => {
-    const animate = () => {
-      animationRef.current = requestAnimationFrame(animate);
-
-      // Update controls
-      if (controlsRef.current) {
-        controlsRef.current.update();
-      }
-
-      // Render scene
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
-    };
-    animate();
-  }, []);
-
-  // Clear existing graph objects
   const clearGraphObjects = useCallback(() => {
     if (!sceneRef.current) return;
 
-    // Remove existing nodes (which are now groups)
-    graphObjectsRef.current.nodes.forEach(nodeGroup => {
+    graphObjectsRef.current.nodes.forEach((nodeGroup) => {
       sceneRef.current!.remove(nodeGroup);
-      
-      // Dispose all geometries and materials in the group
+
       nodeGroup.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.geometry.dispose();
           if (Array.isArray(child.material)) {
-            child.material.forEach(mat => mat.dispose());
+            child.material.forEach((mat) => mat.dispose());
           } else {
             child.material.dispose();
           }
@@ -142,12 +154,11 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
       });
     });
 
-    // Remove existing edges
-    graphObjectsRef.current.edges.forEach(edge => {
+    graphObjectsRef.current.edges.forEach((edge) => {
       sceneRef.current!.remove(edge);
       edge.geometry.dispose();
       if (Array.isArray(edge.material)) {
-        edge.material.forEach(mat => mat.dispose());
+        edge.material.forEach((mat) => mat.dispose());
       } else {
         edge.material.dispose();
       }
@@ -156,199 +167,191 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
     graphObjectsRef.current = { nodes: [], edges: [] };
   }, []);
 
-  // Create text label
-  const createTextLabel = useCallback((text: string, position: THREE.Vector3, color: string = colors.white) => {
-    // Create canvas for text
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-    
-    // Set canvas size
-    canvas.width = 256;
-    canvas.height = 64;
-    
-    // Configure text rendering
-    context.fillStyle = color;
-    context.font = '24px Arial';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    
-    // Add text shadow for better visibility
-    context.shadowColor = 'rgba(0, 0, 0, 0.8)';
-    context.shadowBlur = 4;
-    context.shadowOffsetX = 2;
-    context.shadowOffsetY = 2;
-    
-    // Draw text
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
-    
-    // Create texture
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    
-    // Create sprite material
-    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-    
-    // Create sprite
-    const sprite = new THREE.Sprite(material);
-    sprite.position.copy(position);
-    sprite.position.z += 1.5; // Place label above the node
-    sprite.scale.set(4, 1, 1); // Adjust size
-    
-    return sprite;
-  }, []);
+  const createTextLabel = useCallback(
+    (text: string, position: THREE.Vector3, color: string = colors.white) => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) return null;
 
-  // Create node mesh
-  const createNodeMesh = useCallback((node: GraphNode) => {
-    // Create geometry based on node type
-    let geometry: THREE.BufferGeometry;
-    
-    switch (node.type) {
-      case 'circle':
-        geometry = new THREE.SphereGeometry(0.5, 16, 16);
-        break;
-      case 'diamond':
-        geometry = new THREE.OctahedronGeometry(0.7);
-        break;
-      default: // rect
-        geometry = new THREE.BoxGeometry(Math.min(node.width || 2, 3), Math.min(node.height || 1, 1.5), 1);
-    }
+      canvas.width = 256;
+      canvas.height = 64;
 
-    // Create material with neon colors
-    const material = new THREE.MeshPhongMaterial({
-      color: node.color || colors.neon.pink,
-      emissive: node.color || colors.neon.pink,
-      emissiveIntensity: 0.3,
-      shininess: 100,
-      transparent: true,
-      opacity: 0.9
-    });
+      context.fillStyle = color;
+      context.font = '24px Arial';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
 
-    // Create mesh
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(node.x, node.y, node.z || 0);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    mesh.userData = { node };
+      context.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      context.shadowBlur = 4;
+      context.shadowOffsetX = 2;
+      context.shadowOffsetY = 2;
 
-    // Add glow effect with a slightly larger mesh
-    const glowGeometry = geometry.clone();
-    const glowMaterial = new THREE.MeshBasicMaterial({
-      color: node.color || colors.neon.pink,
-      transparent: true,
-      opacity: 0.1,
-      side: THREE.BackSide
-    });
-    const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
-    glowMesh.position.copy(mesh.position);
-    glowMesh.scale.multiplyScalar(1.2);
-    
-    // Group node and glow
-    const nodeGroup = new THREE.Group();
-    nodeGroup.add(glowMesh);
-    nodeGroup.add(mesh);
-    
-    // Add text label
-    const textLabel = createTextLabel(node.label, new THREE.Vector3(node.x, node.y, node.z || 0), colors.white);
-    if (textLabel) {
-      nodeGroup.add(textLabel);
-    }
+      context.fillText(text, canvas.width / 2, canvas.height / 2);
 
-    return nodeGroup;
-  }, [createTextLabel]);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
 
-  // Create edge line
-  const createEdgeLine = useCallback((edge: GraphEdge, nodes: GraphNode[]) => {
-    const fromNode = nodes.find(n => n.id === edge.from);
-    const toNode = nodes.find(n => n.id === edge.to);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
 
-    if (!fromNode || !toNode) return null;
+      const sprite = new THREE.Sprite(material);
+      sprite.position.copy(position);
+      sprite.position.z += 1.5;
+      sprite.scale.set(4, 1, 1);
 
-    // Create line geometry
-    const points = [
-      new THREE.Vector3(fromNode.x, fromNode.y, fromNode.z || 0),
-      new THREE.Vector3(toNode.x, toNode.y, toNode.z || 0)
-    ];
+      return sprite;
+    },
+    []
+  );
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    
-    // Create neon-style line material
-    const material = new THREE.LineBasicMaterial({
-      color: colors.neon.cyan,
-      linewidth: 3,
-      transparent: true,
-      opacity: 0.8
-    });
+  const createNodeMesh = useCallback(
+    (node: GraphNode) => {
+      let geometry: THREE.BufferGeometry;
 
-    const line = new THREE.Line(geometry, material);
-    line.userData = { edge };
-    
-    return line;
-  }, []);
+      switch (node.type) {
+        case 'circle':
+          geometry = new THREE.SphereGeometry(0.5, 16, 16);
+          break;
+        case 'diamond':
+          geometry = new THREE.OctahedronGeometry(0.7);
+          break;
+        default:
+          geometry = new THREE.BoxGeometry(Math.min(node.width || 2, 3), Math.min(node.height || 1, 1.5), 1);
+      }
 
-  // Render graph
-  const renderGraph = useCallback(async (graphData: GraphData) => {
-    if (!sceneRef.current || graphData.nodes.length === 0) {
-      clearGraphObjects();
-      return;
-    }
+      const baseColor = node.color || colors.neon.pink;
 
-    setIsLoading(true);
-    setError(null);
+      const material = new THREE.MeshPhongMaterial({
+        color: baseColor,
+        emissive: baseColor,
+        emissiveIntensity: 0.3,
+        shininess: 100,
+        transparent: true,
+        opacity: 0.9,
+      });
 
-    try {
-      clearGraphObjects();
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(node.x, node.y, node.z || 0);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.userData = { node };
 
-      // Create and add nodes
-      const nodeGroups: THREE.Group[] = [];
-      for (const nodeData of graphData.nodes) {
-        const nodeGroup = createNodeMesh(nodeData);
-        if (nodeGroup) {
-          sceneRef.current!.add(nodeGroup);
-          nodeGroups.push(nodeGroup);
+      const glowGeometry = geometry.clone();
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.BackSide,
+      });
+      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+      glowMesh.position.copy(mesh.position);
+      glowMesh.scale.multiplyScalar(1.2);
+
+      const nodeGroup = new THREE.Group();
+      nodeGroup.add(glowMesh);
+      nodeGroup.add(mesh);
+
+      const textLabel = createTextLabel(node.label, new THREE.Vector3(node.x, node.y, node.z || 0), labelColor);
+      if (textLabel) {
+        nodeGroup.add(textLabel);
+      }
+
+      return nodeGroup;
+    },
+    [createTextLabel, labelColor]
+  );
+
+  const createEdgeLine = useCallback(
+    (edge: GraphEdge, nodes: GraphNode[]) => {
+      const fromNode = nodes.find((n) => n.id === edge.from);
+      const toNode = nodes.find((n) => n.id === edge.to);
+
+      if (!fromNode || !toNode) return null;
+
+      const points = [
+        new THREE.Vector3(fromNode.x, fromNode.y, fromNode.z || 0),
+        new THREE.Vector3(toNode.x, toNode.y, toNode.z || 0),
+      ];
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+      const material = new THREE.LineBasicMaterial({
+        color: palette.edgeColor,
+        linewidth: 3,
+        transparent: true,
+        opacity: 0.8,
+      });
+
+      const line = new THREE.Line(geometry, material);
+      line.userData = { edge };
+      return line;
+    },
+    [palette.edgeColor]
+  );
+
+  const renderGraph = useCallback(
+    async (graphData: GraphData) => {
+      if (!sceneRef.current || graphData.nodes.length === 0) {
+        clearGraphObjects();
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        clearGraphObjects();
+
+        const nodeGroups: THREE.Group[] = [];
+        for (const nodeData of graphData.nodes) {
+          const nodeGroup = createNodeMesh(nodeData);
+          if (nodeGroup) {
+            sceneRef.current!.add(nodeGroup);
+            nodeGroups.push(nodeGroup);
+          }
         }
-      }
 
-      // Create and add edges
-      const edgeLines: THREE.Line[] = [];
-      for (const edgeData of graphData.edges) {
-        const edgeLine = createEdgeLine(edgeData, graphData.nodes);
-        if (edgeLine) {
-          sceneRef.current!.add(edgeLine);
-          edgeLines.push(edgeLine);
+        const edgeLines: THREE.Line[] = [];
+        for (const edgeData of graphData.edges) {
+          const edgeLine = createEdgeLine(edgeData, graphData.nodes);
+          if (edgeLine) {
+            sceneRef.current!.add(edgeLine);
+            edgeLines.push(edgeLine);
+          }
         }
+
+        graphObjectsRef.current = { nodes: nodeGroups, edges: edgeLines };
+
+        const cameraSettings = calculateOptimalCamera(graphData);
+        if (cameraRef.current && controlsRef.current) {
+          cameraRef.current.position.set(
+            cameraSettings.position.x,
+            cameraSettings.position.y,
+            cameraSettings.position.z
+          );
+          controlsRef.current.target.set(
+            cameraSettings.target.x,
+            cameraSettings.target.y,
+            cameraSettings.target.z
+          );
+          controlsRef.current.update();
+        }
+      } catch (err) {
+        console.error('Error rendering graph:', err);
+        setError(err instanceof Error ? err.message : 'Failed to render graph');
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [clearGraphObjects, createEdgeLine, createNodeMesh]
+  );
 
-      graphObjectsRef.current = {
-        nodes: nodeGroups,
-        edges: edgeLines
-      };
+  useEffect(() => {
+    if (!sceneRef.current) return;
 
-      // Calculate and set optimal camera position
-      const cameraSettings = calculateOptimalCamera(graphData);
-      if (cameraRef.current && controlsRef.current) {
-        cameraRef.current.position.set(
-          cameraSettings.position.x,
-          cameraSettings.position.y,
-          cameraSettings.position.z
-        );
-        controlsRef.current.target.set(
-          cameraSettings.target.x,
-          cameraSettings.target.y,
-          cameraSettings.target.z
-        );
-        controlsRef.current.update();
-      }
+    sceneRef.current.background = new THREE.Color(palette.background);
+    addLights(sceneRef.current, palette);
+  }, [addLights, palette]);
 
-    } catch (err) {
-      console.error('Error rendering graph:', err);
-      setError(err instanceof Error ? err.message : 'Failed to render graph');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [clearGraphObjects, createNodeMesh, createEdgeLine]);
-
-  // Handle content changes
   useEffect(() => {
     if (!canRender || !content) {
       clearGraphObjects();
@@ -357,7 +360,7 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
 
     const updateGraph = async () => {
       try {
-        const graphData = await parseMermaidDiagram(content);
+        const graphData = await parseMermaidDiagram(content, theme);
         await renderGraph(graphData);
       } catch (err) {
         console.error('Error parsing diagram:', err);
@@ -365,35 +368,44 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
       }
     };
 
-    updateGraph();
-  }, [content, canRender, renderGraph, clearGraphObjects]);
+    void updateGraph();
+  }, [canRender, clearGraphObjects, content, renderGraph, theme]);
 
-  // Handle resize
   const handleResize = useCallback(() => {
-    if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+    const container = containerRef.current;
+    if (!container || !cameraRef.current || !rendererRef.current) return;
 
-    const width = containerRef.current.clientWidth;
-    const height = containerRef.current.clientHeight;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
     cameraRef.current.aspect = width / height;
     cameraRef.current.updateProjectionMatrix();
     rendererRef.current.setSize(width, height);
   }, []);
 
-  // Setup resize observer
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(container);
 
     return () => {
       resizeObserver.disconnect();
     };
   }, [handleResize]);
 
-  // Cleanup
   useEffect(() => {
+    if (containerRef.current && !sceneRef.current) {
+      initializeScene();
+    }
+  }, [initializeScene]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const renderer = rendererRef.current;
+    const domElement = renderer?.domElement;
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -401,48 +413,45 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
 
       clearGraphObjects();
 
-      if (rendererRef.current && containerRef.current) {
-        containerRef.current.removeChild(rendererRef.current.domElement);
-        rendererRef.current.dispose();
+      if (domElement && container) {
+        container.removeChild(domElement);
       }
 
-      if (controlsRef.current) {
-        controlsRef.current.dispose();
-      }
+      renderer?.dispose();
+      controlsRef.current?.dispose();
     };
   }, [clearGraphObjects]);
 
-  // Initialize scene on mount
-  useEffect(() => {
-    if (containerRef.current && !sceneRef.current) {
-      initializeScene();
-    }
-  }, [initializeScene]);
-
   return (
-    <div className={`relative h-full w-full overflow-hidden ${className || ''}`}>
-      <div 
-        ref={containerRef} 
+    <div className={`relative h-full w-full overflow-hidden ${className || ''}`}> 
+      <div
+        ref={containerRef}
         className="w-full h-full"
-        style={{ background: `linear-gradient(135deg, ${colors.dark.bg} 0%, #1a1f3a 100%)` }}
+        style={{
+          background: `linear-gradient(135deg, ${palette.backgroundGradient[0]} 0%, ${palette.backgroundGradient[1]} 100%)`,
+        }}
       />
 
-      {/* Status overlay */}
       {(isValidating || isLoading || error || !canRender) && (
         <div className="absolute inset-0 flex items-center justify-center bg-dark-bg/80 backdrop-blur-sm">
           <div className="text-center">
             {isValidating || isLoading ? (
               <>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4" />
                 <p className="text-cyan-400 font-medium">
-                  {isValidating ? 'Validating diagram...' : 'Rendering 3D scene...'}
+                  {isValidating ? 'Validating diagram…' : 'Rendering 3D scene…'}
                 </p>
               </>
             ) : error ? (
               <>
                 <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-red-500/20 rounded-full">
                   <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
                   </svg>
                 </div>
                 <p className="text-red-400 font-medium mb-2">3D Render Error</p>
@@ -452,22 +461,27 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
               <>
                 <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-yellow-500/20 rounded-full">
                   <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
                   </svg>
                 </div>
                 <p className="text-yellow-400 font-medium mb-2">Invalid Diagram</p>
-                <p className="text-gray-400 text-sm">Fix syntax errors to render 3D scene</p>
+                <p className="text-gray-400 text-sm">Fix syntax errors to render the 3D scene</p>
               </>
             ) : null}
           </div>
         </div>
       )}
 
-      {/* Controls hint */}
       {canRender && !isLoading && !error && (
         <div className="absolute top-4 left-4 bg-dark-surface/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-dark-border">
           <p className="text-xs text-gray-400">
-            <span className="text-cyan-400">Mouse:</span> Rotate • <span className="text-cyan-400">Scroll:</span> Zoom • <span className="text-cyan-400">Drag:</span> Pan
+            <span className="text-cyan-400">Mouse:</span> Rotate • <span className="text-cyan-400">Scroll:</span> Zoom •{' '}
+            <span className="text-cyan-400">Drag:</span> Pan
           </p>
         </div>
       )}

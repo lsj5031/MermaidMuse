@@ -1,4 +1,5 @@
 import mermaid from 'mermaid';
+import { type DiagramTheme, getNodeColorForTheme } from '@theme/diagramThemes';
 
 export interface GraphNode {
   id: string;
@@ -31,7 +32,10 @@ export interface GraphData {
   };
 }
 
-export const parseMermaidDiagram = async (content: string): Promise<GraphData> => {
+export const parseMermaidDiagram = async (
+  content: string,
+  theme: DiagramTheme = 'cyber'
+): Promise<GraphData> => {
   if (!content.trim()) {
     return {
       nodes: [],
@@ -45,7 +49,7 @@ export const parseMermaidDiagram = async (content: string): Promise<GraphData> =
     await mermaid.parse(content);
     
     // Extract graph structure from content
-    const graphData = await extractGraphStructure(content);
+    const graphData = await extractGraphStructure(content, theme);
     
     return graphData;
   } catch (error) {
@@ -58,7 +62,7 @@ export const parseMermaidDiagram = async (content: string): Promise<GraphData> =
   }
 };
 
-const extractGraphStructure = async (content: string): Promise<GraphData> => {
+const extractGraphStructure = async (content: string, theme: DiagramTheme): Promise<GraphData> => {
   // Enhanced parsing for Mermaid diagrams
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
@@ -87,22 +91,22 @@ const extractGraphStructure = async (content: string): Promise<GraphData> => {
     let match;
     while ((match = pattern.exec(content)) !== null) {
       const [, id, label] = match;
-      if (!nodes.find(n => n.id === id)) {
+      if (!nodes.find((n) => n.id === id)) {
         nodes.push({
           id,
           label: label.trim(),
           x: 0, // Will be calculated later
-          y: 0, // Will be calculated later  
+          y: 0, // Will be calculated later
           z: 0,
           width: Math.max(2, label.length * 0.6),
           height: 1.2,
           type: getNodeType(match[0]),
-          color: getNodeColor(id)
+          color: getNodeColor(theme, id),
         });
       }
     }
   }
-  
+
   // Extract edges with more patterns
   const edgePatterns = [
     // A --> B - directed edge
@@ -116,7 +120,7 @@ const extractGraphStructure = async (content: string): Promise<GraphData> => {
     // A -.-> B - dotted edge
     /([A-Za-z0-9_]+)\s*-\.(?:\|([^|]+)\|)?\s*([A-Za-z0-9_]+)/g,
     // A -.-> B - dotted directed edge
-    /([A-Za-z0-9_]+)\s*-\.\s*>\s*(?:\|([^|]+)\|)?\s*([A-Za-z0-9_]+)/g
+    /([A-Za-z0-9_]+)\s*-\.\s*>\s*(?:\|([^|]+)\|)?\s*([A-Za-z0-9_]+)/g,
   ];
   
   for (const pattern of edgePatterns) {
@@ -264,23 +268,8 @@ const getNodeType = (nodeDef: string): string => {
   return 'rect';
 };
 
-const getNodeColor = (nodeId: string): string => {
-  // Generate consistent colors based on node ID
-  const colors = [
-    '#ff006e', // neon pink
-    '#00f5ff', // neon cyan
-    '#b537f2', // neon purple
-    '#39ff14', // neon green
-    '#fffd38', // neon yellow
-    '#0080ff'  // neon blue
-  ];
-  
-  let hash = 0;
-  for (let i = 0; i < nodeId.length; i++) {
-    hash = nodeId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  return colors[Math.abs(hash) % colors.length];
+const getNodeColor = (theme: DiagramTheme, nodeId: string): string => {
+  return getNodeColorForTheme(theme, nodeId);
 };
 
 export const calculateOptimalCamera = (graphData: GraphData) => {

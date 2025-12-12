@@ -1,75 +1,119 @@
-import React, { useRef, useEffect } from 'react';
-import Editor, { Monaco } from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
-import { useDiagramState } from '@hooks/useDiagramState';
+import { useCallback, useEffect, useRef } from 'react';
+import Editor, { type Monaco } from '@monaco-editor/react';
+import { type editor } from 'monaco-editor';
+import { useDiagramState, type EditorNavigationApi } from '@hooks/useDiagramState';
 import { EDITOR_DEFAULTS } from '@theme/constants';
-import { ValidationError } from '@utils/validation';
 import { registerMermaidLanguage } from '@utils/mermaidLanguage';
 
 export default function EditorPanel() {
-  const { currentDiagram, updateDiagramContent } = useDiagramState();
+  const { currentDiagram, updateDiagramContent, registerEditorNavigationApi } = useDiagramState();
+
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const highlightTimeoutRef = useRef<number | null>(null);
+  const highlightDecorationIdsRef = useRef<string[]>([]);
 
-  const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    editorRef.current = editor;
-    monacoRef.current = monaco;
+  const validation = currentDiagram.validation;
 
-    // Configure Monaco for Mermaid
-    monaco.languages.register({ id: 'mermaid' });
-    
-    // Set up Monaco validation markers when validation results change
-    updateValidationMarkers();
-  };
-
-  const updateValidationMarkers = () => {
+  const updateValidationMarkers = useCallback(() => {
     if (!editorRef.current || !monacoRef.current) return;
 
-    const { validation } = currentDiagram;
     const monaco = monacoRef.current;
-    const editor = editorRef.current;
+    const model = editorRef.current.getModel();
+    if (!model) return;
 
-    // Clear existing markers
-    monaco.editor.setModelMarkers(editor.getModel()!, 'mermaid', []);
+    const markers: editor.IMarkerData[] = [];
 
-    if (!validation.isValid || validation.errors.length > 0 || validation.warnings.length > 0) {
-      const markers: editor.IMarkerData[] = [];
-
-      validation.errors.forEach((error) => {
-        markers.push({
-          severity: monaco.MarkerSeverity.Error,
-          message: error.message,
-          startLineNumber: error.startLineNumber || error.line,
-          startColumn: error.startColumn || error.column,
-          endLineNumber: error.endLineNumber || error.line,
-          endColumn: error.endColumn || error.column + 1,
-          source: 'Mermaid Parser',
-          code: 'MERMAID_ERROR',
-        });
+    validation.errors.forEach((error) => {
+      markers.push({
+        severity: monaco.MarkerSeverity.Error,
+        message: error.message,
+        startLineNumber: error.startLineNumber || error.line,
+        startColumn: error.startColumn || error.column,
+        endLineNumber: error.endLineNumber || error.line,
+        endColumn: error.endColumn || error.column + 1,
+        source: 'Mermaid',
+        code: 'MERMAID_ERROR',
       });
+    });
 
-      validation.warnings.forEach((warning) => {
-        markers.push({
-          severity: monaco.MarkerSeverity.Warning,
-          message: warning.message,
-          startLineNumber: warning.startLineNumber || warning.line,
-          startColumn: warning.startColumn || warning.column,
-          endLineNumber: warning.endLineNumber || warning.line,
-          endColumn: warning.endColumn || warning.column + 1,
-          source: 'Mermaid Parser',
-          code: 'MERMAID_WARNING',
-        });
+    validation.warnings.forEach((warning) => {
+      markers.push({
+        severity: monaco.MarkerSeverity.Warning,
+        message: warning.message,
+        startLineNumber: warning.startLineNumber || warning.line,
+        startColumn: warning.startColumn || warning.column,
+        endLineNumber: warning.endLineNumber || warning.line,
+        endColumn: warning.endColumn || warning.column + 1,
+        source: 'Mermaid',
+        code: 'MERMAID_WARNING',
       });
+    });
 
-      // Apply markers to the editor
-      monaco.editor.setModelMarkers(editor.getModel()!, 'mermaid', markers);
-    }
-  };
+    monaco.editor.setModelMarkers(model, 'mermaid', markers);
+  }, [validation]);
 
-  // Update markers when validation changes
   useEffect(() => {
     updateValidationMarkers();
-  }, [currentDiagram.validation]);
+  }, [updateValidationMarkers]);
+
+  useEffect(() => {
+    const api: EditorNavigationApi = {
+      revealPosition: (lineNumber: number, column: number = 1) => {
+        if (!editorRef.current || !monacoRef.current) return;
+
+        const editorInstance = editorRef.current;
+        const monaco = monacoRef.current;
+
+        editorInstance.focus();
+        editorInstance.setPosition({ lineNumber, column });
+        editorInstance.revealPositionInCenter({ lineNumber, column });
+
+        const model = editorInstance.getModel();
+        if (!model) return;
+
+        if (highlightTimeoutRef.current) {
+          window.clearTimeout(highlightTimeoutRef.current);
+        }
+
+        highlightDecorationIdsRef.current = editorInstance.deltaDecorations(highlightDecorationIdsRef.current, [
+          {
+            range: new monaco.Range(lineNumber, 1, lineNumber, model.getLineMaxColumn(lineNumber)),
+            options: {
+              isWholeLine: true,
+              className: 'editor-error-line-highlight',
+            },
+          },
+        ]);
+
+        highlightTimeoutRef.current = window.setTimeout(() => {
+          if (!editorRef.current) return;
+          highlightDecorationIdsRef.current = editorRef.current.deltaDecorations(
+            highlightDecorationIdsRef.current,
+            []
+          );
+        }, 2500);
+      },
+    };
+
+    registerEditorNavigationApi(api);
+
+    return () => {
+      registerEditorNavigationApi(null);
+      if (highlightTimeoutRef.current) {
+        window.clearTimeout(highlightTimeoutRef.current);
+      }
+    };
+  }, [registerEditorNavigationApi]);
+
+  const handleEditorDidMount = (instance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = instance;
+    monacoRef.current = monaco;
+
+    registerMermaidLanguage();
+
+    updateValidationMarkers();
+  };
 
   return (
     <div className="h-full flex flex-col bg-dark-bg">
@@ -79,7 +123,7 @@ export default function EditorPanel() {
           value={currentDiagram.content}
           onChange={(value) => updateDiagramContent(value || '')}
           onMount={handleEditorDidMount}
-          theme="vs-dark"
+          theme="mermaid-dark"
           options={{
             ...EDITOR_DEFAULTS,
             fontSize: 13,
@@ -102,13 +146,12 @@ export default function EditorPanel() {
           loading={
             <div className="flex items-center justify-center h-full text-gray-400">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
                 Loading editor...
               </div>
             </div>
           }
           beforeMount={(monaco) => {
-            // Configure Monaco editor before mount
             monaco.editor.defineTheme('mermaid-dark', {
               base: 'vs-dark',
               inherit: true,

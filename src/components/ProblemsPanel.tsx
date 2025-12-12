@@ -9,7 +9,7 @@ interface ProblemsPanelProps {
 }
 
 export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
-  const { currentDiagram } = useDiagramState();
+  const { currentDiagram, revealInEditor } = useDiagramState();
   const { validation, isValidating } = currentDiagram;
 
   if (!isOpen) return null;
@@ -112,9 +112,9 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
                     : 'border-blue-400 hover:bg-blue-900/10'
                 }`}
                 onClick={() => {
-                  // Could implement jumping to line in editor
-                  console.log('Jump to line:', issue.line);
+                  revealInEditor(issue.line, issue.column);
                 }}
+                title="Jump to the highlighted line"
               >
                 <div className="flex items-start gap-2">
                   {getSeverityIcon(issue.severity)}

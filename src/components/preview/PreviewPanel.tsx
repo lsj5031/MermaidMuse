@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 import { useDiagramState } from '@hooks/useDiagramState';
+import { getMermaidConfigForTheme } from '@theme/diagramThemes';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function PreviewPanel() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { currentDiagram, canRender } = useDiagramState();
-  const { validation, isValidating, content } = currentDiagram;
+  const { currentDiagram, canRender, theme } = useDiagramState();
+  const { isValidating, content } = currentDiagram;
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -30,12 +31,7 @@ export default function PreviewPanel() {
       }
 
       try {
-        // Initialize mermaid
-        mermaid.initialize({ 
-          startOnLoad: false, 
-          theme: 'dark',
-          securityLevel: 'loose'
-        });
+        mermaid.initialize(getMermaidConfigForTheme(theme));
         
         containerRef.current.innerHTML = '';
 
@@ -65,7 +61,7 @@ export default function PreviewPanel() {
     };
 
     renderDiagram();
-  }, [content, canRender, isValidating]);
+  }, [content, canRender, isValidating, theme]);
 
   return (
     <div className="h-full flex flex-col bg-dark-bg overflow-hidden">

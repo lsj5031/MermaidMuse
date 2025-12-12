@@ -1,0 +1,16 @@
+{
+  "name": "Diagram Studio",
+  "short_name": "Diagram Studio",
+  "description": "Offline-friendly Mermaid diagram editor with 2D + 3D preview.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0e27",
+  "theme_color": "#00f5ff",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
