@@ -1,0 +1,21 @@
+name = "diagram-maker"
+main = "src/workers/index.ts"
+compatibility_date = "2024-01-15"
+
+account_id = ""
+workers_dev = true
+
+route = {pattern = "example.com/api/*", zone_id = ""}
+
+env.development = {name = "diagram-maker-dev"}
+
+env.production = {name = "diagram-maker-prod"}
+
+[env.development]
+vars = {OPENAPI_MODEL = "gpt-4o", OPENAPI_BASE_URL = "https://api.openai.com/v1"}
+
+[env.production]
+vars = {OPENAPI_MODEL = "gpt-4o", OPENAPI_BASE_URL = "https://api.openai.com/v1"}
+
+[[triggers.crons]]
+cron = "0 0 * * *"

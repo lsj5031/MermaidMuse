@@ -37,6 +37,26 @@ cd MermaidMuse
 npm install
 ```
 
+3. Create environment configuration:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Update `.env.local` with your configuration:
+
+```env
+# Client-side (exposed to the browser)
+VITE_API_URL=http://localhost:3000
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+VITE_MOCK_PRO=false
+
+# Server-side (used by /api/fix with OpenAPI-compatible endpoints)
+# Supports OpenAI, Groq, or any OpenAI-compatible API
+OPENAPI_API_KEY=your_api_key_here
+OPENAPI_MODEL=gpt-4o
+OPENAPI_BASE_URL=https://api.openai.com/v1
+```
 ## 📖 Available Scripts
 
 ### Development
@@ -47,6 +67,14 @@ npm run dev
 
 Starts the development server at `http://localhost:5173`
 
+### Development with Cloudflare Workers
+
+```bash
+npm run dev:workers
+```
+
+Starts the Cloudflare Workers development environment for testing serverless functions locally.
+
 ### Build
 
 ```bash
@@ -54,6 +82,22 @@ npm run build
 ```
 
 Creates an optimized production build in `dist/`
+
+### Build for Cloudflare Workers
+
+```bash
+npm run build:workers
+```
+
+Creates a dry-run deployment package for Cloudflare Workers.
+
+### Deploy to Cloudflare
+
+```bash
+npm run deploy:workers
+```
+
+Deploys the serverless functions to Cloudflare Workers.
 
 ### Preview
 
@@ -106,6 +150,88 @@ src/
 └── index.css                      # Global styles
 ```
 
+## 🌈 Cyberpunk Theme
+
+The application includes a custom cyberpunk-inspired color scheme:
+
+- **Primary Colors**: Neon pink (#ff006e), cyan (#00f5ff), purple (#b537f2)
+- **Accent Colors**: Green (#39ff14), yellow (#fffd38), blue (#0080ff)
+- **Dark Theme**: Dark backgrounds with light text for eye comfort
+
+Customize colors in:
+
+- `src/theme/colors.ts` - Color definitions
+- `tailwind.config.js` - Tailwind theme configuration
+
+## 📦 Key Dependencies
+
+### Core
+
+- **React 18**: UI library
+- **TypeScript**: Type safety
+- **Vite**: Build tool and dev server
+
+### Editors & Visualization
+
+- **Mermaid**: Diagram rendering
+- **@monaco-editor/react**: Code editor
+- **Three.js**: 3D graphics support
+- **html2canvas**: Screenshot/export functionality
+
+### Styling
+
+- **Tailwind CSS**: Utility-first CSS framework
+- **PostCSS**: CSS processing
+
+### Payments
+
+- **@stripe/stripe-js**: Stripe integration
+
+### Development
+
+- **ESLint**: Code linting
+- **Prettier**: Code formatting
+
+## 🔐 Environment Variables
+
+Create a `.env.local` file (use `.env.example` as template):
+
+```env
+# Client-side (exposed to the browser)
+VITE_API_URL=http://localhost:3000
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+VITE_MOCK_PRO=false
+
+# Server-side (used by serverless functions with OpenAPI-compatible endpoints)
+# Supports OpenAI, Groq, or any OpenAI-compatible API
+OPENAPI_API_KEY=your_api_key_here
+OPENAPI_MODEL=gpt-4o
+OPENAPI_BASE_URL=https://api.openai.com/v1
+```
+
+Only variables prefixed with `VITE_` are exposed to the client. `OPENAPI_*` variables are intended for serverless runtimes (Cloudflare Workers, Vercel Functions, or Netlify Functions).
+
+## 🔌 Serverless API (`/api/fix`)
+
+The API endpoint uses OpenAPI-compatible endpoints (e.g., OpenAI, Groq, or any compatible service).
+
+- **POST** `/api/fix`
+- **Body**: `{ "diagramText": "..." }`
+- **Response**: `{ ok, fixedText, suggestions, error? }`
+
+Example:
+
+```bash
+curl -s http://localhost:8888/api/fix \
+  -H 'Content-Type: application/json' \
+  -d '{"diagramText":"graph TD\nA -->"}' | jq
+```
+
+Local notes:
+
+- Vite's dev server does **not** run serverless functions.
+- To run Cloudflare Workers locally, use `npm run dev:workers`.
+- To run Netlify/Vercel functions locally, use `netlify dev` or `vercel dev` respectively.
 ## 🚀 Deployment
 
 ### Cloudflare Pages (Recommended)
@@ -131,14 +257,73 @@ See `.github/workflows/deploy.yml` for workflow configuration.
 npm run build
 ```
 
-Deploy the `dist/` directory to any static hosting:
-- Cloudflare Pages
-- Vercel
-- Netlify
-- GitHub Pages
-- AWS S3 + CloudFront
+The `dist/` directory is ready to be deployed to any static hosting provider.
 
-## 💡 Usage
+### Cloudflare Pages + Workers (Recommended)
+
+```bash
+npm run deploy:workers
+```
+
+This repo includes `wrangler.toml` for Cloudflare Workers configuration:
+
+1. **Prerequisites**: Create a Cloudflare account and install Wrangler CLI
+2. **Setup**: Configure your `account_id` and other settings in `wrangler.toml`
+3. **Deploy**: Run `npm run deploy:workers`
+4. **Environment Variables**: Set `OPENAPI_API_KEY`, `OPENAPI_MODEL`, `OPENAPI_BASE_URL` in Cloudflare dashboard
+
+**Advantages**:
+
+- Unified deployment (Pages for frontend, Workers for serverless functions)
+- Global edge network for low latency
+- Simple environment variable management
+- Free tier available
+
+### Vercel
+
+- This repo includes `vercel.json` for SPA routing + `/api/*` preservation.
+- Add the environment variables listed below.
+- Deploy via the Vercel dashboard (Import Project) or CLI (`vercel`).
+
+### Netlify
+
+- This repo includes `netlify.toml` which:
+  - publishes `dist/`
+  - redirects `/api/*` to `/.netlify/functions/*`
+  - provides an SPA fallback to `/index.html`
+- Add the environment variables listed below.
+
+### Custom domain steps (high level)
+
+1. Deploy once on your platform.
+2. In the platform dashboard, add your domain (e.g. `app.example.com`).
+3. Update DNS:
+   - **Subdomain**: CNAME to the platform-provided hostname
+   - **Apex/root**: use A/ALIAS/ANAME records as instructed by the platform
+4. Wait for DNS + TLS to provision, then set the domain as the primary.
+
+### Environment Variables in Production
+
+Set these in your deployment platform's environment variable settings:
+
+**Client-side (exposed to browser)**:
+
+- `VITE_API_URL` (optional)
+- `VITE_STRIPE_PUBLISHABLE_KEY` (client-side upsell teaser)
+
+**Server-side (for serverless functions)**:
+
+- `OPENAPI_API_KEY` (required for `/api/fix`)
+- `OPENAPI_MODEL` (optional, defaults to `gpt-4o`)
+- `OPENAPI_BASE_URL` (optional, defaults to `https://api.openai.com/v1`)
+
+**Legacy Support** (still works but not recommended):
+
+- `XAI_API_KEY` (falls back if `OPENAPI_API_KEY` not set)
+- `XAI_MODEL` (falls back if `OPENAPI_MODEL` not set)
+- `XAI_BASE_URL` (falls back if `OPENAPI_BASE_URL` not set)
+
+## 💡 Usage Examples
 
 ### Creating a Diagram
 
@@ -168,16 +353,7 @@ flowchart LR
     I --> J[Complete Order]
 ```
 
-## 📦 Key Dependencies
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Mermaid** - Diagram rendering
-- **@monaco-editor/react** - Code editor
-- **Tailwind CSS** - Styling
-- **html2canvas** - PNG export
-- **lucide-react** - Icons
 
 ## 🔗 Useful Resources
 
