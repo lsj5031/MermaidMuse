@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { getMermaidConfigForTheme } from '@theme/diagramThemes';
+import { getMermaidConfigForTheme } from '@theme/themeRegistry';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function PreviewPanel() {
@@ -42,8 +42,9 @@ export default function PreviewPanel() {
         element.innerHTML = `<pre class="mermaid">${content}</pre>`;
         containerRef.current.appendChild(element);
 
-        // Render mermaid
+        // Render mermaid with fresh render
         await mermaid.run();
+        mermaid.contentLoaded();
         
       } catch (error) {
         console.error('Mermaid render error:', error);

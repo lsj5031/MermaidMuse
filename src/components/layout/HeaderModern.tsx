@@ -1,13 +1,16 @@
 import React from 'react';
-import { Download, Share2, RotateCcw } from 'lucide-react';
+import { Download, Share2, RotateCcw, Palette } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
+import { getThemeIds, getTheme } from '@theme/themeRegistry';
 import html2canvas from 'html2canvas';
 import Button from './Button';
 
 const Header: React.FC = () => {
-  const { currentDiagram, canExport, resetDiagram } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
+    useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
+  const [showThemeMenu, setShowThemeMenu] = React.useState(false);
 
   const handleExportSvg = async () => {
     try {
@@ -32,12 +35,12 @@ const Header: React.FC = () => {
 
       // Clone the SVG to add watermark
       const svgClone = svgElement.cloneNode(true) as SVGElement;
-      
+
       // Add watermark to SVG
       const ns = 'http://www.w3.org/2000/svg';
       const group = document.createElementNS(ns, 'g');
       group.setAttribute('pointer-events', 'none');
-      
+
       const text = document.createElementNS(ns, 'text');
       text.textContent = 'MermaidMuse';
       text.setAttribute('x', '99%');
@@ -78,7 +81,7 @@ const Header: React.FC = () => {
       link.href = dataUrl;
       link.download = `${currentDiagram.title || 'diagram'}.png`;
       link.click();
-      
+
       showToast('PNG downloaded');
     } catch (err) {
       console.error(err);
@@ -86,12 +89,19 @@ const Header: React.FC = () => {
     }
   };
 
+  const isMobileDevice = () => {
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      navigator.userAgent.toLowerCase()
+    );
+  };
+
   const handleShare = async () => {
     const url = new URL(window.location.href);
     url.hash = `mmd=${encodeURIComponent(currentDiagram.content)}`;
-    
+
     try {
-      if (navigator.share) {
+      // On mobile: use native share if available
+      if (isMobileDevice() && navigator.share) {
         const shareData = {
           title: currentDiagram.title,
           text: 'Mermaid diagram (paste into MermaidMuse):',
@@ -102,10 +112,10 @@ const Header: React.FC = () => {
         return;
       }
 
-      // Fallback to clipboard
+      // On desktop: always copy to clipboard
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url.toString());
-        showToast(`Link copied: ${url.toString().slice(0, 50)}...`);
+        showToast('Link copied to clipboard');
         return;
       }
 
@@ -116,7 +126,7 @@ const Header: React.FC = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      showToast(`Link copied: ${url.toString().slice(0, 50)}...`);
+      showToast('Link copied to clipboard');
     } catch (err) {
       console.error('Share error:', err);
       showToast('Share failed');
@@ -135,12 +145,66 @@ const Header: React.FC = () => {
         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
     }`;
 
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateDiagramTitle(e.target.value);
+  };
+
+  const handleThemeChange = (themeId: string) => {
+    setTheme(themeId);
+    setShowThemeMenu(false);
+    showToast(`Theme: ${getTheme(themeId)?.label || themeId}`);
+  };
+
+  const currentThemeLabel = getTheme(theme)?.label || theme;
+
   return (
-    <header className="bg-[#E6F7E5] shadow-sm flex items-center justify-between px-4 py-3 flex-shrink-0 z-10 border-b-2 border-gray-200 border-dashed relative">
+    <header className="bg-[#E6F7E5] shadow-sm flex items-center justify-between px-4 py-3 flex-shrink-0 z-50 border-b-2 border-gray-200 border-dashed relative overflow-visible">
       <h1 className="text-2xl font-headline text-gray-800 tracking-wide">MermaidMuse</h1>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4 flex-1 justify-center">
+        <input
+          type="text"
+          value={currentDiagram.title}
+          onChange={handleTitleChange}
+          placeholder="Untitled Diagram"
+          className="px-3 py-2 rounded border border-gray-300 bg-white text-gray-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 max-w-xs"
+          title="Edit diagram title (used for file downloads)"
+        />
+      </div>
+
+      <div className="flex items-center gap-4 overflow-visible">
+        <div className="flex items-center gap-2 overflow-visible">
+          <div className="relative">
+            <button
+              onClick={() => setShowThemeMenu(!showThemeMenu)}
+              className={actionButtonClass(true)}
+              title="Change diagram theme"
+            >
+              <Palette className="w-4 h-4" />
+              <span className="hidden sm:inline text-xs">{currentThemeLabel}</span>
+            </button>
+            {showThemeMenu && (
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded shadow-xl z-[100] min-w-48">
+                {getThemeIds().map((themeId) => {
+                  const themeConfig = getTheme(themeId);
+                  const isSelected = themeId === theme;
+                  return (
+                    <button
+                      key={themeId}
+                      onClick={() => handleThemeChange(themeId)}
+                      className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        isSelected
+                          ? 'bg-blue-500 text-white font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {themeConfig?.label || themeId}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
           <button
             onClick={handleExportSvg}
             disabled={!canExport}
@@ -175,10 +239,10 @@ const Header: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
-          </div>
-          </div>
+        </div>
+      </div>
 
-          {toast && (
+      {toast && (
         <div className="fixed bottom-4 right-4 bg-white border border-gray-300 rounded px-4 py-3 text-sm text-gray-700 shadow-lg z-50">
           {toast}
         </div>

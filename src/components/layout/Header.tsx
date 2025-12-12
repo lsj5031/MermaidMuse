@@ -84,22 +84,29 @@ export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderPro
     }
   };
 
+  const isMobileDevice = () => {
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      navigator.userAgent.toLowerCase()
+    );
+  };
+
   const handleShare = async () => {
     try {
-      const shareData = {
-        title: currentDiagram.title,
-        text: 'Mermaid diagram (paste into Diagram Studio):',
-        url: shareUrl,
-      };
-
-      if (navigator.share) {
+      // On mobile: use native share if available
+      if (isMobileDevice() && navigator.share) {
+        const shareData = {
+          title: currentDiagram.title,
+          text: 'Mermaid diagram (paste into Diagram Studio):',
+          url: shareUrl,
+        };
         await navigator.share(shareData);
         showToast('Share sheet opened');
         return;
       }
 
+      // On desktop: always copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
-      showToast('Share link copied');
+      showToast('Link copied to clipboard');
     } catch (err) {
       console.error(err);
       showToast('Share failed');

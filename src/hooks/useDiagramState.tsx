@@ -74,14 +74,20 @@ const getSharedContentFromHash = (): string | null => {
 
 const getInitialTheme = (): DiagramTheme => {
   const stored = localStorage.getItem(STORAGE_KEYS.theme);
-  const themeIds = getThemeIds();
-  
+
   if (stored && hasTheme(stored)) {
     return stored;
   }
-  
-  // Fallback to first available theme, or 'cyber'
-  return themeIds.length > 0 ? themeIds[0] : 'cyber';
+
+  // Prefer Avocado as the default when no user selection exists.
+  if (hasTheme('avocado')) {
+    return 'avocado';
+  }
+
+  const themeIds = getThemeIds();
+
+  // Final fallback: first available theme, or avocado.
+  return themeIds.length > 0 ? themeIds[0] : 'avocado';
 };
 
 const getInitialDiagram = (): DiagramState => {
@@ -91,7 +97,7 @@ const getInitialDiagram = (): DiagramState => {
   const storedTitle = localStorage.getItem(STORAGE_KEYS.title);
 
   const content = shared ?? storedContent ?? SAMPLE_MERMAID_DIAGRAM;
-  const title = shared ? 'Shared Diagram' : storedTitle ?? 'Untitled Diagram';
+  const title = shared ? 'Shared Diagram' : (storedTitle ?? 'Untitled Diagram');
 
   return {
     id: '1',

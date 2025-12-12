@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import type { MermaidConfig } from 'mermaid';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
+import { getMermaidConfigForTheme } from '@theme/themeRegistry';
 import Button from './Button';
 
 const Preview: React.FC = () => {
@@ -16,9 +18,11 @@ const Preview: React.FC = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    mermaid.initialize({
+    // Base look to keep the app's default styling consistent.
+    const baseConfig: MermaidConfig = {
       startOnLoad: false,
       theme: 'base',
+      securityLevel: 'loose',
       themeVariables: {
         fontFamily: 'Comic Neue',
         fontSize: '16px',
@@ -29,14 +33,27 @@ const Preview: React.FC = () => {
         secondaryColor: '#FCFBF5',
         tertiaryColor: '#fff',
       },
-      securityLevel: 'loose',
-    });
-  }, []);
+    };
+
+    const themeConfig = getMermaidConfigForTheme(theme);
+    const mergedConfig = themeConfig
+      ? {
+          ...baseConfig,
+          ...themeConfig,
+          themeVariables: {
+            ...baseConfig.themeVariables,
+            ...(themeConfig.themeVariables ?? {}),
+          },
+        }
+      : baseConfig;
+
+    mermaid.initialize(mergedConfig);
+  }, [theme]);
 
   useEffect(() => {
     const renderDiagram = async () => {
       if (!containerRef.current) return;
-      
+
       try {
         setError(null);
         const id = `mermaid-${Date.now()}`;
@@ -44,16 +61,16 @@ const Preview: React.FC = () => {
         setSvgContent(svg);
       } catch (err) {
         console.error('Mermaid render error:', err);
-        setError("Syntax Error in Diagram");
+        setError('Syntax Error in Diagram');
       }
     };
 
     const timer = setTimeout(renderDiagram, 500);
     return () => clearTimeout(timer);
-  }, [currentDiagram.content]);
+  }, [currentDiagram.content, theme]);
 
   const handleZoom = (direction: 'in' | 'out') => {
-    setZoom(prev => {
+    setZoom((prev) => {
       const newZoom = direction === 'in' ? prev + 10 : prev - 10;
       return Math.max(25, Math.min(newZoom, 800));
     });
@@ -65,19 +82,20 @@ const Preview: React.FC = () => {
   };
 
   const handleDoubleClick = () => {
-    setZoom(prev => Math.min(prev + 50, 800));
+    setZoom((prev) => Math.min(prev + 50, 800));
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setZoom(prev => {
+    setZoom((prev) => {
       const newZoom = e.deltaY > 0 ? prev - 10 : prev + 10;
-       return Math.max(25, Math.min(newZoom, 800));
+      return Math.max(25, Math.min(newZoom, 800));
     });
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.button === 0) { // Left mouse button
+    if (e.button === 0) {
+      // Left mouse button
       setIsDragging(true);
       setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
@@ -101,44 +119,48 @@ const Preview: React.FC = () => {
       {/* Toolbar */}
       <div className="flex items-center justify-between p-3 border-b-2 border-gray-200 border-dashed bg-brand-green-light/40 backdrop-blur-sm z-10">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Preview</span>
+          <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+            Preview
+          </span>
           <span className="flex items-center gap-1.5 text-xs font-medium text-brand-green-dark bg-brand-green-light px-2 py-0.5 rounded-full border border-brand-green-dark/30">
             <span className="h-1.5 w-1.5 bg-brand-green-dark rounded-full animate-pulse"></span>
             Ready
           </span>
         </div>
-        
+
         <div className="flex items-center gap-2">
-           <Button 
-             onClick={() => handleZoom('out')} 
-             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-             icon={<ZoomOut size={14} />}
-             title="Zoom out"
-           >
-             <span className="sr-only">Zoom out</span>
-           </Button>
-           <span className="text-xs font-semibold text-gray-700 min-w-[3rem] text-center">{zoom}%</span>
-           <Button 
-             onClick={() => handleZoom('in')} 
-             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-             icon={<ZoomIn size={14} />}
-             title="Zoom in"
-           >
-             <span className="sr-only">Zoom in</span>
-           </Button>
-           <Button 
-             onClick={handleResetZoom} 
-             className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-             icon={<RotateCcw size={14} />}
-             title="Reset zoom"
-           >
-             <span className="sr-only">Reset zoom</span>
-           </Button>
-           </div>
-           </div>
+          <Button
+            onClick={() => handleZoom('out')}
+            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            icon={<ZoomOut size={14} />}
+            title="Zoom out"
+          >
+            <span className="sr-only">Zoom out</span>
+          </Button>
+          <span className="text-xs font-semibold text-gray-700 min-w-[3rem] text-center">
+            {zoom}%
+          </span>
+          <Button
+            onClick={() => handleZoom('in')}
+            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            icon={<ZoomIn size={14} />}
+            title="Zoom in"
+          >
+            <span className="sr-only">Zoom in</span>
+          </Button>
+          <Button
+            onClick={handleResetZoom}
+            className="px-2 py-1.5 text-xs font-semibold border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            icon={<RotateCcw size={14} />}
+            title="Reset zoom"
+          >
+            <span className="sr-only">Reset zoom</span>
+          </Button>
+        </div>
+      </div>
 
       {/* Canvas Area */}
-      <div 
+      <div
         className={`flex-grow relative bg-brand-cream bg-dotted-paper bg-dots overflow-auto flex items-center justify-center p-8 transition-colors duration-300 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         ref={containerRef}
         onWheel={handleWheel}
@@ -156,13 +178,15 @@ const Preview: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div 
+          <div
             ref={diagramRef}
             className="mermaid-output"
             dangerouslySetInnerHTML={{ __html: svgContent }}
-            style={{ 
-              opacity: svgContent ? 1 : 0, 
-              transform: svgContent ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})` : 'scale(0.95)',
+            style={{
+              opacity: svgContent ? 1 : 0,
+              transform: svgContent
+                ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`
+                : 'scale(0.95)',
               transformOrigin: 'center',
               cursor: isDragging ? 'grabbing' : 'grab',
               transition: isDragging ? 'none' : 'all 0.5s ease-out',
