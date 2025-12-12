@@ -15,10 +15,23 @@ const base64UrlDecode = (input: string): string => {
   const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
 
-  const binary =
-    typeof globalThis.atob === 'function'
-      ? globalThis.atob(padded)
-      : Buffer.from(padded, 'base64').toString('binary');
+  const atobFn = (globalThis as unknown as { atob?: (value: string) => string }).atob;
+  if (typeof atobFn === 'function') {
+    const binary = atobFn(padded);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  const buffer =
+    (globalThis as unknown as {
+      Buffer?: { from: (value: string, encoding: string) => { toString: (encoding: string) => string } };
+    }).Buffer ?? null;
+
+  if (!buffer) {
+    throw new Error('No base64 decoder available');
+  }
+
+  const binary = buffer.from(padded, 'base64').toString('binary');
 
   const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
   return new TextDecoder().decode(bytes);

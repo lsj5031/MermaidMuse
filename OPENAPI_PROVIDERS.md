@@ -382,7 +382,7 @@ curl -X POST http://localhost:8787/api/fix \
 - Never commit API keys to version control
 - Use `.env.local` and `.env.production.local`
 - Add to `.gitignore`
-- For production, use platform's secret management (Cloudflare, Vercel, etc.)
+- For production, use Cloudflare's secret/environment variable management
 - Rotate keys if compromised
 - Use API key restrictions if available (IP whitelist, usage limits)
 

@@ -26,7 +26,7 @@ This repo implements a **credits-based** billing model:
 
 ## 3) Configure environment variables
 
-Add these variables to your hosting provider (Vercel/Netlify/Cloudflare Workers) and to local `.env.local` when testing:
+Add these variables to your Cloudflare Worker environment and to local `.env.local` when testing:
 
 ```bash
 # Client

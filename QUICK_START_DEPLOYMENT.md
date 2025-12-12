@@ -23,34 +23,7 @@ npm run deploy:workers
 
 ---
 
-### Option B: Vercel (Legacy Support)
-
-**Best for**: Git integration, zero-config deployments
-
-1. Push code to GitHub
-2. Go to https://vercel.com/new
-3. Import your repository
-4. Add environment variables:
-   - `OPENAPI_API_KEY`
-   - `OPENAPI_MODEL` (optional, defaults to `gpt-4o`)
-   - `OPENAPI_BASE_URL` (optional, defaults to OpenAI)
-5. Deploy!
-
----
-
-### Option C: Netlify (Legacy Support)
-
-**Best for**: Drag-and-drop deployment
-
-1. Push code to GitHub
-2. Go to https://app.netlify.com/
-3. Click "New site from Git"
-4. Select your repository
-5. Add environment variables:
-   - `OPENAPI_API_KEY`
-   - `OPENAPI_MODEL` (optional)
-   - `OPENAPI_BASE_URL` (optional)
-6. Deploy!
+(This repo focuses on Cloudflare Pages + Workers.)
 
 ---
 
@@ -159,25 +132,7 @@ npx wrangler pages deploy dist
 npm run deploy:workers
 ```
 
-### For Vercel
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-vercel
-```
-
-### For Netlify
-
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Deploy
-netlify deploy --prod
-```
+(Cloudflare-only deployment.)
 
 ---
 
