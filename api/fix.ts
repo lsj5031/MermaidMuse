@@ -1,8 +1,11 @@
 import { fixMermaidSyntaxWithXai } from '../src/server/xaiFix';
+import { getBearerToken, getClerkUserIdFromSessionToken } from '../src/server/clerkServer';
+import { ensureCreditsBalance, spendCredits } from '../src/server/creditsServer';
 
 type ApiRequest = {
   method?: string;
   body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
 };
 
 type ApiResponse = {
@@ -14,6 +17,13 @@ type ApiResponse = {
 const asRecord = (value: unknown): Record<string, unknown> | null => {
   if (!value || typeof value !== 'object') return null;
   return value as Record<string, unknown>;
+};
+
+const getHeader = (req: ApiRequest, name: string): string | null => {
+  const value = req.headers?.[name] ?? req.headers?.[name.toLowerCase()];
+  if (!value) return null;
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value;
 };
 
 const json = (res: ApiResponse, status: number, body: unknown) => {
@@ -55,6 +65,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return;
   }
 
+  const authorizationHeader = getHeader(req, 'authorization');
+  const token = getBearerToken(authorizationHeader);
+
+  if (!token) {
+    json(res, 401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required.' } });
+    return;
+  }
+
+  const userId = await getClerkUserIdFromSessionToken(token);
+  if (!userId) {
+    json(res, 401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid session.' } });
+    return;
+  }
+
   const parsed = parseBody(req);
   const payload = asRecord(parsed);
 
@@ -75,6 +99,38 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return;
   }
 
-  const result = await fixMermaidSyntaxWithXai(diagramText);
-  json(res, 200, result);
+  try {
+    const creditsBefore = await ensureCreditsBalance(userId);
+
+    if (creditsBefore < 1) {
+      json(res, 402, {
+        ok: false,
+        error: {
+          code: 'INSUFFICIENT_CREDITS',
+          message: 'You do not have enough credits to run an AI fix.',
+        },
+        creditsCharged: false,
+        creditsRemaining: creditsBefore,
+      });
+      return;
+    }
+
+    const result = await fixMermaidSyntaxWithXai(diagramText);
+
+    const shouldCharge = Boolean(result.ok && result.fixedText);
+    const creditsRemaining = shouldCharge ? await spendCredits(userId, 1) : creditsBefore;
+
+    json(res, 200, {
+      ...result,
+      creditsCharged: shouldCharge,
+      creditsRemaining,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+
+    json(res, 500, {
+      ok: false,
+      error: { code: 'SERVER_ERROR', message },
+    });
+  }
 }

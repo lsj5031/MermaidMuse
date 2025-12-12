@@ -48,11 +48,16 @@ cp .env.example .env.local
 ```env
 # Client-side (exposed to the browser)
 VITE_API_URL=http://localhost:3000
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 VITE_MOCK_PRO=false
 
-# Server-side (used by /api/fix with OpenAPI-compatible endpoints)
-# Supports OpenAI, Groq, or any OpenAI-compatible API
+# Server-side (credits + billing)
+CLERK_SECRET_KEY=sk_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...   # optional but recommended
+
+# Server-side (AI provider for /api/fix)
 OPENAPI_API_KEY=your_api_key_here
 OPENAPI_MODEL=gpt-4o
 OPENAPI_BASE_URL=https://api.openai.com/v1
@@ -183,9 +188,14 @@ Customize colors in:
 - **Tailwind CSS**: Utility-first CSS framework
 - **PostCSS**: CSS processing
 
-### Payments
+### Payments / Credits
 
-- **@stripe/stripe-js**: Stripe integration
+- **Stripe Checkout**: credit top-ups (100 credits per purchase)
+- **Credits model**:
+  - New users get **10 free credits**
+  - **AI Fix costs 1 credit** (only charged when the AI returns a `fixedText`)
+
+See **`STRIPE_SETUP.md`** for the full setup guide.
 
 ### Development
 
@@ -309,9 +319,14 @@ Set these in your deployment platform's environment variable settings:
 **Client-side (exposed to browser)**:
 
 - `VITE_API_URL` (optional)
-- `VITE_STRIPE_PUBLISHABLE_KEY` (client-side upsell teaser)
+- `VITE_CLERK_PUBLISHABLE_KEY` (required for auth)
+- `VITE_STRIPE_PUBLISHABLE_KEY` (required to show the billing UI)
 
 **Server-side (for serverless functions)**:
+
+- `CLERK_SECRET_KEY` (required for credits)
+- `STRIPE_SECRET_KEY` (required for Stripe Checkout)
+- `STRIPE_WEBHOOK_SECRET` (recommended for webhook fulfillment)
 
 - `OPENAPI_API_KEY` (required for `/api/fix`)
 - `OPENAPI_MODEL` (optional, defaults to `gpt-4o`)

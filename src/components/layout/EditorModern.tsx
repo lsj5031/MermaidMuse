@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import { SignInButton, SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
 import { useDiagramState } from '@hooks/useDiagramState';
+import { useCredits } from '@hooks/useCredits';
 import { CheckCircle2, AlertTriangle, Clock, Wand2 } from 'lucide-react';
 import { fixDiagramSyntax } from '@utils/fixDiagramApi';
 
 const Editor: React.FC = () => {
   const { currentDiagram, updateDiagramContent } = useDiagramState();
+  const { getToken } = useAuth();
+  const { creditsBalance, isLoading: isCreditsLoading, createCheckoutSession, refresh: refreshCredits } =
+    useCredits();
   const [isFixing, setIsFixing] = useState(false);
   const lineCount = currentDiagram.content.split('\n').length;
   const { validation, isValidating } = currentDiagram;
@@ -14,13 +19,17 @@ const Editor: React.FC = () => {
 
     setIsFixing(true);
     try {
-      const result = await fixDiagramSyntax(currentDiagram.content);
+      const token = await getToken();
+      const result = await fixDiagramSyntax(currentDiagram.content, { token });
 
       if (result.ok && result.fixedText) {
         updateDiagramContent(result.fixedText);
       } else {
         console.warn('AI fix failed:', result.error?.message);
-        // Show error in a toast or alert if desired
+      }
+
+      if (result.creditsCharged) {
+        void refreshCredits();
       }
     } catch (err) {
       console.error('Failed to fix diagram:', err);
@@ -65,24 +74,52 @@ const Editor: React.FC = () => {
 
         {/* AI Fix Button - only show when there are errors */}
         {!validation.isValid && !isValidating && (
-          <button
-            onClick={handleFixWithAI}
-            disabled={isFixing}
-            className="ml-2 px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap"
-            title="Use AI to fix diagram syntax"
-          >
-            {isFixing ? (
-              <>
-                <Clock className="h-3 w-3 animate-spin" />
-                <span>Fixing...</span>
-              </>
-            ) : (
-              <>
-                <Wand2 className="h-3 w-3" />
-                <span>Fix with AI</span>
-              </>
-            )}
-          </button>
+          <div className="ml-2 flex items-center gap-2">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                  title="Sign in to use AI fixing"
+                >
+                  <Wand2 className="h-3 w-3" />
+                  <span>Sign in for AI fix</span>
+                </button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              {creditsBalance !== null && creditsBalance < 1 ? (
+                <button
+                  type="button"
+                  onClick={() => void createCheckoutSession()}
+                  className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                  title="Top up credits"
+                >
+                  <span>Top up credits</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleFixWithAI}
+                  disabled={isFixing || isCreditsLoading || creditsBalance === null}
+                  className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap"
+                  title="Use AI to fix diagram syntax (costs 1 credit)"
+                >
+                  {isFixing ? (
+                    <>
+                      <Clock className="h-3 w-3 animate-spin" />
+                      <span>Fixing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-3 w-3" />
+                      <span>Fix with AI (1 credit)</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </SignedIn>
+          </div>
         )}
       </div>
 
