@@ -87,6 +87,7 @@ export default function StatusBanner({ onProblemsClick }: StatusBannerProps) {
       {validation.errors.length > 0 && (
         <div className="mt-1 text-xs text-red-300">
           <span className="font-medium">Line {validation.errors[0].line}:</span> {validation.errors[0].message}
+          <span className="ml-2 text-red-200/80">Lines with errors are highlighted in the editor.</span>
         </div>
       )}
     </div>

@@ -11,11 +11,14 @@ export default {
           purple: '#b537f2',
           green: '#39ff14',
           yellow: '#fffd38',
+          blue: '#0080ff',
         },
         dark: {
           bg: '#0a0e27',
           surface: '#1a1f3a',
+          surface2: '#252d4a',
           border: '#2a3f5f',
+          text: '#e0e0ff',
         },
       },
       fontSize: {
