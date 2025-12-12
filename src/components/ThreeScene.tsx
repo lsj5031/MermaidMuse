@@ -29,13 +29,17 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
   const lightsGroupRef = useRef<THREE.Group | null>(null);
 
   const { currentDiagram, canRender, theme } = useDiagramState();
-  const { isValidating, content } = currentDiagram;
+  const { isValidating, content, type } = currentDiagram;
 
   const palette = useMemo(() => DIAGRAM_THEME_CONFIG[theme].three, [theme]);
   const labelColor = theme === 'light' ? '#0f172a' : colors.white;
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Only render 3D for graph and flowchart diagrams
+  const supports3D = type === 'flowchart' || content.includes('graph');
+  const canRender3D = canRender && supports3D;
 
   const startRenderLoop = useCallback(() => {
     const animate = () => {
@@ -353,7 +357,7 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
   }, [addLights, palette]);
 
   useEffect(() => {
-    if (!canRender || !content) {
+    if (!canRender3D || !content) {
       clearGraphObjects();
       return;
     }
@@ -369,7 +373,7 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
     };
 
     void updateGraph();
-  }, [canRender, clearGraphObjects, content, renderGraph, theme]);
+  }, [canRender3D, clearGraphObjects, content, renderGraph, theme]);
 
   const handleResize = useCallback(() => {
     const container = containerRef.current;
@@ -432,10 +436,25 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
         }}
       />
 
-      {(isValidating || isLoading || error || !canRender) && (
+      {(isValidating || isLoading || error || !canRender3D) && (
         <div className="absolute inset-0 flex items-center justify-center bg-dark-bg/80 backdrop-blur-sm">
           <div className="text-center">
-            {isValidating || isLoading ? (
+            {!supports3D ? (
+              <>
+                <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-blue-500/20 rounded-full">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-blue-400 font-medium mb-2">3D Not Available</p>
+                <p className="text-gray-400 text-sm">3D rendering is only available for flowcharts and graph diagrams</p>
+              </>
+            ) : isValidating || isLoading ? (
               <>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4" />
                 <p className="text-cyan-400 font-medium">
@@ -477,7 +496,7 @@ export default function ThreeScene({ className }: ThreeSceneProps) {
         </div>
       )}
 
-      {canRender && !isLoading && !error && (
+      {canRender3D && !isLoading && !error && (
         <div className="absolute top-4 left-4 bg-dark-surface/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-dark-border">
           <p className="text-xs text-gray-400">
             <span className="text-cyan-400">Mouse:</span> Rotate • <span className="text-cyan-400">Scroll:</span> Zoom •{' '}

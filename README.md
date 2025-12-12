@@ -1,4 +1,4 @@
-# Diagram Studio - Vite + React + TypeScript SPA
+# Diagram Maker - Vite + React + TypeScript SPA
 
 A modern, cyberpunk-themed diagram editor built with Vite, React, TypeScript, and Mermaid. Perfect for creating flowcharts, sequence diagrams, and other visualizations.
 

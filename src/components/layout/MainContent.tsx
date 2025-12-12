@@ -109,7 +109,7 @@ export default function MainContent() {
                   <div className="w-1/2 border-r border-dark-border overflow-hidden">
                     <EditorPanel />
                   </div>
-                  <div className="w-1/2 overflow-hidden">
+                  <div className="flex-1 overflow-hidden">
                     <div className="h-full flex flex-col">
                       {/* Preview type tabs */}
                       <div className="flex border-b border-dark-border bg-dark-surface/50">
