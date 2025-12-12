@@ -90,8 +90,8 @@ export default function PreviewPanel() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto flex items-center justify-center">
-        <div ref={containerRef} className="w-full h-full flex items-center justify-center p-4" />
+      <div className="flex-1 overflow-auto">
+        <div ref={containerRef} className="w-full h-full flex items-center justify-center min-h-full p-8" />
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { type DiagramTheme, DIAGRAM_THEME_CONFIG } from '@theme/diagramThemes';
-import { exportElementAsPNGById, exportMermaidAsSVG } from '@utils/exportHelpers';
-import { Menu, Download, Camera, Share2, RotateCcw } from 'lucide-react';
+import { type DiagramTheme } from '@theme/diagramThemes';
+import { exportMermaidAsSVG } from '@utils/exportHelpers';
+import { Menu, Download, Share2, RotateCcw, Edit3 } from 'lucide-react';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  shouldShowSidebar: boolean;
 }
 
 const buildShareUrl = (content: string): string => {
@@ -14,11 +15,13 @@ const buildShareUrl = (content: string): string => {
   return url.toString();
 };
 
-export default function Header({ onToggleSidebar }: HeaderProps) {
-  const { currentDiagram, canExport, resetDiagram, theme, setTheme } = useDiagramState();
+export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderProps) {
+  const { currentDiagram, canExport, resetDiagram, theme, setTheme, updateDiagramTitle } = useDiagramState();
 
   const [toast, setToast] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(currentDiagram.title);
 
   useEffect(() => {
     const update = () => setIsOnline(navigator.onLine);
@@ -29,6 +32,36 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
       window.removeEventListener('offline', update);
     };
   }, []);
+
+  useEffect(() => {
+    setTitleValue(currentDiagram.title);
+  }, [currentDiagram.title]);
+
+  const handleTitleEdit = () => {
+    setIsEditingTitle(true);
+    setTitleValue(currentDiagram.title);
+  };
+
+  const handleTitleSave = () => {
+    if (titleValue.trim() && titleValue !== currentDiagram.title) {
+      updateDiagramTitle(titleValue.trim());
+      showToast('Title updated');
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleCancel = () => {
+    setTitleValue(currentDiagram.title);
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      handleTitleCancel();
+    }
+  };
 
   useEffect(() => {
     if (!toast) return;
@@ -43,28 +76,12 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   const handleExportSvg = async () => {
     try {
       await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, theme, {
-        watermarkText: 'Diagram Studio',
+        watermarkText: 'Diagram Maker',
       });
       showToast('SVG downloaded');
     } catch (err) {
       console.error(err);
       showToast('SVG export failed');
-    }
-  };
-
-  const handleExportScreenshot = async () => {
-    try {
-      const palette = DIAGRAM_THEME_CONFIG[theme].three;
-
-      await exportElementAsPNGById('workspace-capture', currentDiagram.title, {
-        backgroundColor: palette.background,
-        watermarkText: 'Diagram Studio',
-        watermarkColor: theme === 'light' ? '#0f172a' : '#ffffff',
-      });
-      showToast('Screenshot downloaded');
-    } catch (err) {
-      console.error(err);
-      showToast('Screenshot failed');
     }
   };
 
@@ -99,21 +116,52 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
 
   return (
     <header className="bg-dark-surface border-b border-dark-border h-16 flex items-center px-4 shadow-lg relative">
-      <button
-        onClick={onToggleSidebar}
-        className="mr-3 p-2 hover:bg-dark-surface2 rounded transition-colors"
-        aria-label="Toggle sidebar"
-        title="Toggle sidebar"
-      >
-        <Menu size={22} className="text-neon-cyan" />
-      </button>
+      {shouldShowSidebar && (
+        <button
+          onClick={onToggleSidebar}
+          className="mr-3 p-2 hover:bg-dark-surface2 rounded transition-colors"
+          aria-label="Toggle sidebar"
+          title="Toggle sidebar"
+        >
+          <Menu size={22} className="text-neon-cyan" />
+        </button>
+      )}
 
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg font-bold truncate">
-          <span className="text-neon-cyan">{'<'}</span>
-          {currentDiagram.title}
-          <span className="text-neon-cyan">{' />'}</span>
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-bold truncate">
+            <span className="text-neon-cyan">{'<'}</span>
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={titleValue}
+                onChange={(e) => setTitleValue(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                className="bg-transparent border-b border-neon-cyan outline-none text-white min-w-0 max-w-xs"
+                autoFocus
+              />
+            ) : (
+              <span
+                className="cursor-pointer hover:text-neon-cyan transition-colors"
+                onClick={handleTitleEdit}
+                title="Click to edit title"
+              >
+                {currentDiagram.title}
+              </span>
+            )}
+            <span className="text-neon-cyan">{' />'}</span>
+          </h1>
+          {!isEditingTitle && (
+            <button
+              onClick={handleTitleEdit}
+              className="p-1 hover:bg-dark-surface2 rounded transition-colors opacity-60 hover:opacity-100"
+              title="Edit title"
+            >
+              <Edit3 size={14} />
+            </button>
+          )}
+        </div>
         <p className="text-xs text-gray-400">Updated {currentDiagram.lastModified.toLocaleTimeString()}</p>
       </div>
 
@@ -149,16 +197,6 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         >
           <Download className="w-4 h-4" />
           <span className="hidden sm:inline">SVG</span>
-        </button>
-
-        <button
-          onClick={handleExportScreenshot}
-          disabled={!canExport}
-          className={actionButtonClass(canExport)}
-          title={canExport ? 'Download a PNG screenshot of the workspace' : 'Fix errors to export'}
-        >
-          <Camera className="w-4 h-4" />
-          <span className="hidden sm:inline">PNG</span>
         </button>
 
         <button
