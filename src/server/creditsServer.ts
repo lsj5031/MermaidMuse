@@ -9,7 +9,10 @@ const getCreditsFromUser = (user: ClerkUser): number | null => {
   return raw;
 };
 
-export async function ensureCreditsBalance(userId: string, envOverride?: RuntimeEnv): Promise<number> {
+export async function ensureCreditsBalance(
+  userId: string,
+  envOverride?: RuntimeEnv
+): Promise<number> {
   const user = await getClerkUser(userId, envOverride);
   if (!user) {
     throw new Error('Unable to load user');
@@ -69,7 +72,9 @@ type StripeTracking = {
 const getStripeTracking = (user: ClerkUser): StripeTracking => {
   const raw = user.private_metadata?.stripeCheckoutSessionIds;
   return {
-    stripeCheckoutSessionIds: Array.isArray(raw) ? raw.filter((v) => typeof v === 'string') : undefined,
+    stripeCheckoutSessionIds: Array.isArray(raw)
+      ? raw.filter((v) => typeof v === 'string')
+      : undefined,
   };
 };
 
@@ -81,7 +86,10 @@ export async function addCreditsForPaidSession(
 ): Promise<{ creditsBalance: number; alreadyProcessed: boolean }> {
   if (!sessionId) throw new Error('Missing session id');
   if (creditsToAdd <= 0) {
-    return { creditsBalance: await ensureCreditsBalance(userId, envOverride), alreadyProcessed: false };
+    return {
+      creditsBalance: await ensureCreditsBalance(userId, envOverride),
+      alreadyProcessed: false,
+    };
   }
 
   const user = await getClerkUser(userId, envOverride);

@@ -62,17 +62,20 @@ npm run deploy:workers
 ### Option C: Self-Hosted (Privacy)
 
 #### LocalAI
+
 ```bash
 docker run -p 8080:8080 localai/localai:latest
 ```
 
 Then set:
+
 ```
 OPENAPI_API_KEY=sk-anything
 OPENAPI_BASE_URL=http://localhost:8080/v1
 ```
 
 #### Ollama
+
 ```bash
 # Download from https://ollama.ai
 ollama pull llama2
@@ -80,6 +83,7 @@ ollama serve
 ```
 
 Then set:
+
 ```
 OPENAPI_API_KEY=ollama
 OPENAPI_BASE_URL=http://localhost:11434/v1
@@ -106,6 +110,7 @@ curl -X POST http://localhost:8787/api/fix \
 ```
 
 Expected response:
+
 ```json
 {
   "ok": true,
@@ -157,7 +162,8 @@ If you get a response with `"ok": true`, you're deployed! 🎉
 
 ### Error: "OPENAPI_API_KEY is not configured"
 
-**Solution**: 
+**Solution**:
+
 1. Go to your deployment platform dashboard
 2. Add the environment variable:
    ```
@@ -167,20 +173,24 @@ If you get a response with `"ok": true`, you're deployed! 🎉
 
 ### Error: "Connection refused" (Self-hosted)
 
-**Solution**: 
+**Solution**:
+
 1. Ensure your service is running:
+
    ```bash
    # For LocalAI
    docker ps | grep localai
-   
+
    # For Ollama
    ollama list
    ```
+
 2. Check the base URL is correct in env variables
 
 ### Error: "Authentication failed"
 
 **Solution**:
+
 1. Verify API key is correct
 2. Check key hasn't expired
 3. Try creating a new key in your provider's dashboard
@@ -188,6 +198,7 @@ If you get a response with `"ok": true`, you're deployed! 🎉
 ### Timeouts
 
 **Solution**:
+
 1. Try Groq (fastest): `OPENAPI_BASE_URL=https://api.groq.com/openai/v1`
 2. Use a different model
 3. Increase timeout in code if needed
@@ -214,17 +225,20 @@ If you get a response with `"ok": true`, you're deployed! 🎉
 ## 8. Cost Estimate
 
 ### Free Options:
+
 - **Groq**: Completely free
 - **Ollama**: Self-hosted (hardware only)
 - **LocalAI**: Self-hosted (hardware only)
 - **Cloudflare Workers**: 100,000 requests/day free
 
 ### Paid Options:
+
 - **OpenAI**: ~$0.01-0.15 per 1K tokens
 - **Groq**: Free (official)
 - **Cloudflare Workers**: $0.50 per million requests after free tier
 
 ### Typical Monthly Cost (100K requests):
+
 - **Groq + Cloudflare**: $0 (completely free!)
 - **OpenAI + Cloudflare**: ~$10-50
 - **Self-hosted + Cloudflare**: Hardware only
@@ -258,6 +272,7 @@ If you get a response with `"ok": true`, you're deployed! 🎉
 **Happy deploying!** 🚀
 
 If you run into issues, check:
+
 1. [CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md)
 2. [OPENAPI_PROVIDERS.md](./OPENAPI_PROVIDERS.md)
 3. [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)

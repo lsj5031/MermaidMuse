@@ -90,14 +90,15 @@ registerTheme('my-brand', {
       primaryTextColor: '#ffffff',
       primaryBorderColor: '#cc0000',
       lineColor: '#ff0000',
-    }
-  }
+    },
+  },
 });
 ```
 
 ### Future: Theme Editor UI
 
 Once we build a theme editor, users will be able to:
+
 1. Create custom themes via UI
 2. Save themes locally or to cloud
 3. Share theme configurations
@@ -108,31 +109,36 @@ Once we build a theme editor, users will be able to:
 With the UI simplified, we can now focus on AI-assisted diagram generation:
 
 ### 1. **Enhance `/api/fix` Endpoint**
-   - Current: Fixes syntax errors in diagrams
-   - Proposed: Also suggest improvements, refactoring
-   - Suggested pattern: `POST /api/fix` with mode parameter
+
+- Current: Fixes syntax errors in diagrams
+- Proposed: Also suggest improvements, refactoring
+- Suggested pattern: `POST /api/fix` with mode parameter
 
 ### 2. **Add AI-Assisted Generation**
-   - New endpoint: `POST /api/generate`
-   - Input: Natural language description
-   - Output: Mermaid diagram code
-   - Example: "Create a flow chart for a user signup process"
+
+- New endpoint: `POST /api/generate`
+- Input: Natural language description
+- Output: Mermaid diagram code
+- Example: "Create a flow chart for a user signup process"
 
 ### 3. **Smart Diagram Assistant Panel**
-   - New component: `AIAssistant.tsx`
-   - Suggestions pane alongside editor
-   - Real-time AI feedback while typing
+
+- New component: `AIAssistant.tsx`
+- Suggestions pane alongside editor
+- Real-time AI feedback while typing
 
 ### 4. **Diagram Improvement Suggestions**
-   - Detect complex nodes that could be split
-   - Suggest common diagram patterns
-   - Warn about non-standard Mermaid syntax
+
+- Detect complex nodes that could be split
+- Suggest common diagram patterns
+- Warn about non-standard Mermaid syntax
 
 ### 5. **Multi-Step Refinement**
-   - User describes diagram
-   - AI generates initial version
-   - User refines with "more detail", "simplify", "add X"
-   - AI applies changes iteratively
+
+- User describes diagram
+- AI generates initial version
+- User refines with "more detail", "simplify", "add X"
+- AI applies changes iteratively
 
 ## Performance Improvements
 
@@ -162,8 +168,12 @@ With the UI simplified, we can now focus on AI-assisted diagram generation:
 import { registerTheme } from '@theme/themeRegistry';
 
 export function initializeCompanyThemes() {
-  registerTheme('company-light', { /* config */ });
-  registerTheme('company-dark', { /* config */ });
+  registerTheme('company-light', {
+    /* config */
+  });
+  registerTheme('company-dark', {
+    /* config */
+  });
 }
 
 // In app.tsx or user code
@@ -184,18 +194,21 @@ initializeCompanyThemes();
 ## Files Changed
 
 ### Deleted
+
 - `src/components/ThreeScene.tsx`
 - `src/components/preview/ThreeScenePanel.tsx`
 - `src/utils/threeHelpers.ts`
 - `src/styles/three-scene.css`
 
 ### Added
+
 - `src/theme/themeRegistry.ts`
 - `src/theme/defaultThemes.ts`
 - `THEME_SYSTEM.md`
 - `MIGRATION_PHASE_2.md` (this file)
 
 ### Modified
+
 - `package.json` - Removed Three.js dependencies
 - `src/App.tsx` - Initialize themes on startup
 - `src/hooks/useDiagramState.tsx` - Use registry to validate themes
@@ -208,26 +221,29 @@ initializeCompanyThemes();
 
 ## Performance Metrics
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Build time | 24s | 19.5s | -19% |
-| Gzipped size | ~780KB | ~680KB | -13% |
-| Dependencies | 16 | 15 | -1 |
-| Component count | ~25 | ~23 | -2 |
+| Metric          | Before | After  | Change |
+| --------------- | ------ | ------ | ------ |
+| Build time      | 24s    | 19.5s  | -19%   |
+| Gzipped size    | ~780KB | ~680KB | -13%   |
+| Dependencies    | 16     | 15     | -1     |
+| Component count | ~25    | ~23    | -2     |
 
 ## Future Roadmap
 
 ### Near Term (Phase 3)
+
 - [ ] AI diagram generation endpoint
 - [ ] AI fix/improve endpoint enhancements
 - [ ] Smart suggestions panel
 
 ### Medium Term (Phase 4)
+
 - [ ] Theme editor UI
 - [ ] Custom color picker
 - [ ] Save themes to localStorage
 
 ### Long Term (Phase 5)
+
 - [ ] Theme marketplace
 - [ ] Collaborative diagram editing
 - [ ] Advanced AI patterns (architecture, sequence diagrams)

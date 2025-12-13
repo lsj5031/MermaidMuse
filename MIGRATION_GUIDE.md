@@ -157,8 +157,6 @@ npm run deploy:workers
 
 See [CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md) for detailed instructions.
 
-
-
 ## Configuration Examples
 
 ### Example 1: OpenAI (Production)

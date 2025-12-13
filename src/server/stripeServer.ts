@@ -34,7 +34,11 @@ export function getStripeWebhookSecret(envOverride?: RuntimeEnv): string | null 
   return env.STRIPE_WEBHOOK_SECRET ?? null;
 }
 
-async function stripeFetch(path: string, init: RequestInit, envOverride?: RuntimeEnv): Promise<Response> {
+async function stripeFetch(
+  path: string,
+  init: RequestInit,
+  envOverride?: RuntimeEnv
+): Promise<Response> {
   const secretKey = getStripeSecretKey(envOverride);
   if (!secretKey) {
     throw new Error('STRIPE_SECRET_KEY is not configured');
@@ -76,7 +80,10 @@ export async function createStripeCheckoutSession(
   body.set('line_items[0][price_data][currency]', currency);
   body.set('line_items[0][price_data][unit_amount]', String(amountCents));
   body.set('line_items[0][price_data][product_data][name]', `${credits} credits`);
-  body.set('line_items[0][price_data][product_data][description]', 'AI fix credits for MermaidMuse');
+  body.set(
+    'line_items[0][price_data][product_data][description]',
+    'AI fix credits for MermaidMuse'
+  );
 
   const response = await stripeFetch(
     '/checkout/sessions',
@@ -93,7 +100,12 @@ export async function createStripeCheckoutSession(
   }
 
   const session = (await response.json()) as StripeCheckoutSession;
-  if (!session || typeof session.id !== 'string' || typeof session.url !== 'string' || !session.url) {
+  if (
+    !session ||
+    typeof session.id !== 'string' ||
+    typeof session.url !== 'string' ||
+    !session.url
+  ) {
     return null;
   }
 
@@ -104,7 +116,11 @@ export async function getStripeCheckoutSession(
   sessionId: string,
   envOverride?: RuntimeEnv
 ): Promise<StripeCheckoutSession | null> {
-  const response = await stripeFetch(`/checkout/sessions/${encodeURIComponent(sessionId)}`, { method: 'GET' }, envOverride);
+  const response = await stripeFetch(
+    `/checkout/sessions/${encodeURIComponent(sessionId)}`,
+    { method: 'GET' },
+    envOverride
+  );
   if (!response.ok) return null;
 
   const session = (await response.json()) as StripeCheckoutSession;

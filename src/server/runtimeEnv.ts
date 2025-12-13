@@ -8,8 +8,9 @@ export function getRuntimeEnv(override?: RuntimeEnv): RuntimeEnv {
   if (override) return override;
 
   const env =
-    ((globalThis as unknown as { process?: NodeProcessLike }).process?.env as RuntimeEnv | undefined) ??
-    {};
+    ((globalThis as unknown as { process?: NodeProcessLike }).process?.env as
+      | RuntimeEnv
+      | undefined) ?? {};
 
   return env;
 }

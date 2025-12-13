@@ -19,15 +19,18 @@ All critical issues and primary feature requests have been resolved. Current imp
 ## Critical Issues (ARCHIVED)
 
 ### 1. Share Dialog - Blocking User Interaction
+
 **Status:** COMPLETED  
 **Severity:** High  
 **Description:**
+
 - Share dialog cannot be dismissed by clicking outside the dialog
 - ESC key does not close the dialog
 - Dialog blocks switching to other browser tabs
 - User is trapped in the modal when opened
 
 **Solution Implemented:**
+
 - ✅ Detect mobile vs desktop platform using user agent
 - ✅ On mobile: use native navigator.share() API (system handles dialog behavior)
 - ✅ On desktop: bypass system share dialog entirely, copy link directly to clipboard
@@ -35,20 +38,24 @@ All critical issues and primary feature requests have been resolved. Current imp
 - ✅ Updated both Header.tsx and HeaderModern.tsx with same logic
 
 **Files Modified:**
+
 - src/components/layout/HeaderModern.tsx
 - src/components/layout/Header.tsx
 
 ---
 
 ### 2. QR Code Generation Fails
+
 **Status:** COMPLETED  
 **Severity:** High  
 **Description:**
+
 - QR code generation fails with error: "Unable to generate QR code. Use a link with 400 characters or less"
 - Share link is too long (exceeds 400 character limit)
 - Affects QR scanning functionality in Share feature
 
 **Solution Implemented:**
+
 - ✅ Removed QR code requirement for desktop users entirely
 - ✅ Desktop: simply copy link to clipboard (no character limit issue)
 - ✅ Mobile: native share sheet handles QR scanning if needed
@@ -56,6 +63,7 @@ All critical issues and primary feature requests have been resolved. Current imp
 - ✅ Simpler UX, no external service dependencies
 
 **Files Modified:**
+
 - src/components/layout/HeaderModern.tsx
 - src/components/layout/Header.tsx
 
@@ -64,14 +72,17 @@ All critical issues and primary feature requests have been resolved. Current imp
 ## Feature Requests / Enhancements
 
 ### 3. Multiple Themes Support
+
 **Status:** COMPLETED  
 **Severity:** Medium  
 **Description:**
+
 - Currently only 1 theme available
 - Website interface looks identical to Mermaid Live Editor
 - Need visual differentiation and theme variety
 
 **Solution Implemented:**
+
 - ✅ Renamed default light theme to "Avocado" (original theme)
 - ✅ Added Kanagawa theme (dark, warm, Japanese-inspired)
 - ✅ Added Dracula theme (dark, vibrant, popular)
@@ -83,20 +94,24 @@ All critical issues and primary feature requests have been resolved. Current imp
 - ✅ Current theme displayed on button, selected theme highlighted in menu
 
 **Files Modified:**
+
 - src/theme/defaultThemes.ts
 - src/components/layout/HeaderModern.tsx
 
 ---
 
 ### 4. Diagram Title / Download Filename
+
 **Status:** COMPLETED  
 **Severity:** Medium  
 **Description:**
+
 - Downloaded files are named "Untitled Diagram.png"
 - Cannot find where to edit/set the diagram title
 - Title should be user-configurable and reflect in downloaded filename
 
 **Implementation:**
+
 - ✅ Added title input field in HeaderModern toolbar (center position)
 - ✅ Title is stored in state via `updateDiagramTitle` hook
 - ✅ Title automatically used in PNG/SVG downloads via existing `currentDiagram.title`
@@ -107,18 +122,22 @@ All critical issues and primary feature requests have been resolved. Current imp
 ---
 
 ### 5. Copy/Paste Format Support (Kanban & Block Diagrams)
+
 **Status:** COMPLETED  
 **Severity:** Medium  
 **Description:**
+
 - User reported paste error when attempting to paste Kanban diagram
 - Kanban and Block diagrams were not supported in Mermaid 10.6.1
 - This prevented paste operations for these diagram types
 
 **Root Cause:**
+
 - Mermaid 10.6.1 (Oct 2023) did not include Kanban or Block diagram support
 - Kanban support was added in Mermaid 11.4.0 (June 2024)
 
 **Solution Implemented:**
+
 - ✅ Upgraded mermaid from ^10.6.1 to ^11.12.2
 - ✅ All 15 diagram types now supported (was 13/15 in 10.6.1):
   - Flowchart, Sequence, Class, State, ER, Gantt, Pie, Mindmap, Timeline
@@ -128,19 +147,23 @@ All critical issues and primary feature requests have been resolved. Current imp
 - ✅ No code changes needed - drop-in dependency update
 
 **Files Modified:**
+
 - package.json (mermaid version bump)
 
 ---
 
 ### 6. Mouse Button Support for Shape Movement
+
 **Status:** TODO  
 **Severity:** Low  
 **Description:**
+
 - Only left mouse button can move/drag shapes
 - Middle mouse button does NOT work for dragging
 - Right mouse button does NOT work for dragging
 
 **Expected Behavior (Industry Standard):**
+
 - Left click: drag shapes
 - Middle click: pan/scroll canvas
 - Right click: context menu
@@ -149,14 +172,17 @@ All critical issues and primary feature requests have been resolved. Current imp
 ---
 
 ### 7. Missing Features: Emoji & Handwriting Style Support
+
 **Status:** TODO  
 **Severity:** Low  
 **Description:**
+
 - Official Mermaid supports emoji characters in diagrams
 - Official Mermaid supports handwriting style (similar to excalidraw)
 - These features are not available in MermaidMuse
 
 **Expected:**
+
 - Add emoji support in diagram text
 - Add handwriting/sketch style option for shapes and connectors
 - Enable visual parity with official Mermaid Live Editor

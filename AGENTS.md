@@ -18,6 +18,7 @@ npm run format          # Prettier formatting
 **Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Mermaid diagram library
 
 **Key Directories**:
+
 - `src/components/` - React components (layout, UI)
 - `src/hooks/` - Custom hooks (state management: `useDiagramState`)
 - `src/utils/` - Helpers (exportHelpers, validationHelpers, environmentHelpers)

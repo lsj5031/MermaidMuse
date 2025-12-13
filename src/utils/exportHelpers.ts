@@ -20,7 +20,11 @@ export interface ExportPngOptions {
   watermarkColor?: string;
 }
 
-export async function exportElementAsPNG(element: HTMLElement, filename: string, options: ExportPngOptions = {}) {
+export async function exportElementAsPNG(
+  element: HTMLElement,
+  filename: string,
+  options: ExportPngOptions = {}
+) {
   const { backgroundColor = '#0a0e27', scale = 2, watermarkText, watermarkColor } = options;
 
   const canvas = await html2canvas(element, {
@@ -47,7 +51,11 @@ export async function exportElementAsPNG(element: HTMLElement, filename: string,
   downloadBlob(canvasToBlob(canvas), `${filename}.png`);
 }
 
-export async function exportElementAsPNGById(elementId: string, filename: string, options?: ExportPngOptions) {
+export async function exportElementAsPNGById(
+  elementId: string,
+  filename: string,
+  options?: ExportPngOptions
+) {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error(`Element with id ${elementId} not found`);
@@ -139,11 +147,7 @@ export async function exportMermaidAsSVG(
 
   const { svg } = await mermaid.mermaidAPI.render(`export-${Date.now()}`, content);
 
-  const colored = addSvgWatermark(
-    svg,
-    watermarkText,
-    watermarkColor ?? '#2d2d2d'
-  );
+  const colored = addSvgWatermark(svg, watermarkText, watermarkColor ?? '#2d2d2d');
 
   downloadBlob(new Blob([colored], { type: 'image/svg+xml;charset=utf-8' }), `${filename}.svg`);
 }

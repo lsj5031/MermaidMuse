@@ -7,20 +7,25 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  className = '', 
-  variant = 'neutral', 
+const Button: React.FC<ButtonProps> = ({
+  children,
+  className = '',
+  variant = 'neutral',
   icon,
-  ...props 
+  ...props
 }) => {
   const getBgColor = () => {
     switch (variant) {
-      case 'primary': return 'bg-brand-blue text-white';
-      case 'secondary': return 'bg-brand-green-dark text-white';
-      case 'accent': return 'bg-brand-magenta text-white';
-      case 'neutral': return 'bg-white hover:bg-gray-50 text-gray-700';
-      default: return 'bg-white text-gray-700';
+      case 'primary':
+        return 'bg-brand-blue text-white';
+      case 'secondary':
+        return 'bg-brand-green-dark text-white';
+      case 'accent':
+        return 'bg-brand-magenta text-white';
+      case 'neutral':
+        return 'bg-white hover:bg-gray-50 text-gray-700';
+      default:
+        return 'bg-white text-gray-700';
     }
   };
 

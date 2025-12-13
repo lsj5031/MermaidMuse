@@ -113,6 +113,6 @@ Server-side behavior:
 
 ## Notes
 
-- If you want the user to pay exactly $10 *net* after Stripe fees, you must charge slightly more.
+- If you want the user to pay exactly $10 _net_ after Stripe fees, you must charge slightly more.
   This repo defaults to **1061 cents** to roughly cover Stripe's typical US card fee (~2.9% + $0.30).
   Adjust this in `DEFAULT_CREDITS_PACK` if needed.

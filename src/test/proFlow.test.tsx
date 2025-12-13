@@ -3,9 +3,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, cleanup } from '@testing-library/react';
 
 vi.mock('@stripe/react-stripe-js', () => ({
-  Elements: ({ children }: { children: ReactNode }) => (
-    <div data-testid="elements">{children}</div>
-  ),
+  Elements: ({ children }: { children: ReactNode }) => <div data-testid="elements">{children}</div>,
   CardElement: ({ options }: { options?: { disabled?: boolean } }) => (
     <div data-testid="card" data-disabled={options?.disabled ? 'true' : 'false'} />
   ),

@@ -10,7 +10,7 @@ export default function CreditsWidget() {
         <div className="rounded border border-gray-300 bg-white px-2 py-1">
           Credits:{' '}
           <span className="font-semibold">
-            {isLoading && creditsBalance === null ? '…' : creditsBalance ?? '—'}
+            {isLoading && creditsBalance === null ? '…' : (creditsBalance ?? '—')}
           </span>
         </div>
 

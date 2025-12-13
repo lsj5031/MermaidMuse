@@ -44,14 +44,9 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
       <div className="flex items-center justify-between p-3 border-b border-dark-border">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-white">Problems</h3>
-          {isValidating && (
-            <Clock className="w-4 h-4 text-blue-400 animate-spin" />
-          )}
+          {isValidating && <Clock className="w-4 h-4 text-blue-400 animate-spin" />}
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-gray-400 hover:text-white transition-colors"
-        >
+        <button onClick={onClose} className="p-1 text-gray-400 hover:text-white transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -105,11 +100,11 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
               <div
                 key={index}
                 className={`p-3 rounded-lg mb-2 bg-dark-bg border-l-4 transition-colors cursor-pointer ${
-                  issue.severity === 'error' 
-                    ? 'border-red-400 hover:bg-red-900/10' 
+                  issue.severity === 'error'
+                    ? 'border-red-400 hover:bg-red-900/10'
                     : issue.severity === 'warning'
-                    ? 'border-yellow-400 hover:bg-yellow-900/10'
-                    : 'border-blue-400 hover:bg-blue-900/10'
+                      ? 'border-yellow-400 hover:bg-yellow-900/10'
+                      : 'border-blue-400 hover:bg-blue-900/10'
                 }`}
                 onClick={() => {
                   revealInEditor(issue.line, issue.column);
@@ -127,9 +122,7 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
                         Line {issue.line}, Column {issue.column}
                       </span>
                     </div>
-                    <p className="text-sm text-white leading-relaxed">
-                      {issue.message}
-                    </p>
+                    <p className="text-sm text-white leading-relaxed">{issue.message}</p>
                   </div>
                 </div>
               </div>
@@ -146,8 +139,8 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
             <div>
               <p className="text-xs text-yellow-400 font-medium mb-1">Validation Note</p>
               <p className="text-xs text-gray-400">
-                {validation.mermaidError.toLowerCase().includes('network') || 
-                 validation.mermaidError.toLowerCase().includes('offline')
+                {validation.mermaidError.toLowerCase().includes('network') ||
+                validation.mermaidError.toLowerCase().includes('offline')
                   ? 'Offline validation: Some syntax checks may be limited. Check your connection for full validation.'
                   : 'Validation completed with limitations. Some advanced syntax checks may not be available.'}
               </p>

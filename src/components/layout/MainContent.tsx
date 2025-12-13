@@ -20,7 +20,7 @@ export default function MainContent() {
     <main className="flex-1 overflow-hidden relative">
       {/* Status Banner */}
       <StatusBanner onProblemsClick={toggleProblemsPanel} />
-      
+
       <div id="workspace-capture" className="flex h-full">
         {splitMode ? (
           <>
@@ -55,11 +55,7 @@ export default function MainContent() {
                     </button>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    {activePanel === 'editor' ? (
-                      <EditorPanel />
-                    ) : (
-                      <PreviewPanel />
-                    )}
+                    {activePanel === 'editor' ? <EditorPanel /> : <PreviewPanel />}
                   </div>
                 </div>
               ) : (
@@ -77,9 +73,11 @@ export default function MainContent() {
 
             {/* Problems Panel - Desktop/Docked */}
             {!shouldStackLayout && (
-              <div className={`fixed right-0 top-0 h-full transition-transform duration-300 z-10 ${
-                problemsOpen ? 'translate-x-0' : 'translate-x-full'
-              }`}>
+              <div
+                className={`fixed right-0 top-0 h-full transition-transform duration-300 z-10 ${
+                  problemsOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
+              >
                 <div className="w-80 h-full">
                   <ProblemsPanel isOpen={problemsOpen} onClose={() => setProblemsOpen(false)} />
                 </div>
@@ -88,10 +86,12 @@ export default function MainContent() {
 
             {/* Problems Panel - Mobile/Overlay */}
             {shouldStackLayout && (
-              <div className={`absolute inset-0 z-20 transition-opacity duration-300 ${
-                problemsOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-              }`}>
-                <div 
+              <div
+                className={`absolute inset-0 z-20 transition-opacity duration-300 ${
+                  problemsOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <div
                   className="absolute inset-0 bg-black/50"
                   onClick={() => setProblemsOpen(false)}
                 />
@@ -127,9 +127,7 @@ export default function MainContent() {
       {/* Responsive Hint for Mobile */}
       {shouldStackLayout && (
         <div className="absolute top-4 left-4 bg-dark-surface/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-dark-border">
-          <p className="text-xs text-gray-400">
-            Use tabs to switch between Editor and Preview
-          </p>
+          <p className="text-xs text-gray-400">Use tabs to switch between Editor and Preview</p>
         </div>
       )}
     </main>

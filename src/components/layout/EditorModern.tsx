@@ -8,8 +8,12 @@ import { fixDiagramSyntax } from '@utils/fixDiagramApi';
 const Editor: React.FC = () => {
   const { currentDiagram, updateDiagramContent } = useDiagramState();
   const { getToken } = useAuth();
-  const { creditsBalance, isLoading: isCreditsLoading, createCheckoutSession, refresh: refreshCredits } =
-    useCredits();
+  const {
+    creditsBalance,
+    isLoading: isCreditsLoading,
+    createCheckoutSession,
+    refresh: refreshCredits,
+  } = useCredits();
   const [isFixing, setIsFixing] = useState(false);
   const lineCount = currentDiagram.content.split('\n').length;
   const { validation, isValidating } = currentDiagram;
@@ -41,11 +45,15 @@ const Editor: React.FC = () => {
   return (
     <aside className="flex flex-col h-full bg-white border-r-2 border-gray-200 border-dashed shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
       {/* Status Bar */}
-      <div className={`px-4 py-2 flex items-center justify-between gap-2 text-sm font-medium border-b border-gray-200 flex-shrink-0 ${
-        isValidating ? 'bg-blue-50 text-blue-700' :
-        validation.isValid ? 'bg-brand-green-light text-green-800' : 
-        'bg-red-50 text-red-700'
-      }`}>
+      <div
+        className={`px-4 py-2 flex items-center justify-between gap-2 text-sm font-medium border-b border-gray-200 flex-shrink-0 ${
+          isValidating
+            ? 'bg-blue-50 text-blue-700'
+            : validation.isValid
+              ? 'bg-brand-green-light text-green-800'
+              : 'bg-red-50 text-red-700'
+        }`}
+      >
         <div className="flex items-center gap-2">
           {isValidating ? (
             <>
@@ -61,7 +69,9 @@ const Editor: React.FC = () => {
             <>
               <AlertTriangle className="h-4 w-4" />
               <div className="flex flex-col gap-0.5">
-                <span>{validation.errors.length} error{validation.errors.length !== 1 ? 's' : ''}</span>
+                <span>
+                  {validation.errors.length} error{validation.errors.length !== 1 ? 's' : ''}
+                </span>
                 {validation.errors.length > 0 && (
                   <span className="text-xs text-red-600">
                     Line {validation.errors[0].line}: {validation.errors[0].message}
@@ -128,7 +138,9 @@ const Editor: React.FC = () => {
         {/* Line Numbers */}
         <div className="bg-gray-50 py-4 px-2 text-right text-gray-400 select-none border-r border-gray-100 min-w-[3rem]">
           {Array.from({ length: Math.max(lineCount, 15) }).map((_, i) => (
-            <div key={i} className="leading-6 h-6">{i + 1}</div>
+            <div key={i} className="leading-6 h-6">
+              {i + 1}
+            </div>
           ))}
         </div>
 

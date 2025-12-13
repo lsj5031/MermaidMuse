@@ -104,7 +104,9 @@ export function useCredits() {
         body: JSON.stringify({ successUrl, cancelUrl }),
       });
 
-      const data = (await response.json().catch(() => null)) as StripeCheckoutSessionResponse | null;
+      const data = (await response
+        .json()
+        .catch(() => null)) as StripeCheckoutSessionResponse | null;
 
       if (!response.ok || !data?.ok || !data.url) {
         throw new Error(data?.error?.message ?? 'Unable to start checkout');

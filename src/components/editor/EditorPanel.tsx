@@ -76,15 +76,23 @@ export default function EditorPanel() {
           window.clearTimeout(highlightTimeoutRef.current);
         }
 
-        highlightDecorationIdsRef.current = editorInstance.deltaDecorations(highlightDecorationIdsRef.current, [
-          {
-            range: new monaco.Range(lineNumber, 1, lineNumber, model.getLineMaxColumn(lineNumber)),
-            options: {
-              isWholeLine: true,
-              className: 'editor-error-line-highlight',
+        highlightDecorationIdsRef.current = editorInstance.deltaDecorations(
+          highlightDecorationIdsRef.current,
+          [
+            {
+              range: new monaco.Range(
+                lineNumber,
+                1,
+                lineNumber,
+                model.getLineMaxColumn(lineNumber)
+              ),
+              options: {
+                isWholeLine: true,
+                className: 'editor-error-line-highlight',
+              },
             },
-          },
-        ]);
+          ]
+        );
 
         highlightTimeoutRef.current = window.setTimeout(() => {
           if (!editorRef.current) return;

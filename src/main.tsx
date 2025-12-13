@@ -10,7 +10,7 @@ registerServiceWorker();
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  console.error("Missing Clerk Publishable Key");
+  console.error('Missing Clerk Publishable Key');
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -23,7 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <div className="flex items-center justify-center min-h-screen">
         <div className="p-4 text-center">
           <h1 className="text-xl font-bold text-red-600 mb-2">Configuration Error</h1>
-          <p>Missing Clerk Publishable Key. Please add VITE_CLERK_PUBLISHABLE_KEY to your .env file.</p>
+          <p>
+            Missing Clerk Publishable Key. Please add VITE_CLERK_PUBLISHABLE_KEY to your .env file.
+          </p>
         </div>
       </div>
     )}

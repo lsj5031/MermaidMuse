@@ -4,7 +4,8 @@ let stripePromise: Promise<Stripe | null>;
 
 export async function getStripeClient(): Promise<Stripe | null> {
   if (!stripePromise) {
-    const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.VITE_STRIPE_KEY;
+    const stripeKey =
+      import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.VITE_STRIPE_KEY;
     if (!stripeKey) {
       console.warn('Stripe key not configured');
       return null;
