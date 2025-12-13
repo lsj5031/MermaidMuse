@@ -1,6 +1,7 @@
 import { fixMermaidSyntaxWithXai } from '../server/xaiFix';
 import { generateMermaidDiagram } from '../server/aiGenerate';
 import { refineMermaidDiagram } from '../server/aiRefine';
+import { analyzeMermaidDiagram } from '../server/aiAnalyze';
 import { getBearerToken, getClerkUserIdFromSessionToken } from '../server/clerkServer';
 import {
   addCreditsForPaidSession,
@@ -508,6 +509,82 @@ export default {
       const shouldCharge = Boolean(result.ok && result.generatedText);
       const creditsRemaining = shouldCharge
         ? await spendCredits(userId, GENERATION_COST, runtimeEnv)
+        : creditsBefore;
+
+      return json(200, { ...result, creditsCharged: shouldCharge, creditsRemaining });
+    }
+
+    // Route /api/analyze
+    if (pathname === '/api/analyze') {
+      if (req.method !== 'POST') {
+        return json(405, {
+          ok: false,
+          error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST.' },
+        });
+      }
+
+      if (!env.CLERK_SECRET_KEY) {
+        return json(500, {
+          ok: false,
+          error: { code: 'NOT_CONFIGURED', message: 'CLERK_SECRET_KEY not configured.' },
+        });
+      }
+
+      const token = getBearerToken(req.headers.get('Authorization'));
+      if (!token) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
+      }
+
+      const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
+      if (!userId) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
+      }
+
+      const parsed = await parseBody(req);
+      const payload = asRecord(parsed);
+      const diagramText = payload && typeof payload.diagramText === 'string' ? payload.diagramText : null;
+
+      if (!diagramText || !diagramText.trim()) {
+        return json(400, {
+          ok: false,
+          error: { code: 'BAD_REQUEST', message: 'Expected { diagramText: string }.' },
+        });
+      }
+
+      const focusAreas = Array.isArray(payload?.focusAreas)
+        ? payload.focusAreas.filter((v: unknown): v is string => typeof v === 'string')
+        : undefined;
+
+      const ANALYSIS_COST = 1;
+      const creditsBefore = await ensureCreditsBalance(userId, runtimeEnv);
+      if (creditsBefore < ANALYSIS_COST) {
+        return json(402, {
+          ok: false,
+          error: {
+            code: 'INSUFFICIENT_CREDITS',
+            message: `Analysis requires ${ANALYSIS_COST} credit.`,
+          },
+          creditsCharged: false,
+          creditsRemaining: creditsBefore,
+        });
+      }
+
+      const result = await analyzeMermaidDiagram(diagramText, {
+        apiKey: env.OPENAPI_API_KEY,
+        baseUrl: env.OPENAPI_BASE_URL,
+        model: env.OPENAPI_MODEL,
+        focusAreas,
+      });
+
+      const shouldCharge = result.ok;
+      const creditsRemaining = shouldCharge
+        ? await spendCredits(userId, ANALYSIS_COST, runtimeEnv)
         : creditsBefore;
 
       return json(200, { ...result, creditsCharged: shouldCharge, creditsRemaining });
