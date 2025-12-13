@@ -4,6 +4,8 @@ import {
   addCreditsForPaidSession,
   ensureCreditsBalance,
   spendCredits,
+  ensureReferralCode,
+  applyReferralCode,
 } from '../server/creditsServer';
 import {
   asStripeCheckoutSession,
@@ -427,6 +429,105 @@ export default {
         : creditsBefore;
 
       return json(200, { ...result, creditsCharged: shouldCharge, creditsRemaining });
+    }
+
+    // Route /api/referral-code
+    if (pathname === '/api/referral-code') {
+      if (req.method !== 'GET') {
+        return json(405, {
+          ok: false,
+          error: { code: 'METHOD_NOT_ALLOWED', message: 'Use GET.' },
+        });
+      }
+
+      if (!env.CLERK_SECRET_KEY) {
+        return json(500, {
+          ok: false,
+          error: { code: 'NOT_CONFIGURED', message: 'CLERK_SECRET_KEY not configured.' },
+        });
+      }
+
+      const token = getBearerToken(req.headers.get('Authorization'));
+      if (!token) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
+      }
+
+      const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
+      if (!userId) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
+      }
+
+      const referralCode = await ensureReferralCode(userId, runtimeEnv);
+      return json(200, { ok: true, referralCode, userId });
+    }
+
+    // Route /api/apply-referral
+    if (pathname === '/api/apply-referral') {
+      if (req.method !== 'POST') {
+        return json(405, {
+          ok: false,
+          error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST.' },
+        });
+      }
+
+      if (!env.CLERK_SECRET_KEY) {
+        return json(500, {
+          ok: false,
+          error: { code: 'NOT_CONFIGURED', message: 'CLERK_SECRET_KEY not configured.' },
+        });
+      }
+
+      const token = getBearerToken(req.headers.get('Authorization'));
+      if (!token) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
+      }
+
+      const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
+      if (!userId) {
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
+      }
+
+      const parsed = await parseBody(req);
+      const payload = asRecord(parsed);
+      const referrerUserId =
+        payload && typeof payload.referrerUserId === 'string' ? payload.referrerUserId : null;
+
+      if (!referrerUserId) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'BAD_REQUEST',
+            message: 'Expected JSON body with { referrerUserId: string }.',
+          },
+        });
+      }
+
+      const result = await applyReferralCode(userId, referrerUserId, runtimeEnv);
+
+      if (!result.success) {
+        return json(400, {
+          ok: false,
+          error: { code: 'REFERRAL_ERROR', message: result.message },
+        });
+      }
+
+      return json(200, {
+        ok: true,
+        message: result.message,
+        creditsBalance: result.creditsBalance,
+      });
     }
 
     // Default 404

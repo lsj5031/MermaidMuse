@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { SignInButton, SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { useCredits } from '@hooks/useCredits';
+import { useReferral } from '@hooks/useReferral';
 import { CheckCircle2, AlertTriangle, Clock, Wand2 } from 'lucide-react';
 import { fixDiagramSyntax } from '@utils/fixDiagramApi';
+import ReferralModal from '@components/ReferralModal';
 
 const Editor: React.FC = () => {
   const { currentDiagram, updateDiagramContent } = useDiagramState();
@@ -14,6 +16,7 @@ const Editor: React.FC = () => {
     createCheckoutSession,
     refresh: refreshCredits,
   } = useCredits();
+  const { showModal, triggerModal, closeModal, dismissModalPermanently } = useReferral();
   const [isFixing, setIsFixing] = useState(false);
   const lineCount = currentDiagram.content.split('\n').length;
   const { validation, isValidating } = currentDiagram;
@@ -28,6 +31,7 @@ const Editor: React.FC = () => {
 
       if (result.ok && result.fixedText) {
         updateDiagramContent(result.fixedText);
+        triggerModal();
       } else {
         console.warn('AI fix failed:', result.error?.message);
       }
@@ -43,8 +47,14 @@ const Editor: React.FC = () => {
   };
 
   return (
-    <aside className="flex flex-col h-full bg-white border-r-2 border-gray-200 border-dashed shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
-      {/* Status Bar */}
+    <>
+      <ReferralModal
+        isOpen={showModal}
+        onClose={closeModal}
+        onDontShowAgain={dismissModalPermanently}
+      />
+      <aside className="flex flex-col h-full bg-white border-r-2 border-gray-200 border-dashed shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
+        {/* Status Bar */}
       <div
         className={`px-4 py-2 flex items-center justify-between gap-2 text-sm font-medium border-b border-gray-200 flex-shrink-0 ${
           isValidating
@@ -153,6 +163,7 @@ const Editor: React.FC = () => {
         />
       </div>
     </aside>
+    </>
   );
 };
 
