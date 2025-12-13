@@ -246,9 +246,7 @@ const Header: React.FC = () => {
           <div className="border-l border-gray-300 pl-4 ml-2 flex items-center">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className={actionButtonClass(true)}>
-                  Sign In
-                </button>
+                <button className={actionButtonClass(true)}>Sign In</button>
               </SignInButton>
             </SignedOut>
             <SignedIn>

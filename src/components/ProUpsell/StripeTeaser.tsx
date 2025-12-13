@@ -30,8 +30,9 @@ export default function StripeTeaser({
       <div className="rounded border border-dark-border bg-dark-surface p-4">
         <div className="text-sm font-semibold text-neon-cyan">{title}</div>
         <div className="mt-2 text-xs text-gray-400">
-          Stripe is not configured. Set <code className="text-gray-200">VITE_STRIPE_PUBLISHABLE_KEY</code>{' '}
-          (or legacy <code className="text-gray-200">VITE_STRIPE_KEY</code>) to show the upgrade teaser.
+          Stripe is not configured. Set{' '}
+          <code className="text-gray-200">VITE_STRIPE_PUBLISHABLE_KEY</code> (or legacy{' '}
+          <code className="text-gray-200">VITE_STRIPE_KEY</code>) to show the upgrade teaser.
         </div>
       </div>
     );
@@ -72,7 +73,8 @@ export default function StripeTeaser({
         </button>
 
         <div className="mt-2 text-[11px] text-gray-500">
-          Payments are not enabled in this demo build. This is a UI teaser for gating future pro features.
+          Payments are not enabled in this demo build. This is a UI teaser for gating future pro
+          features.
         </div>
       </div>
     </div>

@@ -168,7 +168,9 @@ export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderPro
             </button>
           )}
         </div>
-        <p className="text-xs text-gray-400">Updated {currentDiagram.lastModified.toLocaleTimeString()}</p>
+        <p className="text-xs text-gray-400">
+          Updated {currentDiagram.lastModified.toLocaleTimeString()}
+        </p>
       </div>
 
       <div className="flex items-center gap-2">

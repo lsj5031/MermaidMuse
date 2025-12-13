@@ -51,9 +51,7 @@ export async function fixDiagramSyntax(
       const errorRecord = (errorData.error as Record<string, unknown> | undefined) ?? {};
 
       const code =
-        typeof errorRecord.code === 'string'
-          ? errorRecord.code
-          : `HTTP_${response.status}`;
+        typeof errorRecord.code === 'string' ? errorRecord.code : `HTTP_${response.status}`;
 
       const message =
         (typeof errorRecord.message === 'string' && errorRecord.message) ||

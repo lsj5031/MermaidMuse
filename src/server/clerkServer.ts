@@ -23,9 +23,13 @@ const base64UrlDecode = (input: string): string => {
   }
 
   const buffer =
-    (globalThis as unknown as {
-      Buffer?: { from: (value: string, encoding: string) => { toString: (encoding: string) => string } };
-    }).Buffer ?? null;
+    (
+      globalThis as unknown as {
+        Buffer?: {
+          from: (value: string, encoding: string) => { toString: (encoding: string) => string };
+        };
+      }
+    ).Buffer ?? null;
 
   if (!buffer) {
     throw new Error('No base64 decoder available');
@@ -66,7 +70,11 @@ export function getClerkSecretKey(envOverride?: RuntimeEnv): string | null {
   return secret;
 }
 
-async function clerkFetch(path: string, init: RequestInit, envOverride?: RuntimeEnv): Promise<Response> {
+async function clerkFetch(
+  path: string,
+  init: RequestInit,
+  envOverride?: RuntimeEnv
+): Promise<Response> {
   const secretKey = getClerkSecretKey(envOverride);
   if (!secretKey) {
     throw new Error('CLERK_SECRET_KEY is not configured');
@@ -107,7 +115,10 @@ export async function getClerkUserIdFromSessionToken(
   return session.user_id;
 }
 
-export async function getClerkUser(userId: string, envOverride?: RuntimeEnv): Promise<ClerkUser | null> {
+export async function getClerkUser(
+  userId: string,
+  envOverride?: RuntimeEnv
+): Promise<ClerkUser | null> {
   const response = await clerkFetch(`/users/${userId}`, { method: 'GET' }, envOverride);
   if (!response.ok) return null;
 

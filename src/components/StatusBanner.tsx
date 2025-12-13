@@ -31,7 +31,8 @@ export default function StatusBanner({ onProblemsClick }: StatusBannerProps) {
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm font-medium">Diagram is valid</span>
             <span className="text-xs text-green-300">
-              {validation.warnings.length > 0 && `${validation.warnings.length} warning${validation.warnings.length !== 1 ? 's' : ''}`}
+              {validation.warnings.length > 0 &&
+                `${validation.warnings.length} warning${validation.warnings.length !== 1 ? 's' : ''}`}
             </span>
           </div>
           {validation.warnings.length > 0 && (
@@ -82,12 +83,15 @@ export default function StatusBanner({ onProblemsClick }: StatusBannerProps) {
           </button>
         </div>
       </div>
-      
+
       {/* Show first error message in banner */}
       {validation.errors.length > 0 && (
         <div className="mt-1 text-xs text-red-300">
-          <span className="font-medium">Line {validation.errors[0].line}:</span> {validation.errors[0].message}
-          <span className="ml-2 text-red-200/80">Lines with errors are highlighted in the editor.</span>
+          <span className="font-medium">Line {validation.errors[0].line}:</span>{' '}
+          {validation.errors[0].message}
+          <span className="ml-2 text-red-200/80">
+            Lines with errors are highlighted in the editor.
+          </span>
         </div>
       )}
     </div>

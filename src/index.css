@@ -15,7 +15,7 @@ html {
 }
 
 body {
-  background: #FCFBF5;
+  background: #fcfbf5;
   color: #2d2d2d;
   font-family:
     'Comic Neue',
@@ -26,7 +26,12 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Sniglet', cursive;
 }
 

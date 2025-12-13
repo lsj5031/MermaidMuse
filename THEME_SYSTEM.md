@@ -36,8 +36,8 @@ registerTheme('my-theme', {
       primaryBorderColor: '#ffaaaa',
       lineColor: '#ff0000',
       // ... other Mermaid theme variables
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -100,8 +100,8 @@ A `DiagramThemeConfig` contains:
 
 ```typescript
 interface DiagramThemeConfig {
-  label: string;           // Display name for the theme
-  mermaid: MermaidConfig;  // Mermaid configuration object
+  label: string; // Display name for the theme
+  mermaid: MermaidConfig; // Mermaid configuration object
 }
 ```
 
@@ -139,8 +139,8 @@ registerTheme('custom-bright', {
       lineColor: '#333333',
       secondaryColor: '#f0f0f0',
       tertiaryColor: '#e0e0e0',
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -165,8 +165,8 @@ function createCustomTheme(name: string, colors: ColorConfig) {
         primaryBorderColor: colors.border,
         lineColor: colors.edge,
         // ... more variables
-      }
-    }
+      },
+    },
   });
 }
 ```
@@ -174,16 +174,19 @@ function createCustomTheme(name: string, colors: ColorConfig) {
 ## Current Default Themes
 
 ### Light
+
 - Clean, high-contrast theme suitable for presentations
 - Light backgrounds with dark text
 - Blue and purple accents
 
 ### Dark
+
 - Dark backgrounds with light text
 - Suitable for reduced eye strain
 - Cool blue and purple highlights
 
 ### Cyber
+
 - Cyberpunk aesthetic with neon colors
 - Cyan edges (#00f5ff)
 - Neon pink (#ff006e), purple (#b537f2), and lime accents
@@ -204,7 +207,7 @@ import { useDiagramState } from '@hooks/useDiagramState';
 
 export default function MyComponent() {
   const { theme } = useDiagramState();
-  
+
   return <div>Current theme: {theme}</div>;
 }
 ```
@@ -228,11 +231,13 @@ const { svg } = await mermaid.mermaidAPI.render('diagram-id', mermaidContent);
 The old system with hardcoded theme options has been replaced. If you have code referencing old theme exports:
 
 **Before:**
+
 ```typescript
 import { DIAGRAM_THEME_CONFIG } from '@theme/diagramThemes';
 ```
 
 **After:**
+
 ```typescript
 import { getTheme, getAllThemes } from '@theme/themeRegistry';
 ```
@@ -261,7 +266,7 @@ registerTheme('hc-dark', {
     startOnLoad: false,
     theme: 'dark',
     securityLevel: 'loose',
-  }
+  },
 });
 ```
 
@@ -285,8 +290,8 @@ registerTheme('sepia', {
       noteTextColor: '#3e2723',
       actorBkg: '#efebe9',
       actorBorder: '#8b6f47',
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -301,7 +306,7 @@ clearAllThemes();
 // Register test theme
 registerTheme('test', {
   label: 'Test',
-  mermaid: { startOnLoad: false, theme: 'dark', securityLevel: 'loose' }
+  mermaid: { startOnLoad: false, theme: 'dark', securityLevel: 'loose' },
 });
 
 // Verify

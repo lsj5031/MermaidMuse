@@ -15,7 +15,7 @@ async function test() {
   } catch (err) {
     console.log('PARSE FAILED:', err.message);
   }
-  
+
   try {
     console.log('\nTesting with mermaid.render...');
     const result = await mermaid.render('test-id', invalidDiagram);

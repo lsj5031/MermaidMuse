@@ -169,7 +169,8 @@ export async function fixMermaidSyntaxWithXai(
     const parsed = extractJsonObject(content);
     const parsedRecord = asRecord(parsed);
 
-    const fixedText = parsedRecord && typeof parsedRecord.fixedText === 'string' ? parsedRecord.fixedText : null;
+    const fixedText =
+      parsedRecord && typeof parsedRecord.fixedText === 'string' ? parsedRecord.fixedText : null;
 
     const suggestions = Array.isArray(parsedRecord?.suggestions)
       ? parsedRecord.suggestions.filter((s: unknown) => typeof s === 'string')

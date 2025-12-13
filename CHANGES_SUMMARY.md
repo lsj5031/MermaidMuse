@@ -11,11 +11,13 @@ This document summarizes changes made to migrate from xAI API to OpenAPI-compati
 ### 1. **API Integration: xAI → OpenAPI-Compatible Endpoints**
 
 #### What Changed:
+
 - Migrated from proprietary xAI API to industry-standard OpenAPI-compatible endpoints
 - No official SDK dependency (uses raw `fetch` API)
 - Supports any OpenAI-compatible provider (OpenAI, Groq, LocalAI, Ollama, etc.)
 
 #### Files Modified:
+
 - **`src/server/xaiFix.ts`**
   - Updated default base URL: `https://api.x.ai/v1` → `https://api.openai.com/v1`
   - Updated default model: `grok-beta` → `gpt-4o`
@@ -27,6 +29,7 @@ This document summarizes changes made to migrate from xAI API to OpenAPI-compati
   - **No function signature changes** - fully backward compatible
 
 #### Backward Compatibility:
+
 ✅ Old `XAI_*` environment variables still work as fallback
 ✅ No breaking changes to function signatures
 ✅ No changes to response structure (except provider name)
@@ -36,23 +39,27 @@ This document summarizes changes made to migrate from xAI API to OpenAPI-compati
 ### 2. **Deployment: Cloudflare Pages + Workers**
 
 #### What Changed:
+
 - Added Cloudflare Workers support for serverless API routes
 - Created unified deployment configuration for Pages (frontend) + Workers (API)
 
 #### New Files Created:
 
 **`wrangler.toml`** (Cloudflare Workers configuration)
+
 - Worker name: `diagram-maker`
 - Entry point: `src/workers/index.ts`
 - Environment variables configuration
 - Development and production environments
 
 **`cloudflare.toml`** (Cloudflare Pages configuration)
+
 - Frontend deployment settings
 - Build command: `npm run build`
 - Output directory: `dist`
 
 **`src/workers/index.ts`** (New Cloudflare Workers handler)
+
 - Implements `/api/fix` endpoint for Cloudflare Workers
 - Follows the same API contract the frontend expects
 - CORS handling built-in
@@ -67,6 +74,7 @@ This repo focuses on Cloudflare Pages + Workers as the supported deployment targ
 ### 3. **Configuration Files**
 
 #### `.env.example` (Updated)
+
 ```diff
 - XAI_API_KEY=
 - XAI_MODEL=grok-beta
@@ -78,11 +86,14 @@ This repo focuses on Cloudflare Pages + Workers as the supported deployment targ
 ```
 
 #### `.gitignore` (Updated)
+
 - Added: `.wrangler` (Cloudflare Workers artifacts)
 - Added: `dist-worker` (Worker build output)
 
 #### `package.json` (Updated)
+
 New deployment scripts:
+
 ```json
 {
   "dev:workers": "wrangler dev",
@@ -128,6 +139,7 @@ New deployment scripts:
 #### Updated Documentation:
 
 **`README.md`** (Major updates)
+
 - Updated installation instructions with OPENAPI variables
 - New "Development with Cloudflare Workers" section
 - New "Build for Cloudflare Workers" section
@@ -146,22 +158,17 @@ New deployment scripts:
 const apiKey = options.apiKey ?? env.OPENAPI_API_KEY ?? env.XAI_API_KEY;
 
 // For Base URL
-const baseUrl = options.baseUrl ?? 
-                env.OPENAPI_BASE_URL ?? 
-                env.XAI_BASE_URL ?? 
-                DEFAULT_BASE_URL;
+const baseUrl = options.baseUrl ?? env.OPENAPI_BASE_URL ?? env.XAI_BASE_URL ?? DEFAULT_BASE_URL;
 
 // For Model
-const model = options.model ?? 
-              env.OPENAPI_MODEL ?? 
-              env.XAI_MODEL ?? 
-              DEFAULT_MODEL;
+const model = options.model ?? env.OPENAPI_MODEL ?? env.XAI_MODEL ?? DEFAULT_MODEL;
 ```
 
 **Behavior**:
+
 1. Option parameter (if passed)
-2. OPENAPI_* environment variable (new standard)
-3. XAI_* environment variable (legacy fallback)
+2. OPENAPI\_\* environment variable (new standard)
+3. XAI\_\* environment variable (legacy fallback)
 4. Default value (gpt-4o / https://api.openai.com/v1)
 
 ### API Endpoint Compatibility
@@ -184,6 +191,7 @@ fetch(`${baseUrl}/chat/completions`, {
 ```
 
 This format works with:
+
 - ✅ OpenAI API
 - ✅ Groq API
 - ✅ Azure OpenAI
@@ -197,15 +205,15 @@ This format works with:
 
 All with zero configuration changes (just set environment variables):
 
-| Provider | Cost | Speed | Privacy |
-|----------|------|-------|---------|
-| OpenAI | $$$ | Fast | Medium |
-| **Groq** | **Free** | **⚡ Fastest** | Medium |
-| Azure | $$$ | Fast | High |
-| LocalAI | Free | Slow | ⭐ Excellent |
-| Ollama | Free | Slow | ⭐ Excellent |
-| Replicate | $ | Fast | Medium |
-| Together AI | $ | Fast | Medium |
+| Provider    | Cost     | Speed          | Privacy      |
+| ----------- | -------- | -------------- | ------------ |
+| OpenAI      | $$$      | Fast           | Medium       |
+| **Groq**    | **Free** | **⚡ Fastest** | Medium       |
+| Azure       | $$$      | Fast           | High         |
+| LocalAI     | Free     | Slow           | ⭐ Excellent |
+| Ollama      | Free     | Slow           | ⭐ Excellent |
+| Replicate   | $        | Fast           | Medium       |
+| Together AI | $        | Fast           | Medium       |
 
 ---
 
@@ -218,6 +226,7 @@ npm run deploy:workers
 ```
 
 **Advantages**:
+
 - ✅ Global edge network
 - ✅ Free tier: 100K requests/day
 - ✅ Unified Pages + Workers deployment
@@ -247,7 +256,7 @@ For existing deployments migrating from xAI to OpenAPI:
 - [ ] Test with `npm run dev:workers`
 - [ ] Deploy using `npm run deploy:workers`
 - [ ] Verify `/api/fix` endpoint works
-- [ ] Remove old XAI_* environment variables (optional)
+- [ ] Remove old XAI\_\* environment variables (optional)
 
 ---
 
@@ -255,12 +264,12 @@ For existing deployments migrating from xAI to OpenAPI:
 
 ### API Response Times:
 
-| Provider | Typical Time |
-|----------|--------------|
-| Groq | 200-500ms |
-| OpenAI (gpt-4o) | 500-1000ms |
-| LocalAI (GPU) | 1-3s |
-| Ollama (CPU) | 3-10s |
+| Provider        | Typical Time |
+| --------------- | ------------ |
+| Groq            | 200-500ms    |
+| OpenAI (gpt-4o) | 500-1000ms   |
+| LocalAI (GPU)   | 1-3s         |
+| Ollama (CPU)    | 3-10s        |
 
 **Note**: Groq is fastest and free!
 
@@ -276,24 +285,31 @@ For existing deployments migrating from xAI to OpenAPI:
 ## Testing
 
 ### Type Checking
+
 ```bash
 npm run type-check
 ```
+
 ✅ All new TypeScript code passes strict type checking
 
 ### Linting
+
 ```bash
 npm run lint
 ```
+
 ✅ All code follows ESLint rules
 
 ### Formatting
+
 ```bash
 npm run format
 ```
+
 ✅ All new files properly formatted with Prettier
 
 ### Local Testing
+
 ```bash
 npm run dev:workers
 curl -X POST http://localhost:8787/api/fix \
@@ -306,6 +322,7 @@ curl -X POST http://localhost:8787/api/fix \
 ## Files Changed Summary
 
 ### Modified Files (6):
+
 1. `.env.example` - Updated environment variables
 2. `.gitignore` - Added Cloudflare artifacts
 3. `package.json` - Added deployment scripts
@@ -314,6 +331,7 @@ curl -X POST http://localhost:8787/api/fix \
 6. `src/server/xaiFix.ts` - API endpoint migration
 
 ### New Files (9):
+
 1. `wrangler.toml` - Cloudflare Workers config
 2. `cloudflare.toml` - Cloudflare Pages config
 3. `src/workers/index.ts` - Cloudflare Workers handler
@@ -324,6 +342,7 @@ curl -X POST http://localhost:8787/api/fix \
 8. `CHANGES_SUMMARY.md` - This file
 
 ### Preserved Files:
+
 - ✅ `src/workers/index.ts` - Single Cloudflare Worker handler for `/api/*`
 
 ---
@@ -331,18 +350,21 @@ curl -X POST http://localhost:8787/api/fix \
 ## Next Steps for Users
 
 ### For New Users:
+
 1. Start with `QUICK_START_DEPLOYMENT.md`
 2. Choose provider (recommend: Groq)
 3. Choose platform (recommend: Cloudflare)
 4. Deploy
 
 ### For Existing Users:
+
 1. Read `MIGRATION_GUIDE.md`
 2. Update environment variables
 3. Test locally
 4. Redeploy (Cloudflare recommended)
 
 ### For Production:
+
 1. Use OpenAI or Groq
 2. Set up rate limiting
 3. Monitor usage

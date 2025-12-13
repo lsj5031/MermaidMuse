@@ -19,9 +19,10 @@ export default function PreviewPanel() {
           containerRef.current.innerHTML = `
             <div class="flex items-center justify-center h-full">
               <div class="text-center">
-                ${isValidating ? 
-                  '<div class="flex items-center justify-center gap-2 text-blue-400"><svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" class="opacity-25"/><path d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"/></svg>Validating...</div>' :
-                  '<div class="text-red-400"><svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg><p class="font-semibold">Cannot render invalid diagram</p><p class="text-sm text-gray-400 mt-2">Fix syntax errors to see preview</p></div>'
+                ${
+                  isValidating
+                    ? '<div class="flex items-center justify-center gap-2 text-blue-400"><svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" class="opacity-25"/><path d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"/></svg>Validating...</div>'
+                    : '<div class="text-red-400"><svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg><p class="font-semibold">Cannot render invalid diagram</p><p class="text-sm text-gray-400 mt-2">Fix syntax errors to see preview</p></div>'
                 }
               </div>
             </div>
@@ -35,7 +36,7 @@ export default function PreviewPanel() {
         if (config) {
           mermaid.initialize(config);
         }
-        
+
         containerRef.current.innerHTML = '';
 
         const element = document.createElement('div');
@@ -45,7 +46,6 @@ export default function PreviewPanel() {
         // Render mermaid with fresh render
         await mermaid.run();
         mermaid.contentLoaded();
-        
       } catch (error) {
         console.error('Mermaid render error:', error);
         if (containerRef.current) {
@@ -93,9 +93,12 @@ export default function PreviewPanel() {
           )}
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-auto">
-        <div ref={containerRef} className="w-full h-full flex items-center justify-center min-h-full p-8" />
+        <div
+          ref={containerRef}
+          className="w-full h-full flex items-center justify-center min-h-full p-8"
+        />
       </div>
     </div>
   );

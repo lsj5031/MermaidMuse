@@ -1,6 +1,10 @@
 import { fixMermaidSyntaxWithXai } from '../server/xaiFix';
 import { getBearerToken, getClerkUserIdFromSessionToken } from '../server/clerkServer';
-import { addCreditsForPaidSession, ensureCreditsBalance, spendCredits } from '../server/creditsServer';
+import {
+  addCreditsForPaidSession,
+  ensureCreditsBalance,
+  spendCredits,
+} from '../server/creditsServer';
 import {
   asStripeCheckoutSession,
   asStripeEvent,
@@ -88,12 +92,18 @@ export default {
 
       const token = getBearerToken(req.headers.get('Authorization'));
       if (!token) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
       }
 
       const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
       if (!userId) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid session.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
       }
 
       const creditsBalance = await ensureCreditsBalance(userId, runtimeEnv);
@@ -118,18 +128,25 @@ export default {
 
       const token = getBearerToken(req.headers.get('Authorization'));
       if (!token) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
       }
 
       const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
       if (!userId) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid session.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
       }
 
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
 
-      const successUrl = payload && typeof payload.successUrl === 'string' ? payload.successUrl : null;
+      const successUrl =
+        payload && typeof payload.successUrl === 'string' ? payload.successUrl : null;
       const cancelUrl = payload && typeof payload.cancelUrl === 'string' ? payload.cancelUrl : null;
 
       if (!successUrl || !cancelUrl) {
@@ -155,7 +172,10 @@ export default {
       );
 
       if (!session) {
-        return json(500, { ok: false, error: { code: 'STRIPE_ERROR', message: 'Unable to create checkout session.' } });
+        return json(500, {
+          ok: false,
+          error: { code: 'STRIPE_ERROR', message: 'Unable to create checkout session.' },
+        });
       }
 
       return json(200, {
@@ -186,12 +206,18 @@ export default {
 
       const token = getBearerToken(req.headers.get('Authorization'));
       if (!token) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
       }
 
       const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
       if (!userId) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid session.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
       }
 
       const parsed = await parseBody(req);
@@ -207,18 +233,27 @@ export default {
 
       const session = await getStripeCheckoutSession(sessionId, runtimeEnv);
       if (!session) {
-        return json(404, { ok: false, error: { code: 'NOT_FOUND', message: 'Stripe session not found.' } });
+        return json(404, {
+          ok: false,
+          error: { code: 'NOT_FOUND', message: 'Stripe session not found.' },
+        });
       }
 
       const metadataUserId = session.metadata?.clerkUserId;
       const creditsRaw = session.metadata?.credits;
 
       if (!metadataUserId || metadataUserId !== userId) {
-        return json(403, { ok: false, error: { code: 'FORBIDDEN', message: 'Session does not belong to user.' } });
+        return json(403, {
+          ok: false,
+          error: { code: 'FORBIDDEN', message: 'Session does not belong to user.' },
+        });
       }
 
       if (session.payment_status !== 'paid') {
-        return json(400, { ok: false, error: { code: 'NOT_PAID', message: 'Checkout session is not paid.' } });
+        return json(400, {
+          ok: false,
+          error: { code: 'NOT_PAID', message: 'Checkout session is not paid.' },
+        });
       }
 
       const creditsToAdd = creditsRaw ? Number.parseInt(creditsRaw, 10) : 0;
@@ -261,7 +296,10 @@ export default {
       const isValid = await verifyStripeWebhookSignature(rawBody, signatureHeader, webhookSecret);
 
       if (!isValid) {
-        return json(400, { ok: false, error: { code: 'INVALID_SIGNATURE', message: 'Invalid signature.' } });
+        return json(400, {
+          ok: false,
+          error: { code: 'INVALID_SIGNATURE', message: 'Invalid signature.' },
+        });
       }
 
       let parsedEvent: unknown = null;
@@ -273,7 +311,10 @@ export default {
 
       const stripeEvent = asStripeEvent(parsedEvent);
       if (!stripeEvent) {
-        return json(400, { ok: false, error: { code: 'BAD_REQUEST', message: 'Invalid Stripe event.' } });
+        return json(400, {
+          ok: false,
+          error: { code: 'BAD_REQUEST', message: 'Invalid Stripe event.' },
+        });
       }
 
       if (stripeEvent.type !== 'checkout.session.completed') {
@@ -282,7 +323,10 @@ export default {
 
       const session = asStripeCheckoutSession(stripeEvent.data.object);
       if (!session) {
-        return json(400, { ok: false, error: { code: 'BAD_REQUEST', message: 'Invalid checkout session.' } });
+        return json(400, {
+          ok: false,
+          error: { code: 'BAD_REQUEST', message: 'Invalid checkout session.' },
+        });
       }
 
       const clerkUserId = session.metadata?.clerkUserId;
@@ -293,7 +337,12 @@ export default {
         return json(200, { ok: true, received: true, ignored: true });
       }
 
-      const result = await addCreditsForPaidSession(clerkUserId, session.id, creditsToAdd, runtimeEnv);
+      const result = await addCreditsForPaidSession(
+        clerkUserId,
+        session.id,
+        creditsToAdd,
+        runtimeEnv
+      );
       return json(200, {
         ok: true,
         received: true,
@@ -320,12 +369,18 @@ export default {
 
       const token = getBearerToken(req.headers.get('Authorization'));
       if (!token) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Sign in required.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Sign in required.' },
+        });
       }
 
       const userId = await getClerkUserIdFromSessionToken(token, runtimeEnv);
       if (!userId) {
-        return json(401, { ok: false, error: { code: 'UNAUTHORIZED', message: 'Invalid session.' } });
+        return json(401, {
+          ok: false,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
+        });
       }
 
       const parsed = await parseBody(req);
@@ -367,7 +422,9 @@ export default {
       });
 
       const shouldCharge = Boolean(result.ok && result.fixedText);
-      const creditsRemaining = shouldCharge ? await spendCredits(userId, 1, runtimeEnv) : creditsBefore;
+      const creditsRemaining = shouldCharge
+        ? await spendCredits(userId, 1, runtimeEnv)
+        : creditsBefore;
 
       return json(200, { ...result, creditsCharged: shouldCharge, creditsRemaining });
     }

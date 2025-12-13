@@ -63,6 +63,7 @@ OPENAPI_API_KEY=your_api_key_here
 OPENAPI_MODEL=gpt-4o
 OPENAPI_BASE_URL=https://api.openai.com/v1
 ```
+
 ## 📖 Available Scripts
 
 ### Development
@@ -249,6 +250,7 @@ Local notes:
 - Vite's dev server does **not** run serverless functions.
 - For local testing of the APIs, run the Cloudflare Worker with `npm run dev:workers`.
 - If you're running the UI separately with `npm run dev`, set `VITE_API_URL=http://localhost:8787`.
+
 ## 🚀 Deployment
 
 ### Cloudflare Pages (Recommended)
@@ -362,8 +364,6 @@ flowchart LR
     H --> I[Transfer NFT]
     I --> J[Complete Order]
 ```
-
-
 
 ## 🔗 Useful Resources
 
