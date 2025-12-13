@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
@@ -6,6 +6,7 @@ import OnboardingModal from '@components/OnboardingModal';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { ProProvider } from '@hooks/usePro';
 import { initializeDefaultThemes } from '@theme/defaultThemes';
+import { savePendingReferralCode } from '@hooks/useReferral';
 import './App.css';
 
 // Initialize themes on app startup
@@ -13,6 +14,14 @@ initializeDefaultThemes();
 
 function AppContent() {
   const [leftPaneWidth, setLeftPaneWidth] = useState(33.33); // percentage
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      savePendingReferralCode(refCode);
+    }
+  }, []);
 
   const handleResize = (e: React.MouseEvent) => {
     e.preventDefault();
