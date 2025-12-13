@@ -39,10 +39,12 @@ export function useAIAssistant(
   const [lastResponse, setLastResponse] = useState<AnalyzeDiagramResponse | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isAnalyzingRef = useRef(false);
 
   const analyze = useCallback(async (): Promise<AnalyzeDiagramResponse | null> => {
-    if (isAnalyzing || !diagramText.trim()) return null;
+    if (isAnalyzingRef.current || !diagramText.trim()) return null;
 
+    isAnalyzingRef.current = true;
     setIsAnalyzing(true);
     setError(null);
 
@@ -65,9 +67,10 @@ export function useAIAssistant(
       setError(err instanceof Error ? err.message : 'Unknown error');
       return null;
     } finally {
+      isAnalyzingRef.current = false;
       setIsAnalyzing(false);
     }
-  }, [diagramText, focusAreas, getToken, isAnalyzing]);
+  }, [diagramText, focusAreas, getToken]);
 
   const dismiss = useCallback((suggestionId: string) => {
     setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));

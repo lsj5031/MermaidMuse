@@ -118,9 +118,10 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
               <button
                 onClick={() => handleUndo(turn.id)}
                 className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                title="Restore diagram state and discard later refinement turns"
               >
                 <RotateCcw className="h-3 w-3" />
-                Undo to this point
+                Restore from here (discard later turns)
               </button>
             </div>
           )

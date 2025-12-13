@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
-import { AIAssistantPanel } from '@components/AIAssistant';
+import { AIAssistantPanel, RefinementChat } from '@components/AIAssistant';
 import OnboardingModal from '@components/OnboardingModal';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { ProProvider } from '@hooks/usePro';
 import { savePendingReferralCode } from '@hooks/useReferral';
+import { useCredits } from '@hooks/useCredits';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import { initializeDefaultThemes } from '@theme/defaultThemes';
-import { Bot } from 'lucide-react';
+import { Bot, MessageSquare } from 'lucide-react';
 import './App.css';
 
 // Initialize themes on app startup
@@ -17,6 +19,8 @@ initializeDefaultThemes();
 function AppContent() {
   const [leftPaneWidth, setLeftPaneWidth] = useState(33.33); // percentage
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isRefinementOpen, setIsRefinementOpen] = useState(false);
+  const { creditsBalance, isLoading: isCreditsLoading, createCheckoutSession } = useCredits();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -44,6 +48,16 @@ function AppContent() {
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+  };
+
+  const openAssistant = () => {
+    setIsRefinementOpen(false);
+    setIsAssistantOpen(true);
+  };
+
+  const openRefinement = () => {
+    setIsAssistantOpen(false);
+    setIsRefinementOpen(true);
   };
 
   return (
@@ -77,7 +91,7 @@ function AppContent() {
         {!isAssistantOpen && (
           <button
             type="button"
-            onClick={() => setIsAssistantOpen(true)}
+            onClick={openAssistant}
             className="absolute bottom-4 right-4 z-30 p-3 rounded-full shadow-lg bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
             title="Open AI Assistant"
           >
@@ -85,11 +99,53 @@ function AppContent() {
           </button>
         )}
 
-        {isAssistantOpen && (
-          <div className="absolute top-0 right-0 bottom-0 z-40">
-            <AIAssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+        {/* AI Refinement Button */}
+        {!isRefinementOpen && (
+          <div className="absolute bottom-4 right-20 z-30">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400"
+                  title="Sign in to refine diagrams with AI"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              {creditsBalance !== null && creditsBalance < 1 ? (
+                <button
+                  type="button"
+                  onClick={() => void createCheckoutSession()}
+                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400"
+                  title="Top up credits to refine diagrams"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openRefinement}
+                  disabled={isCreditsLoading || creditsBalance === null}
+                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400 disabled:opacity-50"
+                  title="Refine your diagram through conversation (1 credit per refinement)"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                </button>
+              )}
+            </SignedIn>
           </div>
         )}
+
+        <div className={`absolute top-0 right-0 bottom-0 z-40 ${isRefinementOpen ? '' : 'hidden'}`}>
+          <RefinementChat isOpen={isRefinementOpen} onClose={() => setIsRefinementOpen(false)} />
+        </div>
+
+        <div className={`absolute top-0 right-0 bottom-0 z-40 ${isAssistantOpen ? '' : 'hidden'}`}>
+          <AIAssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+        </div>
       </main>
 
       <OnboardingModal />
