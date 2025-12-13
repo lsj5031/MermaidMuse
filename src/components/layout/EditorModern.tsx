@@ -3,11 +3,12 @@ import { SignInButton, SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { useCredits } from '@hooks/useCredits';
 import { useReferral } from '@hooks/useReferral';
-import { CheckCircle2, AlertTriangle, Clock, Wand2, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, Wand2, Sparkles, MessageSquare } from 'lucide-react';
 import { fixDiagramSyntax } from '@utils/fixDiagramApi';
 import { generateDiagram } from '@utils/generateDiagramApi';
 import ReferralModal from '@components/ReferralModal';
 import GenerateModal from '@components/GenerateModal';
+import { RefinementChat } from '@components/AIAssistant/RefinementChat';
 
 const Editor: React.FC = () => {
   const { currentDiagram, updateDiagramContent } = useDiagramState();
@@ -22,6 +23,7 @@ const Editor: React.FC = () => {
   const [isFixing, setIsFixing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [showRefinementChat, setShowRefinementChat] = useState(false);
   const lineCount = currentDiagram.content.split('\n').length;
   const { validation, isValidating } = currentDiagram;
 
@@ -222,6 +224,46 @@ const Editor: React.FC = () => {
         </SignedIn>
       </div>
 
+      {/* AI Refinement Button */}
+      <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button
+              type="button"
+              className="w-full px-3 py-2 rounded text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 flex items-center justify-center gap-2"
+              title="Sign in to refine diagrams with AI"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Refine with AI</span>
+            </button>
+          </SignInButton>
+        </SignedOut>
+
+        <SignedIn>
+          {creditsBalance !== null && creditsBalance < 1 ? (
+            <button
+              type="button"
+              onClick={() => void createCheckoutSession()}
+              className="w-full px-3 py-2 rounded text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 flex items-center justify-center gap-2"
+              title="Top up credits to refine diagrams"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Top up to Refine (1 credit)</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowRefinementChat(true)}
+              disabled={isCreditsLoading || creditsBalance === null}
+              className="w-full px-3 py-2 rounded text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              title="Refine your diagram through conversation (costs 1 credit per refinement)"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Refine with AI (1 credit)</span>
+            </button>
+          )}
+        </SignedIn>
+      </div>
+
       {/* Editor Area */}
       <div className="flex-grow flex overflow-hidden relative font-mono text-sm">
         {/* Line Numbers */}
@@ -241,6 +283,12 @@ const Editor: React.FC = () => {
           spellCheck={false}
         />
       </div>
+
+      {/* AI Refinement Chat */}
+      <RefinementChat
+        isOpen={showRefinementChat}
+        onClose={() => setShowRefinementChat(false)}
+      />
     </aside>
     </>
   );

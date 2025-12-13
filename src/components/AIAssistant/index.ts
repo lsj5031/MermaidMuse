@@ -1,0 +1,1 @@
+export { RefinementChat } from './RefinementChat';
