@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
+import { AIAssistantPanel } from '@components/AIAssistant';
 import OnboardingModal from '@components/OnboardingModal';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { ProProvider } from '@hooks/usePro';
-import { initializeDefaultThemes } from '@theme/defaultThemes';
 import { savePendingReferralCode } from '@hooks/useReferral';
+import { initializeDefaultThemes } from '@theme/defaultThemes';
+import { Bot } from 'lucide-react';
 import './App.css';
 
 // Initialize themes on app startup
@@ -14,6 +16,7 @@ initializeDefaultThemes();
 
 function AppContent() {
   const [leftPaneWidth, setLeftPaneWidth] = useState(33.33); // percentage
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -69,6 +72,24 @@ function AppContent() {
         >
           <Preview />
         </div>
+
+        {/* AI Assistant Panel */}
+        {!isAssistantOpen && (
+          <button
+            type="button"
+            onClick={() => setIsAssistantOpen(true)}
+            className="absolute bottom-4 right-4 z-30 p-3 rounded-full shadow-lg bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
+            title="Open AI Assistant"
+          >
+            <Bot className="w-5 h-5" />
+          </button>
+        )}
+
+        {isAssistantOpen && (
+          <div className="absolute top-0 right-0 bottom-0 z-40">
+            <AIAssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+          </div>
+        )}
       </main>
 
       <OnboardingModal />
