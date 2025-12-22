@@ -1,6 +1,12 @@
-# AI Diagram Generation Implementation Summary
+# ARCHIVED: AI Diagram Generation Implementation Summary
 
-## Overview
+> **⚠️ ARCHIVED DOCUMENT**  
+> This document describes the implementation of AI Diagram Generation, which is now complete.  
+> For current AI features documentation, see [AI_FEATURES.md](./AI_FEATURES.md).
+
+---
+
+## Historical Overview
 
 Successfully implemented the AI diagram generation feature as specified in `SPEC_AI_DIAGRAM_GENERATION.md`. This feature allows users to generate Mermaid diagrams from natural language descriptions using AI.
 
@@ -9,6 +15,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
 ### 1. Backend Implementation
 
 #### `src/server/aiGenerate.ts` (New File)
+
 - **Purpose**: Server-side AI generation logic using OpenAPI-compatible providers
 - **Key Features**:
   - `generateMermaidDiagram()` function that calls OpenAPI chat completion endpoint
@@ -19,6 +26,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
   - 30-second timeout for generation requests
 
 #### `src/workers/index.ts` (Modified)
+
 - **Added**: `/api/generate` route handler
 - **Features**:
   - Authentication via Clerk session token
@@ -31,6 +39,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
 ### 2. Frontend Implementation
 
 #### `src/utils/generateDiagramApi.ts` (New File)
+
 - **Purpose**: Frontend API client for diagram generation
 - **Features**:
   - Type-safe API calls to `/api/generate` endpoint
@@ -40,6 +49,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
   - Returns structured response with credits information
 
 #### `src/components/GenerateModal.tsx` (New Component)
+
 - **Purpose**: Modal UI for diagram generation
 - **Features**:
   - Text area for natural language prompt
@@ -51,6 +61,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
   - User-friendly tips and instructions
 
 #### `src/components/layout/EditorModern.tsx` (Modified)
+
 - **Added**:
   - "Generate with AI" button in editor sidebar
   - Integration with GenerateModal component
@@ -65,6 +76,7 @@ Successfully implemented the AI diagram generation feature as specified in `SPEC
 ### 3. API Specification
 
 #### Request
+
 ```json
 POST /api/generate
 Authorization: Bearer <clerk-token>
@@ -78,6 +90,7 @@ Content-Type: application/json
 ```
 
 #### Response
+
 ```json
 {
   "ok": true,
@@ -159,6 +172,7 @@ Content-Type: application/json
 ## Environment Variables
 
 Uses existing environment variables:
+
 - `OPENAPI_API_KEY` - API key for AI provider
 - `OPENAPI_BASE_URL` - Base URL for AI provider (optional, defaults to OpenAI)
 - `OPENAPI_MODEL` - Model name (optional, defaults to gpt-4o)
@@ -167,6 +181,7 @@ Uses existing environment variables:
 ## Deployment
 
 No special deployment steps required. The feature is ready to deploy with the rest of the application:
+
 - Frontend changes compile to static assets
 - Worker route handles backend logic
 - Uses existing infrastructure (Cloudflare Workers + KV)

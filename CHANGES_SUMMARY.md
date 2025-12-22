@@ -1,8 +1,14 @@
-# Summary of Changes: OpenAPI Endpoints + Cloudflare Stack
+# ARCHIVED: Summary of Changes: OpenAPI Endpoints + Cloudflare Stack
 
-## Overview
+> **⚠️ ARCHIVED DOCUMENT**  
+> This document describes historical changes from the xAI → OpenAPI migration and Cloudflare deployment.  
+> For current documentation, see [DEPLOYMENT.md](./DEPLOYMENT.md) and [MIGRATION.md](./MIGRATION.md).
 
-This document summarizes changes made to migrate from xAI API to OpenAPI-compatible endpoints and to deploy on Cloudflare Pages + Workers.
+---
+
+## Historical Overview
+
+This document summarized changes made to migrate from xAI API to OpenAPI-compatible endpoints and to deploy on Cloudflare Pages + Workers.
 
 ---
 

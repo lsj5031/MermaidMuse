@@ -1,18 +1,21 @@
 # MermaidMuse
 
-A modern, minimalist diagram editor for creating beautiful Mermaid diagrams. Built with Vite, React, TypeScript, and Mermaid.
+A modern, AI-powered diagram editor for creating beautiful Mermaid diagrams. Built with Vite, React, TypeScript, and Mermaid.
 
 ## 🎯 Project Status
 
-**Frontend-only MVP**: Currently deploying the frontend to Cloudflare Pages. No backend required for basic functionality.
+**AI-First Architecture**: Production-ready with AI diagram generation, fixing, and analysis features. Deployed on Cloudflare Pages + Workers.
 
 ## 🚀 Features
 
+- **AI-Powered**: Generate diagrams from natural language, fix syntax errors, and get intelligent suggestions
 - **Fast & Responsive**: Vite for instant HMR and lightning-fast builds
-- **Mermaid Diagrams**: Create flowcharts, sequence diagrams, and other visualizations
+- **Mermaid Diagrams**: Create flowcharts, sequence diagrams, and all 15 supported diagram types
 - **Monaco Editor**: Professional code editor with syntax highlighting
 - **Interactive Preview**: Real-time diagram rendering with zoom (up to 800%), pan, and double-click zoom
 - **Export Options**: PNG and JSON export formats
+- **Credits System**: 10 free credits, then affordable top-ups for AI features
+- **Theme System**: Multiple built-in themes with pluggable custom themes
 - **Tailwind CSS**: Modern, clean styling
 - **Type Safe**: Full TypeScript support with strict type checking
 - **Code Quality**: ESLint and Prettier configured
@@ -46,129 +49,98 @@ cp .env.example .env.local
 4. Update `.env.local` with your configuration:
 
 ```env
-# Client-side (exposed to the browser)
-# For local dev: run Wrangler (`npm run dev:workers`) and point the UI at it:
-VITE_API_URL=http://localhost:8787
-VITE_CLERK_PUBLISHABLE_KEY=pk_...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-VITE_MOCK_PRO=false
-
-# Server-side (credits + billing)
-CLERK_SECRET_KEY=sk_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...   # optional but recommended
-
-# Server-side (AI provider for /api/fix)
+# AI Provider (choose one: Groq recommended for free usage)
 OPENAPI_API_KEY=your_api_key_here
 OPENAPI_MODEL=gpt-4o
 OPENAPI_BASE_URL=https://api.openai.com/v1
+
+# Authentication (required for credits)
+CLERK_SECRET_KEY=sk_...
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
+
+# Payments (optional, for credit top-ups)
+STRIPE_SECRET_KEY=sk_test_...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+For detailed setup instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## 📖 Available Scripts
 
 ### Development
 
 ```bash
-npm run dev
+npm run dev              # Start dev server at :5173
+npm run dev:workers     # Start Workers dev server at :8787
 ```
 
-Starts the development server at `http://localhost:5173`
-
-### Development with Cloudflare Workers
+### Build & Deploy
 
 ```bash
-npm run dev:workers
+npm run build           # Production build to dist/
+npm run build:workers   # Dry-run Workers deployment
+npm run deploy:workers  # Deploy Workers to Cloudflare
+npm run preview         # Serve production build locally
 ```
 
-Starts the Cloudflare Workers development environment for testing serverless functions locally.
-
-### Build
+### Code Quality
 
 ```bash
-npm run build
+npm run lint            # Check for issues
+npm run lint:fix       # Auto-fix issues
+npm run format          # Format all files
+npm run type-check      # Check TypeScript types
 ```
 
-Creates an optimized production build in `dist/`
-
-### Build for Cloudflare Workers
-
-```bash
-npm run build:workers
-```
-
-Creates a dry-run deployment package for Cloudflare Workers.
-
-### Deploy to Cloudflare
-
-```bash
-npm run deploy:workers
-```
-
-Deploys the serverless functions to Cloudflare Workers.
-
-### Preview
-
-```bash
-npm run preview
-```
-
-Serves the production build locally for testing
-
-### Linting & Formatting
-
-```bash
-npm run lint              # Check for issues
-npm run lint:fix         # Auto-fix issues
-npm run format           # Format all files
-npm run format:check     # Check if formatting is needed
-npm run type-check       # Check TypeScript types
-```
-
-### Tests
+### Testing
 
 ```bash
 npm run test            # Run tests
 npm run test:watch      # Watch mode
 ```
 
+For detailed development guide, see [DEVELOPMENT.md](./DEVELOPMENT.md).
+
 ## 🎨 Project Structure
 
 ```
 src/
 ├── components/
-│   ├── layout/
-│   │   ├── HeaderModern.tsx      # Top navigation bar
-│   │   ├── EditorModern.tsx      # Code editor panel
-│   │   ├── PreviewModern.tsx     # Diagram preview with zoom/pan
-│   │   └── MainContent.tsx       # Main layout container
-│   ├── ProUpsell/                # Pro feature teasers
+│   ├── AIAssistant/           # AI features (generate, analyze, refine)
+│   ├── layout/               # Layout components (header, editor, preview)
+│   ├── editor/               # Monaco editor panel
+│   ├── preview/              # Mermaid diagram rendering
 │   └── ...
-├── hooks/
-│   └── useDiagramState.tsx       # Global diagram state management
-├── theme/
-│   ├── colors.ts                 # Color palette
-│   └── constants.ts              # App constants
-├── utils/
-│   ├── exportHelpers.ts          # Export functions (PNG, JSON)
-│   ├── environmentHelpers.ts     # Environment configuration
-│   └── validationHelpers.ts      # Input validation
-├── App.tsx                        # Root component
-├── main.tsx                       # Entry point
-└── index.css                      # Global styles
+├── hooks/                   # Custom React hooks
+├── theme/                   # Theme system and color palettes
+├── utils/                   # Helper functions and API clients
+├── server/                  # Server-side AI logic
+├── workers/                 # Cloudflare Workers entrypoint
+├── App.tsx                  # Root component
+├── main.tsx                 # Entry point
+└── index.css                # Global styles
 ```
 
-## 🌈 Cyberpunk Theme
+## 🎨 Theme System
 
-The application includes a custom cyberpunk-inspired color scheme:
+MermaidMuse includes a pluggable theme system with multiple built-in themes:
 
-- **Primary Colors**: Neon pink (#ff006e), cyan (#00f5ff), purple (#b537f2)
-- **Accent Colors**: Green (#39ff14), yellow (#fffd38), blue (#0080ff)
-- **Dark Theme**: Dark backgrounds with light text for eye comfort
+- **Light**: Clean, high-contrast for presentations
+- **Dark**: Dark theme for reduced eye strain
+- **Cyber**: Cyberpunk aesthetic with neon colors
+- **Custom**: Register your own themes via API
 
-Customize colors in:
+See [THEME_SYSTEM.md](./THEME_SYSTEM.md) for complete theming documentation.
 
-- `src/theme/colors.ts` - Color definitions
-- `tailwind.config.js` - Tailwind theme configuration
+## 🤖 AI Features
+
+- **AI Generate**: Create diagrams from natural language (2 credits)
+- **AI Fix**: Automatically fix syntax errors (1 credit)
+- **AI Assistant**: Real-time analysis and suggestions (1 credit)
+- **AI Refinement**: Iterative diagram improvements (1 credit)
+
+See [AI_FEATURES.md](./AI_FEATURES.md) for complete AI documentation.
 
 ## 📦 Key Dependencies
 
@@ -178,105 +150,56 @@ Customize colors in:
 - **TypeScript**: Type safety
 - **Vite**: Build tool and dev server
 
+### AI & API
+
+- **OpenAPI-compatible**: Support for OpenAI, Groq, LocalAI, Ollama
+- **Clerk**: User authentication and credits management
+- **Stripe**: Payment processing for credit top-ups
+
 ### Editors & Visualization
 
-- **Mermaid**: Diagram rendering
-- **@monaco-editor/react**: Code editor
-- **Three.js**: 3D graphics support
-- **html2canvas**: Screenshot/export functionality
+- **Mermaid**: Diagram rendering (15 diagram types)
+- **@monaco-editor/react**: Professional code editor
+- **html2canvas**: PNG export functionality
 
 ### Styling
 
 - **Tailwind CSS**: Utility-first CSS framework
 - **PostCSS**: CSS processing
 
-### Payments / Credits
-
-- **Stripe Checkout**: credit top-ups (100 credits per purchase)
-- **Credits model**:
-  - New users get **10 free credits**
-  - **AI Fix costs 1 credit** (only charged when the AI returns a `fixedText`)
-
-See **`STRIPE_SETUP.md`** for the full setup guide.
-
 ### Development
 
 - **ESLint**: Code linting
 - **Prettier**: Code formatting
+- **Vitest**: Testing framework
 
 ## 🔐 Environment Variables
 
 Create a `.env.local` file (use `.env.example` as template):
 
 ```env
-# Client-side (exposed to the browser)
-# For local dev, run Wrangler (`npm run dev:workers`) and point the UI at it:
-VITE_API_URL=http://localhost:8787
-VITE_CLERK_PUBLISHABLE_KEY=pk_...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-VITE_MOCK_PRO=false
-
-# Server-side (credits + billing)
-CLERK_SECRET_KEY=sk_...
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...   # optional but recommended
-
-# Server-side (AI provider for /api/fix)
+# AI Provider (choose one: Groq recommended for free usage)
 OPENAPI_API_KEY=your_api_key_here
 OPENAPI_MODEL=gpt-4o
 OPENAPI_BASE_URL=https://api.openai.com/v1
+
+# Authentication (required for credits)
+CLERK_SECRET_KEY=sk_...
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
+
+# Payments (optional, for credit top-ups)
+STRIPE_SECRET_KEY=sk_test_...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 Only variables prefixed with `VITE_` are exposed to the client. All other variables are used by the Cloudflare Worker.
 
-## 🔌 Serverless API (`/api/fix`)
-
-The API endpoint uses OpenAPI-compatible endpoints (e.g., OpenAI, Groq, or any compatible service).
-
-- **POST** `/api/fix`
-- **Body**: `{ "diagramText": "..." }`
-- **Response**: `{ ok, fixedText, suggestions, error? }`
-
-Example:
-
-```bash
-curl -s http://localhost:8888/api/fix \
-  -H 'Content-Type: application/json' \
-  -d '{"diagramText":"graph TD\nA -->"}' | jq
-```
-
-Local notes:
-
-- Vite's dev server does **not** run serverless functions.
-- For local testing of the APIs, run the Cloudflare Worker with `npm run dev:workers`.
-- If you're running the UI separately with `npm run dev`, set `VITE_API_URL=http://localhost:8787`.
-
 ## 🚀 Deployment
 
-### Cloudflare Pages (Recommended)
+### Quick Start
 
-The project includes a GitHub Actions workflow for automatic deployment to Cloudflare Pages.
-
-**Setup:**
-
-1. Connect your GitHub repository to Cloudflare Pages
-2. Configure build settings:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-3. Add GitHub secrets:
-   - `CLOUDFLARE_API_TOKEN` - [Generate here](https://dash.cloudflare.com/profile/api-tokens)
-   - `CLOUDFLARE_ACCOUNT_ID` - Find in Cloudflare Dashboard
-4. Every push to `main` automatically deploys
-
-See `.github/workflows/deploy.yml` for workflow configuration.
-
-### Manual Deployment
-
-```bash
-npm run build
-```
-
-The `dist/` directory is ready to be deployed to any static hosting provider.
+For a complete 10-minute deployment guide, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### Cloudflare Pages + Workers (Recommended)
 
@@ -284,71 +207,65 @@ The `dist/` directory is ready to be deployed to any static hosting provider.
 npm run deploy:workers
 ```
 
-This repo includes `wrangler.toml` for Cloudflare Workers configuration:
-
-1. **Prerequisites**: Create a Cloudflare account and install Wrangler CLI
-2. **Setup**: Configure your `account_id` and other settings in `wrangler.toml`
-3. **Deploy**: Run `npm run deploy:workers`
-4. **Environment Variables**: Set `OPENAPI_API_KEY`, `OPENAPI_MODEL`, `OPENAPI_BASE_URL` in Cloudflare dashboard
-
 **Advantages**:
 
-- Unified deployment (Pages for frontend, Workers for serverless functions)
+- Unified deployment (Pages for frontend, Workers for API)
 - Global edge network for low latency
+- Free tier: 100,000 requests/day
 - Simple environment variable management
-- Free tier available
-
-(This repo focuses on Cloudflare Pages + Workers and does not include other platform-specific deployment configs.)
-
-### Custom domain steps (high level)
-
-1. Deploy once on your platform.
-2. In the platform dashboard, add your domain (e.g. `app.example.com`).
-3. Update DNS:
-   - **Subdomain**: CNAME to the platform-provided hostname
-   - **Apex/root**: use A/ALIAS/ANAME records as instructed by the platform
-4. Wait for DNS + TLS to provision, then set the domain as the primary.
 
 ### Environment Variables in Production
 
-Set these in your deployment platform's environment variable settings:
+Set these in your deployment platform:
 
-**Client-side (exposed to browser)**:
+**Required for AI Features**:
 
-- `VITE_API_URL` (optional)
-- `VITE_CLERK_PUBLISHABLE_KEY` (required for auth)
-- `VITE_STRIPE_PUBLISHABLE_KEY` (required to show the billing UI)
+```env
+OPENAPI_API_KEY=your-api-key
+OPENAPI_MODEL=gpt-4o
+OPENAPI_BASE_URL=https://api.openai.com/v1
+```
 
-**Server-side (for serverless functions)**:
+**Required for Authentication**:
 
-- `CLERK_SECRET_KEY` (required for credits)
-- `STRIPE_SECRET_KEY` (required for Stripe Checkout)
-- `STRIPE_WEBHOOK_SECRET` (recommended for webhook fulfillment)
+```env
+CLERK_SECRET_KEY=sk_...
+VITE_CLERK_PUBLISHABLE_KEY=pk_...
+```
 
-- `OPENAPI_API_KEY` (required for `/api/fix`)
-- `OPENAPI_MODEL` (optional, defaults to `gpt-4o`)
-- `OPENAPI_BASE_URL` (optional, defaults to `https://api.openai.com/v1`)
+**Optional for Payments**:
 
-**Legacy Support** (still works but not recommended):
+```env
+STRIPE_SECRET_KEY=sk_test_...
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
-- `XAI_API_KEY` (falls back if `OPENAPI_API_KEY` not set)
-- `XAI_MODEL` (falls back if `OPENAPI_MODEL` not set)
-- `XAI_BASE_URL` (falls back if `OPENAPI_BASE_URL` not set)
+### AI Provider Options
+
+| Provider | Cost     | Speed          | Setup |
+| -------- | -------- | -------------- | ----- |
+| **Groq** | **Free** | ⚡⚡⚡ Fastest | Easy  |
+| OpenAI   | $$$      | ⚡⚡ Fast      | Easy  |
+| LocalAI  | Free     | ⚡ Medium      | Hard  |
+| Ollama   | Free     | ⚡ Slow        | Easy  |
+
+For provider setup details, see [OPENAPI_PROVIDERS.md](./OPENAPI_PROVIDERS.md).
 
 ## 💡 Usage Examples
 
-### Creating a Diagram
+### Creating a Diagram with AI
 
 1. Start dev server: `npm run dev`
-2. Edit Mermaid syntax in the left editor panel
-3. See real-time preview in the right panel
+2. Click "Generate with AI" in the editor
+3. Describe your diagram: "User signup flow with email verification"
+4. AI generates complete Mermaid code automatically
 
-### Preview Controls
+### Manual Diagram Creation
 
-- **Zoom In/Out**: Click buttons or scroll wheel
-- **Double-click**: Zoom in by 50%
-- **Drag**: Pan around the diagram
-- **Reset**: Click reset button to return to 100% zoom
+1. Edit Mermaid syntax in the left editor panel
+2. See real-time preview in the right panel
+3. Use "Fix with AI" to correct syntax errors
 
 ### Sample Diagram
 
@@ -367,6 +284,17 @@ flowchart LR
 
 ## 🔗 Useful Resources
 
+### Documentation
+
+- [AI Features Overview](./AI_FEATURES.md) - Complete AI feature documentation
+- [Deployment Guide](./DEPLOYMENT.md) - Step-by-step deployment instructions
+- [Migration Guide](./MIGRATION.md) - API provider and architecture migration
+- [Development Guide](./DEVELOPMENT.md) - Local development setup
+- [Theme System](./THEME_SYSTEM.md) - Custom theme creation
+- [AI Providers](./OPENAPI_PROVIDERS.md) - Provider comparison and setup
+
+### External Resources
+
 - [Mermaid Documentation](https://mermaid.js.org)
 - [Vite Documentation](https://vitejs.dev)
 - [React Documentation](https://react.dev)
@@ -375,39 +303,22 @@ flowchart LR
 
 ## 🐛 Troubleshooting
 
-### Port Already in Use
+### Common Issues
 
-Vite automatically uses the next available port if 5173 is in use.
+**Port Already in Use**: Vite automatically uses the next available port.
 
-### Mermaid Not Rendering
+**Mermaid Not Rendering**: Check syntax validity and clear browser cache.
 
-- Check diagram syntax is valid
-- Clear browser cache (`Ctrl+Shift+Delete`)
-- Check browser console for errors
+**AI Features Not Working**: Verify API keys and credits balance.
 
-### TypeScript Errors
-
-```bash
-npm run type-check
-```
+**TypeScript Errors**: Run `npm run type-check` for detailed errors.
 
 ## 🤝 Contributing
 
 1. Create a feature branch
 2. Make changes and test locally
-3. Run linting: `npm run lint && npm run type-check`
-4. Format code: `npm run format`
-5. Submit a pull request
-
-## 🎯 Planned Features
-
-- [ ] Backend API integration (when ready)
-- [ ] User authentication
-- [ ] Diagram persistence/library
-- [ ] Diagram sharing
-- [ ] Collaboration features
-- [ ] Custom theme support
-- [ ] AI-powered diagram suggestions
+3. Run quality checks: `npm run lint && npm run type-check && npm run format`
+4. Submit a pull request
 
 ## 📄 License
 
@@ -415,4 +326,4 @@ MIT License
 
 ---
 
-**Happy diagramming! 🎨**
+**Happy AI-powered diagramming! 🎨✨**

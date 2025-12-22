@@ -1,211 +1,198 @@
-# MermaidMuse - Bug & Feature Tracker
+# MermaidMuse - Project Status & Roadmap
 
-**Last Updated:** December 12, 2025
+**Last Updated:** December 14, 2025
 
-## Completed Work (Phase 1) ✅
+## ✅ Completed Features
 
-All critical issues and primary feature requests have been resolved. Current implementation includes:
+### Core Functionality
 
-- ✅ Share dialog UX fixed (mobile native share + desktop clipboard)
-- ✅ QR code generation issue resolved
-- ✅ Multiple themes system (Avocado, Kanagawa, Dracula, Solarized)
-- ✅ Configurable diagram titles with download filename support
-- ✅ Mermaid upgraded to 11.12.2 (full diagram type support)
-- ✅ Theme persistence via localStorage
-- ✅ Theme picker UI in header
+- ✅ **AI Diagram Generation** - Create diagrams from natural language (2 credits)
+- ✅ **AI Syntax Fixing** - Automatically fix Mermaid syntax errors (1 credit)
+- ✅ **Multiple Themes System** - Light, Dark, Cyber themes with pluggable registry
+- ✅ **Mermaid 11.12.2** - Full support for all 15 diagram types
+- ✅ **Credits System** - 10 free credits, Stripe integration for top-ups
+- ✅ **Export Options** - PNG and JSON export with custom filenames
+- ✅ **Share Dialog** - Mobile native share + desktop clipboard
+- ✅ **Theme Persistence** - User preferences saved to localStorage
+- ✅ **OpenAPI Integration** - Support for OpenAI, Groq, LocalAI, Ollama
 
----
+### Architecture & Infrastructure
 
-## Critical Issues (ARCHIVED)
+- ✅ **Cloudflare Pages + Workers** - Production deployment stack
+- ✅ **Clerk Authentication** - User management and credits
+- ✅ **TypeScript Strict Mode** - Full type safety
+- ✅ **ESLint + Prettier** - Code quality tools
+- ✅ **Vite Build System** - Fast development and production builds
 
-### 1. Share Dialog - Blocking User Interaction
+### UI/UX Improvements
 
-**Status:** COMPLETED  
-**Severity:** High  
-**Description:**
-
-- Share dialog cannot be dismissed by clicking outside the dialog
-- ESC key does not close the dialog
-- Dialog blocks switching to other browser tabs
-- User is trapped in the modal when opened
-
-**Solution Implemented:**
-
-- ✅ Detect mobile vs desktop platform using user agent
-- ✅ On mobile: use native navigator.share() API (system handles dialog behavior)
-- ✅ On desktop: bypass system share dialog entirely, copy link directly to clipboard
-- ✅ No modal blocking interaction, no need for ESC/backdrop dismiss
-- ✅ Updated both Header.tsx and HeaderModern.tsx with same logic
-
-**Files Modified:**
-
-- src/components/layout/HeaderModern.tsx
-- src/components/layout/Header.tsx
+- ✅ **Monaco Editor** - Professional code editing experience
+- ✅ **Interactive Preview** - Zoom, pan, double-click controls
+- ✅ **Responsive Design** - Mobile and desktop optimized
+- ✅ **Loading States** - Proper feedback during AI operations
+- ✅ **Error Handling** - Graceful error states and recovery
 
 ---
 
-### 2. QR Code Generation Fails
+## 🚧 In Progress
 
-**Status:** COMPLETED  
-**Severity:** High  
-**Description:**
+### Documentation Consolidation
 
-- QR code generation fails with error: "Unable to generate QR code. Use a link with 400 characters or less"
-- Share link is too long (exceeds 400 character limit)
-- Affects QR scanning functionality in Share feature
-
-**Solution Implemented:**
-
-- ✅ Removed QR code requirement for desktop users entirely
-- ✅ Desktop: simply copy link to clipboard (no character limit issue)
-- ✅ Mobile: native share sheet handles QR scanning if needed
-- ✅ No URL shortening required anymore
-- ✅ Simpler UX, no external service dependencies
-
-**Files Modified:**
-
-- src/components/layout/HeaderModern.tsx
-- src/components/layout/Header.tsx
+- 🔄 **Consolidating Documentation** - Merging redundant docs into comprehensive guides
+  - ✅ DEPLOYMENT.md (merged QUICK_START + CLOUDFLARE_DEPLOYMENT)
+  - ✅ MIGRATION.md (merged MIGRATION_GUIDE + MIGRATION_PHASE_2)
+  - ✅ AI_FEATURES.md (consolidated all AI specs and status)
+  - ✅ README.md (updated to reference consolidated docs)
+  - 🔄 Update DEVELOPMENT.md with current project structure
 
 ---
 
-## Feature Requests / Enhancements
+## 📋 Planned Features (Phase 3)
 
-### 3. Multiple Themes Support
+### AI Assistant Panel
 
-**Status:** COMPLETED  
-**Severity:** Medium  
-**Description:**
+**Status:** Specified, ready for implementation
 
-- Currently only 1 theme available
-- Website interface looks identical to Mermaid Live Editor
-- Need visual differentiation and theme variety
+- **Real-time Analysis**: Debounced diagram analysis as user types
+- **Categorized Suggestions**: Improvements, warnings, patterns, tips
+- **Complexity Assessment**: Node count, depth, readability metrics
+- **Actionable Advice**: Specific suggestions with examples and fixes
+- **Credits Integration**: 1 credit per analysis
 
-**Solution Implemented:**
+### AI Refinement Mode
 
-- ✅ Renamed default light theme to "Avocado" (original theme)
-- ✅ Added Kanagawa theme (dark, warm, Japanese-inspired)
-- ✅ Added Dracula theme (dark, vibrant, popular)
-- ✅ Added Solarized theme (dark, scientifically designed, readable)
-- ✅ All 4 themes apply only to diagram rendering (as requested)
-- ✅ Themes persist in localStorage via existing system
-- ✅ Theme switching available through useDiagramState hook
-- ✅ Added theme picker dropdown in header (Palette icon, shows theme list)
-- ✅ Current theme displayed on button, selected theme highlighted in menu
+**Status:** Specified, ready for implementation
 
-**Files Modified:**
+- **Multi-turn Conversations**: Context-aware iterative improvements
+- **Quick Actions**: Pre-defined refinement buttons (Add detail, Simplify, etc.)
+- **Preview Before Apply**: See changes before committing
+- **Conversation History**: Track and revert to any previous state
+- **Credits Integration**: 1 credit per refinement
 
-- src/theme/defaultThemes.ts
-- src/components/layout/HeaderModern.tsx
+### Advanced Features
 
----
-
-### 4. Diagram Title / Download Filename
-
-**Status:** COMPLETED  
-**Severity:** Medium  
-**Description:**
-
-- Downloaded files are named "Untitled Diagram.png"
-- Cannot find where to edit/set the diagram title
-- Title should be user-configurable and reflect in downloaded filename
-
-**Implementation:**
-
-- ✅ Added title input field in HeaderModern toolbar (center position)
-- ✅ Title is stored in state via `updateDiagramTitle` hook
-- ✅ Title automatically used in PNG/SVG downloads via existing `currentDiagram.title`
-- ✅ Default value: "Untitled Diagram"
-- ✅ Title persisted in localStorage (already implemented)
-- ✅ Works in both Header.tsx (edit inline) and HeaderModern.tsx (direct input)
+- **Template Library**: Pre-built prompts for common diagram types
+- **Voice Input**: Natural language diagram creation via speech
+- **Collaborative Editing**: Real-time multi-user diagram editing
+- **Diagram History**: Version control and branching for diagrams
+- **Custom Theme Editor**: Visual theme creation and customization
 
 ---
 
-### 5. Copy/Paste Format Support (Kanban & Block Diagrams)
+## 🔧 Technical Improvements
 
-**Status:** COMPLETED  
-**Severity:** Medium  
-**Description:**
+### Performance Optimizations
 
-- User reported paste error when attempting to paste Kanban diagram
-- Kanban and Block diagrams were not supported in Mermaid 10.6.1
-- This prevented paste operations for these diagram types
+- **Response Caching**: Intelligent caching for AI responses
+- **Bundle Optimization**: Further reduce bundle size
+- **Lazy Loading**: Code splitting for better initial load
+- **Service Worker**: Offline functionality and caching
 
-**Root Cause:**
+### User Experience
 
-- Mermaid 10.6.1 (Oct 2023) did not include Kanban or Block diagram support
-- Kanban support was added in Mermaid 11.4.0 (June 2024)
+- **Keyboard Shortcuts**: Comprehensive keyboard navigation
+- **Undo/Redo System**: Visual history panel
+- **Drag & Drop**: Import diagrams via file drag
+- **Accessibility**: WCAG compliance improvements
 
-**Solution Implemented:**
+### Developer Experience
 
-- ✅ Upgraded mermaid from ^10.6.1 to ^11.12.2
-- ✅ All 15 diagram types now supported (was 13/15 in 10.6.1):
-  - Flowchart, Sequence, Class, State, ER, Gantt, Pie, Mindmap, Timeline
-  - **Kanban** (NEW), **Block** (NEW), Sankey, C4, Git, User Journey
-- ✅ Build succeeds with no breaking changes
-- ✅ Verified in dev server - all diagrams parse correctly
-- ✅ No code changes needed - drop-in dependency update
-
-**Files Modified:**
-
-- package.json (mermaid version bump)
+- **Component Library**: Reusable UI components
+- **Test Coverage**: Comprehensive unit and integration tests
+- **Documentation**: API docs and component storybook
+- **CI/CD Pipeline**: Automated testing and deployment
 
 ---
 
-### 6. Mouse Button Support for Shape Movement
+## 🐛 Known Issues
 
-**Status:** TODO  
-**Severity:** Low  
-**Description:**
+### Low Priority
 
-- Only left mouse button can move/drag shapes
-- Middle mouse button does NOT work for dragging
-- Right mouse button does NOT work for dragging
+- **Mouse Button Support**: Only left-click works for shape dragging
+- **Emoji Support**: Mermaid emoji rendering not fully integrated
+- **Handwriting Style**: Sketch-style visual theme not implemented
 
-**Expected Behavior (Industry Standard):**
+### Workarounds
 
-- Left click: drag shapes
-- Middle click: pan/scroll canvas
-- Right click: context menu
-- Follow excalidraw/Figma conventions
+- Use keyboard shortcuts for navigation
+- Copy/paste emoji from external sources if needed
+- Use existing themes for different visual styles
 
 ---
 
-### 7. Missing Features: Emoji & Handwriting Style Support
+## 📊 Project Status
 
-**Status:** TODO  
-**Severity:** Low  
-**Description:**
+### Architecture
 
-- Official Mermaid supports emoji characters in diagrams
-- Official Mermaid supports handwriting style (similar to excalidraw)
-- These features are not available in MermaidMuse
+- ✅ **Frontend**: React 18 + TypeScript + Vite
+- ✅ **Backend**: Cloudflare Workers (serverless)
+- ✅ **AI**: OpenAPI-compatible providers (OpenAI, Groq, etc.)
+- ✅ **Auth**: Clerk authentication + credits system
+- ✅ **Payments**: Stripe integration for credit top-ups
+- ✅ **Deployment**: Cloudflare Pages + Workers
 
-**Expected:**
+### Feature Completeness
 
-- Add emoji support in diagram text
-- Add handwriting/sketch style option for shapes and connectors
-- Enable visual parity with official Mermaid Live Editor
+- ✅ **Core Editor**: Full-featured Mermaid editor
+- ✅ **AI Generation**: Natural language to diagram
+- ✅ **AI Fixing**: Syntax error correction
+- 🔄 **AI Assistant**: Analysis and suggestions (planned)
+- 🔄 **AI Refinement**: Iterative improvements (planned)
+- ✅ **Export**: PNG, JSON with custom filenames
+- ✅ **Themes**: Multiple built-in + custom theme support
+
+### Code Quality
+
+- ✅ **TypeScript**: Strict mode enabled
+- ✅ **Linting**: ESLint with zero warnings policy
+- ✅ **Formatting**: Prettier with consistent style
+- ✅ **Testing**: Vitest framework configured
+- 🔄 **Coverage**: Comprehensive test coverage (in progress)
 
 ---
 
-## Next Phase (Phase 2 - Enhancements)
+## 🎯 Success Metrics
 
-Lower-priority features and polish improvements:
+### User Engagement
 
-1. **Mouse Button Support** - Middle/right mouse button handling for navigation
-2. **Emoji Support** - Add emoji character support in diagrams
-3. **Handwriting Style** - Add sketch/handwriting visual style option
-4. **Additional Themes** - Expand theme library (Nord, Gruvbox, etc.)
-5. **Diagram Export Formats** - Additional export options (SVG optimization, PDF, etc.)
-6. **Undo/Redo UI** - Visual undo/redo history panel
-7. **Keyboard Shortcuts Panel** - In-app keyboard shortcuts reference
+- **AI Feature Usage**: Track generation, fixing, analysis usage
+- **User Retention**: Monitor return user rates
+- **Credit Consumption**: Analyze feature popularity
+- **Error Rates**: Monitor AI failure rates
+
+### Technical Performance
+
+- **Load Time**: < 3 seconds initial load
+- **AI Response**: < 5 seconds for generation
+- **Build Size**: < 1MB gzipped bundle
+- **Uptime**: > 99.5% availability
 
 ---
 
-## Development Notes
+## 📚 Documentation Structure
 
-- MermaidMuse now has feature parity with official Mermaid Live Editor for core functionality
-- All 15 diagram types fully supported (Mermaid 11.12.2)
-- Theme system is extensible and easy to add new themes
-- Mobile and desktop experiences are optimized separately
+### Consolidated Guides
+
+- ✅ [README.md](./README.md) - Project overview and quick start
+- ✅ [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment guide
+- ✅ [MIGRATION.md](./MIGRATION.md) - Migration instructions
+- ✅ [AI_FEATURES.md](./AI_FEATURES.md) - AI features overview
+- ✅ [OPENAPI_PROVIDERS.md](./OPENAPI_PROVIDERS.md) - AI provider setup
+- ✅ [STRIPE_SETUP.md](./STRIPE_SETUP.md) - Payment integration
+- ✅ [THEME_SYSTEM.md](./THEME_SYSTEM.md) - Theme customization
+
+### Development Docs
+
+- 🔄 [DEVELOPMENT.md](./DEVELOPMENT.md) - Local development setup
+- ✅ [AGENTS.md](./AGENTS.md) - Build commands and architecture
+
+### Archived
+
+- 📁 [IMPLEMENTATION_AI_GENERATION.md](./IMPLEMENTATION_AI_GENERATION.md) - Implementation summary (archived)
+- 📁 [SPEC*AI*\*.md](./SPEC_AI_*.md) - Individual specs (consolidated into AI_FEATURES.md)
+- 📁 [CHANGES_SUMMARY.md](./CHANGES_SUMMARY.md) - Historical changes (archived)
+
+---
+
+**Last Updated:** December 14, 2025  
+**Next Review:** January 15, 2026
