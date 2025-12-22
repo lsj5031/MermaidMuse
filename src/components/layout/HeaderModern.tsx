@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Share2, RotateCcw, Palette } from 'lucide-react';
+import { Download, Share2, RotateCcw, Palette, Undo, Redo } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
@@ -8,8 +8,18 @@ import CreditsWidget from '@components/Credits/CreditsWidget';
 import html2canvas from 'html2canvas';
 
 const Header: React.FC = () => {
-  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
-    useDiagramState();
+  const {
+    currentDiagram,
+    canExport,
+    resetDiagram,
+    updateDiagramTitle,
+    theme,
+    setTheme,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
   const [showThemeMenu, setShowThemeMenu] = React.useState(false);
 
@@ -206,6 +216,22 @@ const Header: React.FC = () => {
               </div>
             )}
           </div>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            className={actionButtonClass(canUndo)}
+            title="Undo"
+          >
+            <Undo className="w-4 h-4" />
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            className={actionButtonClass(canRedo)}
+            title="Redo"
+          >
+            <Redo className="w-4 h-4" />
+          </button>
           <button
             onClick={handleExportSvg}
             disabled={!canExport}

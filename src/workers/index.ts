@@ -19,6 +19,7 @@ import {
   getStripeWebhookSecret,
   verifyStripeWebhookSignature,
 } from '../server/stripeServer';
+import { checkRateLimit } from '../server/rateLimit';
 import { type RuntimeEnv } from '../server/runtimeEnv';
 
 type CloudflareEnv = {
@@ -35,7 +36,7 @@ const asRecord = (value: unknown): Record<string, unknown> | null => {
   return value as Record<string, unknown>;
 };
 
-const json = (status: number, body: unknown): Response => {
+const json = (status: number, body: unknown, extraHeaders?: Record<string, string>): Response => {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -43,6 +44,7 @@ const json = (status: number, body: unknown): Response => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      ...(extraHeaders ?? {}),
     },
   });
 };
@@ -61,6 +63,38 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Rate limit configurations per endpoint (limit per minute)
+const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
+  '/api/fix': { limit: 20, windowMs: 60000 },
+  '/api/generate': { limit: 10, windowMs: 60000 },
+  '/api/analyze': { limit: 15, windowMs: 60000 },
+  '/api/refine': { limit: 20, windowMs: 60000 },
+};
+
+const checkEndpointRateLimit = (userId: string, endpoint: string): Response | null => {
+  const config = RATE_LIMITS[endpoint];
+  if (!config) return null;
+
+  const result = checkRateLimit(userId, endpoint, config.limit, config.windowMs);
+  if (result.allowed) return null;
+
+  return json(
+    429,
+    {
+      ok: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Rate limit exceeded. Please try again later.',
+      },
+    },
+    {
+      'X-RateLimit-Limit': config.limit.toString(),
+      'X-RateLimit-Remaining': result.remaining.toString(),
+      'X-RateLimit-Reset': result.reset.toString(),
+    }
+  );
 };
 
 export default {
@@ -388,6 +422,9 @@ export default {
         });
       }
 
+      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/fix');
+      if (rateLimitResponse) return rateLimitResponse;
+
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
 
@@ -465,6 +502,9 @@ export default {
           error: { code: 'UNAUTHORIZED', message: 'Invalid session.' },
         });
       }
+
+      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/generate');
+      if (rateLimitResponse) return rateLimitResponse;
 
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
@@ -546,9 +586,13 @@ export default {
         });
       }
 
+      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/analyze');
+      if (rateLimitResponse) return rateLimitResponse;
+
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
-      const diagramText = payload && typeof payload.diagramText === 'string' ? payload.diagramText : null;
+      const diagramText =
+        payload && typeof payload.diagramText === 'string' ? payload.diagramText : null;
 
       if (!diagramText || !diagramText.trim()) {
         return json(400, {
@@ -622,16 +666,24 @@ export default {
         });
       }
 
+      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/refine');
+      if (rateLimitResponse) return rateLimitResponse;
+
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
 
-      const diagramText = payload && typeof payload.diagramText === 'string' ? payload.diagramText : null;
-      const instruction = payload && typeof payload.instruction === 'string' ? payload.instruction : null;
+      const diagramText =
+        payload && typeof payload.diagramText === 'string' ? payload.diagramText : null;
+      const instruction =
+        payload && typeof payload.instruction === 'string' ? payload.instruction : null;
 
       if (!diagramText || !instruction?.trim()) {
         return json(400, {
           ok: false,
-          error: { code: 'BAD_REQUEST', message: 'Expected { diagramText: string, instruction: string }.' }
+          error: {
+            code: 'BAD_REQUEST',
+            message: 'Expected { diagramText: string, instruction: string }.',
+          },
         });
       }
 

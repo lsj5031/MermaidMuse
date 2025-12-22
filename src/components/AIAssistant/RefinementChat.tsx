@@ -16,8 +16,14 @@ import {
 } from 'lucide-react';
 
 const QUICK_ACTIONS = [
-  { label: 'Add detail', instruction: 'Add more detail and specificity to the nodes and connections' },
-  { label: 'Simplify', instruction: 'Simplify the diagram by combining related nodes and removing redundancy' },
+  {
+    label: 'Add detail',
+    instruction: 'Add more detail and specificity to the nodes and connections',
+  },
+  {
+    label: 'Simplify',
+    instruction: 'Simplify the diagram by combining related nodes and removing redundancy',
+  },
   { label: 'Add errors', instruction: 'Add error handling paths and edge cases' },
   { label: 'Subgraphs', instruction: 'Organize related nodes into logical subgraphs' },
   { label: 'Labels', instruction: 'Add or improve edge labels to clarify relationships' },
@@ -30,7 +36,13 @@ interface RefinementChatProps {
 
 export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose }) => {
   const { currentDiagram, updateDiagramContent } = useDiagramState();
-  const { creditsBalance, createCheckoutSession, refresh: refreshCredits } = useCredits();
+  const {
+    creditsBalance,
+    createCheckoutSession,
+    refresh: refreshCredits,
+    spendOptimistically,
+    cancelOptimisticSpend,
+  } = useCredits();
   const {
     turns,
     isRefining,
@@ -41,7 +53,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
     discardPending,
     undoToTurn,
     clearHistory,
-  } = useAIRefinement();
+  } = useAIRefinement(currentDiagram.id);
 
   const [inputValue, setInputValue] = useState('');
 
@@ -50,7 +62,13 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
   const handleSubmit = async (instruction: string) => {
     if (!instruction.trim() || isRefining) return;
     setInputValue('');
-    await refine(instruction, currentDiagram.content);
+    spendOptimistically(1);
+    const result = await refine(instruction, currentDiagram.content);
+    if (result && result.ok) {
+      void refreshCredits();
+    } else {
+      cancelOptimisticSpend(1);
+    }
   };
 
   const handleApply = () => {
@@ -180,9 +198,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
         )}
 
         {/* Error */}
-        {error && (
-          <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
-        )}
+        {error && <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
 
         {/* Loading */}
         {isRefining && (

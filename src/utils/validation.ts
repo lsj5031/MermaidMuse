@@ -18,15 +18,29 @@ export interface ValidationResult {
   mermaidError?: string;
 }
 
-export const debounce = (
-  func: (...args: string[]) => void | Promise<void>,
+export type DebouncedFunction<T extends (...args: string[]) => void | Promise<void>> = T & {
+  cancel: () => void;
+};
+
+export const debounce = <T extends (...args: string[]) => void | Promise<void>>(
+  func: T,
   delay: number
-): ((...args: string[]) => void) => {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return (...args: string[]) => {
-    clearTimeout(timeoutId);
+): DebouncedFunction<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const debounced = ((...args: Parameters<T>) => {
+    if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
+  }) as DebouncedFunction<T>;
+
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
   };
+
+  return debounced;
 };
 
 export const validateMermaidSyntax = async (content: string): Promise<ValidationResult> => {

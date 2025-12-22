@@ -1,4 +1,9 @@
-import { getClerkUser, updateClerkUserPrivateMetadata, type ClerkUser } from './clerkServer';
+import {
+  getClerkUser,
+  updateClerkUserPrivateMetadata,
+  updateClerkUserPrivateMetadataWithVersion,
+  type ClerkUser,
+} from './clerkServer';
 import { type RuntimeEnv } from './runtimeEnv';
 
 const FREE_SIGNUP_CREDITS = 10;
@@ -28,6 +33,7 @@ export async function ensureCreditsBalance(
       ...(user.private_metadata ?? {}),
       creditsBalance: FREE_SIGNUP_CREDITS,
       creditsInitializedAt: new Date().toISOString(),
+      creditsVersion: 0,
     },
     envOverride
   );
@@ -46,24 +52,39 @@ export async function spendCredits(
 ): Promise<number> {
   if (amount <= 0) return ensureCreditsBalance(userId, envOverride);
 
-  const user = await getClerkUser(userId, envOverride);
-  if (!user) throw new Error('Unable to load user');
+  const MAX_RETRIES = 3;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const user = await getClerkUser(userId, envOverride);
+    if (!user) throw new Error('Unable to load user');
 
-  const existing = getCreditsFromUser(user) ?? FREE_SIGNUP_CREDITS;
-  const next = Math.max(0, existing - amount);
+    const existing = getCreditsFromUser(user) ?? FREE_SIGNUP_CREDITS;
+    const version =
+      typeof user.private_metadata?.creditsVersion === 'number'
+        ? user.private_metadata.creditsVersion
+        : 0;
 
-  const ok = await updateClerkUserPrivateMetadata(
-    userId,
-    {
-      ...(user.private_metadata ?? {}),
-      creditsBalance: next,
-    },
-    envOverride
-  );
+    const next = Math.max(0, existing - amount);
 
-  if (!ok) throw new Error('Unable to update credits');
+    const ok = await updateClerkUserPrivateMetadataWithVersion(
+      userId,
+      {
+        ...(user.private_metadata ?? {}),
+        creditsBalance: next,
+        creditsVersion: version + 1,
+      },
+      version,
+      envOverride
+    );
 
-  return next;
+    if (ok) return next;
+
+    // Backoff
+    if (attempt < MAX_RETRIES - 1) {
+      await new Promise((r) => setTimeout(r, 50 * (attempt + 1)));
+    }
+  }
+
+  throw new Error('Unable to update credits after retries');
 }
 
 type StripeTracking = {

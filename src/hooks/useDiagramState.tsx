@@ -36,6 +36,11 @@ interface DiagramContextType {
   canExport: boolean;
   canRender: boolean;
 
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+
   theme: DiagramTheme;
   setTheme: (theme: DiagramTheme) => void;
 
@@ -114,7 +119,14 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
   const [currentDiagram, setCurrentDiagram] = useState<DiagramState>(() => getInitialDiagram());
   const [theme, setThemeState] = useState<DiagramTheme>(() => getInitialTheme());
 
+  const [history, setHistory] = useState<{ past: string[]; future: string[] }>({
+    past: [],
+    future: [],
+  });
+
   const editorNavApiRef = useRef<EditorNavigationApi | null>(null);
+  const historyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastHistoryContent = useRef<string>(currentDiagram.content);
 
   const registerEditorNavigationApi = useCallback((api: EditorNavigationApi | null) => {
     editorNavApiRef.current = api;
@@ -164,6 +176,67 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     }, 500);
   }, [validateContent]);
 
+  const addToHistory = useCallback((content: string) => {
+    setHistory((prev) => {
+      // Don't push if same as last saved
+      if (prev.past.length > 0 && prev.past[prev.past.length - 1] === content) return prev;
+      return {
+        past: [...prev.past, lastHistoryContent.current],
+        future: [],
+      };
+    });
+    lastHistoryContent.current = content;
+  }, []);
+
+  const undo = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.past.length === 0) return prev;
+      const previous = prev.past[prev.past.length - 1];
+      const newPast = prev.past.slice(0, -1);
+
+      setCurrentDiagram((curr) => ({
+        ...curr,
+        content: previous,
+        lastModified: new Date(),
+        isValidating: true,
+      }));
+
+      // Update local storage and validate immediately
+      localStorage.setItem(STORAGE_KEYS.content, previous);
+      debouncedValidate(previous);
+      lastHistoryContent.current = previous;
+
+      return {
+        past: newPast,
+        future: [currentDiagram.content, ...prev.future],
+      };
+    });
+  }, [currentDiagram.content, debouncedValidate]);
+
+  const redo = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.future.length === 0) return prev;
+      const next = prev.future[0];
+      const newFuture = prev.future.slice(1);
+
+      setCurrentDiagram((curr) => ({
+        ...curr,
+        content: next,
+        lastModified: new Date(),
+        isValidating: true,
+      }));
+
+      localStorage.setItem(STORAGE_KEYS.content, next);
+      debouncedValidate(next);
+      lastHistoryContent.current = next;
+
+      return {
+        past: [...prev.past, currentDiagram.content],
+        future: newFuture,
+      };
+    });
+  }, [currentDiagram.content, debouncedValidate]);
+
   const updateDiagramContent = useCallback(
     (content: string) => {
       localStorage.setItem(STORAGE_KEYS.content, content);
@@ -176,8 +249,16 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
       }));
 
       debouncedValidate(content);
+
+      // Debounce history update
+      if (historyTimeoutRef.current) {
+        clearTimeout(historyTimeoutRef.current);
+      }
+      historyTimeoutRef.current = setTimeout(() => {
+        addToHistory(content);
+      }, 1000);
     },
-    [debouncedValidate]
+    [debouncedValidate, addToHistory]
   );
 
   const validateDiagram = useCallback(
@@ -240,6 +321,16 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cleanup debounced validation and history timeout on unmount
+  useEffect(() => {
+    return () => {
+      debouncedValidate.cancel();
+      if (historyTimeoutRef.current) {
+        clearTimeout(historyTimeoutRef.current);
+      }
+    };
+  }, [debouncedValidate]);
+
   const canExport = currentDiagram.validation.isValid && !currentDiagram.isValidating;
   const canRender = currentDiagram.validation.isValid && !currentDiagram.isValidating;
 
@@ -252,6 +343,11 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     validateDiagram,
     canExport,
     canRender,
+
+    undo,
+    redo,
+    canUndo: history.past.length > 0,
+    canRedo: history.future.length > 0,
 
     theme,
     setTheme,

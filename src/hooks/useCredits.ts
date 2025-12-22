@@ -31,8 +31,12 @@ export function useCredits() {
   const apiUrl = useMemo(() => getApiUrl(), []);
 
   const [creditsBalance, setCreditsBalance] = useState<number | null>(null);
+  const [optimisticDelta, setOptimisticDelta] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const displayBalance =
+    creditsBalance !== null ? Math.max(0, creditsBalance + optimisticDelta) : null;
 
   const fulfillInFlightRef = useRef<string | null>(null);
 
@@ -71,6 +75,7 @@ export function useCredits() {
       }
 
       setCreditsBalance(data.creditsBalance);
+      setOptimisticDelta(0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
@@ -190,11 +195,21 @@ export function useCredits() {
     });
   }, [fulfillCheckoutSession, isSignedIn]);
 
+  const spendOptimistically = useCallback((amount: number) => {
+    setOptimisticDelta((prev) => prev - amount);
+  }, []);
+
+  const cancelOptimisticSpend = useCallback((amount: number) => {
+    setOptimisticDelta((prev) => prev + amount);
+  }, []);
+
   return {
-    creditsBalance,
+    creditsBalance: displayBalance,
     isLoading,
     error,
     refresh,
     createCheckoutSession,
+    spendOptimistically,
+    cancelOptimisticSpend,
   };
 }

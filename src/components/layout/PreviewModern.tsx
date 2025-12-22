@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
 import type { MermaidConfig } from 'mermaid';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
@@ -58,7 +59,8 @@ const Preview: React.FC = () => {
         setError(null);
         const id = `mermaid-${Date.now()}`;
         const { svg } = await mermaid.render(id, currentDiagram.content);
-        setSvgContent(svg);
+        const sanitized = DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, html: true } });
+        setSvgContent(sanitized);
       } catch (err) {
         console.error('Mermaid render error:', err);
         setError('Syntax Error in Diagram');
@@ -179,6 +181,7 @@ const Preview: React.FC = () => {
           </div>
         ) : (
           <div
+            id="mermaid-preview-container"
             ref={diagramRef}
             className="mermaid-output"
             dangerouslySetInnerHTML={{ __html: svgContent }}

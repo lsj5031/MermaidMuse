@@ -144,3 +144,28 @@ export async function updateClerkUserPrivateMetadata(
 
   return response.ok;
 }
+
+export async function updateClerkUserPrivateMetadataWithVersion(
+  userId: string,
+  privateMetadata: Record<string, unknown>,
+  expectedVersion: number,
+  envOverride?: RuntimeEnv
+): Promise<boolean> {
+  // 1. Fetch current user state to verify version
+  const user = await getClerkUser(userId, envOverride);
+  if (!user) return false;
+
+  const currentVersion =
+    typeof user.private_metadata?.creditsVersion === 'number'
+      ? user.private_metadata.creditsVersion
+      : 0;
+
+  // 2. Check version
+  if (currentVersion !== expectedVersion) {
+    return false; // Version mismatch
+  }
+
+  // 3. Update
+  // Note: Race condition still exists between read and write, but window is small.
+  return updateClerkUserPrivateMetadata(userId, privateMetadata, envOverride);
+}
