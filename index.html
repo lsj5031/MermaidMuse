@@ -4,10 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#00f5ff" />
+    <meta name="theme-color" content="#fcfbf5" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MermaidMuse - Diagram Studio</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>MermaidMuse - Creative Diagram Studio</title>
+    <meta name="description" content="MermaidMuse is a creative, hand-drawn style diagramming tool. Create beautiful flowcharts, sequence diagrams, and more with a playful twist." />
+    <meta name="keywords" content="diagrams, mermaid.js, flowchart, sequence diagram, creative tools, hand-drawn, sketch" />
+    <meta name="author" content="MermaidMuse Team" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mermaidmuse.app/" />
+    <meta property="og:title" content="MermaidMuse - Creative Diagram Studio" />
+    <meta property="og:description" content="Create beautiful, hand-drawn style diagrams effortlessly." />
+    <meta property="og:image" content="/icon.svg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://mermaidmuse.app/" />
+    <meta property="twitter:title" content="MermaidMuse - Creative Diagram Studio" />
+    <meta property="twitter:description" content="Create beautiful, hand-drawn style diagrams effortlessly." />
+    <meta property="twitter:image" content="/icon.svg" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,71 +38,6 @@
       href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Chewy&display=swap"
       rel="stylesheet"
     />
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Comic Neue', 'sans-serif'],
-              headline: ['Mouse Memoirs', 'cursive'],
-              title: ['Sniglet', 'cursive'],
-              paragraph: ['Comic Neue', 'sans-serif'],
-              caption: ['Kalam', 'cursive'],
-              banner: ['Chewy', 'cursive'],
-              mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            },
-            colors: {
-              'brand-green-light': '#D6F2D5',
-              'brand-green-dark': '#4CAF50',
-              'brand-yellow': '#FFD700',
-              'brand-pink': '#FFA7A7',
-              'brand-blue': '#4A90E2',
-              'brand-magenta': '#E83E8C',
-              'brand-cream': '#FCFBF5',
-            },
-            backgroundImage: {
-              'dotted-paper': 'radial-gradient(#CBD5E1 1.5px, transparent 1.5px)',
-            },
-            backgroundSize: {
-              dots: '24px 24px',
-            },
-          },
-        },
-      };
-    </script>
-    <style>
-      /* Custom sketchy border class */
-      .border-sketch {
-        border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-        border: 2px solid #2d2d2d;
-        box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
-      }
-      .border-sketch:hover {
-        box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.15);
-        transform: translateY(-1px);
-      }
-      .border-sketch:active {
-        box-shadow: 1px 1px 0 0 rgba(0, 0, 0, 0.1);
-        transform: translateY(1px);
-      }
-
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-      }
-    </style>
   </head>
   <body class="bg-brand-cream text-gray-800 antialiased h-screen overflow-hidden">
     <div id="root"></div>

@@ -1,11 +1,11 @@
 {
-  "name": "Diagram Studio",
-  "short_name": "Diagram Studio",
-  "description": "Offline-friendly Mermaid diagram editor with 2D + 3D preview.",
+  "name": "MermaidMuse",
+  "short_name": "MermaidMuse",
+  "description": "Creative, hand-drawn style diagramming tool for flowcharts and sequence diagrams.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0a0e27",
-  "theme_color": "#00f5ff",
+  "background_color": "#fcfbf5",
+  "theme_color": "#fcfbf5",
   "icons": [
     {
       "src": "/icon.svg",

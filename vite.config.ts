@@ -21,6 +21,18 @@ export default defineConfig(({ mode }) => {
         '@types': path.resolve(__dirname, './src/types'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            mermaid: ['mermaid'],
+            utils: ['html2canvas', 'dompurify'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1000,
+    },
     define: {
       // For Cloudflare Pages + Workers, we usually call same-origin (/api/*).
       // Leave empty unless explicitly configured so runtime can default to window.location.origin.
