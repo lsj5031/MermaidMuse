@@ -511,4 +511,4 @@ Run `npm run type-check` to see all type errors in detail.
 
 ## Questions?
 
-Check the main README.md for project overview and setup instructions.
+Check the main [README.md](../README.md) for project overview and setup instructions.

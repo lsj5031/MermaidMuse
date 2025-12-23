@@ -64,7 +64,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-For detailed setup instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+For detailed setup instructions, see [DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ## 📖 Available Scripts
 
@@ -100,7 +100,7 @@ npm run test            # Run tests
 npm run test:watch      # Watch mode
 ```
 
-For detailed development guide, see [DEVELOPMENT.md](./DEVELOPMENT.md).
+For detailed development guide, see [DEVELOPMENT.md](./docs/DEVELOPMENT.md).
 
 ## 🎨 Project Structure
 
@@ -131,7 +131,7 @@ MermaidMuse includes a pluggable theme system with multiple built-in themes:
 - **Cyber**: Cyberpunk aesthetic with neon colors
 - **Custom**: Register your own themes via API
 
-See [THEME_SYSTEM.md](./THEME_SYSTEM.md) for complete theming documentation.
+See [THEME_SYSTEM.md](./docs/THEME_SYSTEM.md) for complete theming documentation.
 
 ## 🤖 AI Features
 
@@ -140,7 +140,7 @@ See [THEME_SYSTEM.md](./THEME_SYSTEM.md) for complete theming documentation.
 - **AI Assistant**: Real-time analysis and suggestions (1 credit)
 - **AI Refinement**: Iterative diagram improvements (1 credit)
 
-See [AI_FEATURES.md](./AI_FEATURES.md) for complete AI documentation.
+See [AI_FEATURES.md](./docs/AI_FEATURES.md) for complete AI documentation.
 
 ## 📦 Key Dependencies
 
@@ -160,7 +160,7 @@ See [AI_FEATURES.md](./AI_FEATURES.md) for complete AI documentation.
 
 - **Mermaid**: Diagram rendering (15 diagram types)
 - **@monaco-editor/react**: Professional code editor
-- **html2canvas**: PNG export functionality
+- Native SVG-to-canvas rendering for high-quality PNG export (4x scale)
 
 ### Styling
 
@@ -199,7 +199,7 @@ Only variables prefixed with `VITE_` are exposed to the client. All other variab
 
 ### Quick Start
 
-For a complete 10-minute deployment guide, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+For a complete 10-minute deployment guide, see [DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
 ### Cloudflare Pages + Workers (Recommended)
 
@@ -250,7 +250,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 | LocalAI  | Free     | ⚡ Medium      | Hard  |
 | Ollama   | Free     | ⚡ Slow        | Easy  |
 
-For provider setup details, see [OPENAPI_PROVIDERS.md](./OPENAPI_PROVIDERS.md).
+For provider setup details, see [OPENAPI_PROVIDERS.md](./docs/OPENAPI_PROVIDERS.md).
 
 ## 💡 Usage Examples
 
@@ -286,12 +286,12 @@ flowchart LR
 
 ### Documentation
 
-- [AI Features Overview](./AI_FEATURES.md) - Complete AI feature documentation
-- [Deployment Guide](./DEPLOYMENT.md) - Step-by-step deployment instructions
-- [Migration Guide](./MIGRATION.md) - API provider and architecture migration
-- [Development Guide](./DEVELOPMENT.md) - Local development setup
-- [Theme System](./THEME_SYSTEM.md) - Custom theme creation
-- [AI Providers](./OPENAPI_PROVIDERS.md) - Provider comparison and setup
+- [AI Features Overview](./docs/AI_FEATURES.md) - Complete AI feature documentation
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Step-by-step deployment instructions
+- [Migration Guide](./docs/MIGRATION.md) - API provider and architecture migration
+- [Development Guide](./docs/DEVELOPMENT.md) - Local development setup
+- [Theme System](./docs/THEME_SYSTEM.md) - Custom theme creation
+- [AI Providers](./docs/OPENAPI_PROVIDERS.md) - Provider comparison and setup
 
 ### External Resources
 

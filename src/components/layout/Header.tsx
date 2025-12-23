@@ -15,7 +15,7 @@ const buildShareUrl = (content: string): string => {
 };
 
 export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderProps) {
-  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme } = useDiagramState();
 
   const [toast, setToast] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
@@ -74,9 +74,14 @@ export default function Header({ onToggleSidebar, shouldShowSidebar }: HeaderPro
 
   const handleExportSvg = async () => {
     try {
-      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, {
-        watermarkText: 'Diagram Maker',
-      });
+      await exportMermaidAsSVG(
+        currentDiagram.content,
+        currentDiagram.title,
+        {
+          watermarkText: 'Diagram Maker',
+        },
+        theme
+      );
       showToast('SVG downloaded');
     } catch (err) {
       console.error(err);

@@ -43,7 +43,7 @@
   - ✅ MIGRATION.md (merged MIGRATION_GUIDE + MIGRATION_PHASE_2)
   - ✅ AI_FEATURES.md (consolidated all AI specs and status)
   - ✅ README.md (updated to reference consolidated docs)
-  - 🔄 Update DEVELOPMENT.md with current project structure
+  - ✅ DEVELOPMENT.md (updated with current project structure and AI-first workflows)
 
 ---
 
@@ -173,7 +173,7 @@
 
 ### Consolidated Guides
 
-- ✅ [README.md](./README.md) - Project overview and quick start
+- ✅ [README.md](../README.md) - Project overview and quick start
 - ✅ [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment guide
 - ✅ [MIGRATION.md](./MIGRATION.md) - Migration instructions
 - ✅ [AI_FEATURES.md](./AI_FEATURES.md) - AI features overview
@@ -183,14 +183,14 @@
 
 ### Development Docs
 
-- 🔄 [DEVELOPMENT.md](./DEVELOPMENT.md) - Local development setup
+- ✅ [DEVELOPMENT.md](./DEVELOPMENT.md) - Local development setup
 - ✅ [AGENTS.md](./AGENTS.md) - Build commands and architecture
 
 ### Archived
 
-- 📁 [IMPLEMENTATION_AI_GENERATION.md](./IMPLEMENTATION_AI_GENERATION.md) - Implementation summary (archived)
-- 📁 [SPEC*AI*\*.md](./SPEC_AI_*.md) - Individual specs (consolidated into AI_FEATURES.md)
-- 📁 [CHANGES_SUMMARY.md](./CHANGES_SUMMARY.md) - Historical changes (archived)
+- 📁 IMPLEMENTATION_AI_GENERATION.md - Implementation summary (archived & deleted)
+- 📁 SPEC*AI*\*.md - Individual specs (consolidated into AI_FEATURES.md & deleted)
+- 📁 CHANGES_SUMMARY.md - Historical changes (archived & deleted)
 
 ---
 

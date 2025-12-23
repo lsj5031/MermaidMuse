@@ -488,15 +488,8 @@ All AI features include comprehensive error handling:
 
 ## 📚 Documentation
 
-### Specifications
+### Related Documentation
 
-- `SPEC_AI_DIAGRAM_GENERATION.md` - AI Generate feature spec
-- `SPEC_AI_ASSISTANT_PANEL.md` - AI Assistant feature spec
-- `SPEC_AI_REFINEMENT_MODE.md` - AI Refinement feature spec
-
-### Implementation
-
-- `IMPLEMENTATION_AI_GENERATION.md` - AI Generate implementation summary
 - `OPENAPI_PROVIDERS.md` - Provider configuration guide
 - `STRIPE_SETUP.md` - Credits and payment setup
 

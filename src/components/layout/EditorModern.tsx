@@ -7,12 +7,12 @@ import { useKeyboardShortcuts } from '@hooks/useKeyboardShortcuts';
 import { CheckCircle2, AlertTriangle, Clock, Wand2, Sparkles } from 'lucide-react';
 import { fixDiagramSyntax } from '@utils/fixDiagramApi';
 import { generateDiagram } from '@utils/generateDiagramApi';
-import { exportMermaidAsSVG, exportElementAsPNGById } from '@utils/exportHelpers';
+import { exportMermaidAsSVG, exportDisplayedSvgAsPNG } from '@utils/exportHelpers';
 import ReferralModal from '@components/ReferralModal';
 import GenerateModal from '@components/GenerateModal';
 
 const Editor: React.FC = () => {
-  const { currentDiagram, updateDiagramContent } = useDiagramState();
+  const { currentDiagram, updateDiagramContent, theme } = useDiagramState();
   const { getToken } = useAuth();
   const {
     creditsBalance,
@@ -36,12 +36,18 @@ const Editor: React.FC = () => {
       console.log('Diagram saved');
     },
     onExportSVG: () => {
-      void exportMermaidAsSVG(currentDiagram.content, currentDiagram.title || 'diagram');
+      void exportMermaidAsSVG(currentDiagram.content, currentDiagram.title || 'diagram', {}, theme);
     },
     onExportPNG: () => {
-      void exportElementAsPNGById('mermaid-preview-container', currentDiagram.title || 'diagram', {
-        backgroundColor: '#ffffff',
-      });
+      const svgElement = document.querySelector('.mermaid-output svg') as SVGSVGElement | null;
+      if (svgElement) {
+        void exportDisplayedSvgAsPNG(svgElement, currentDiagram.title || 'diagram', {
+          backgroundColor: '#ffffff',
+          watermarkText: 'MermaidMuse',
+          scale: 4,
+          padding: 40,
+        });
+      }
     },
     onValidate: () => {
       validateDiagram();

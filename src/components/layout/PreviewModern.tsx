@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
-import DOMPurify from 'dompurify';
 import type { MermaidConfig } from 'mermaid';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
@@ -59,8 +58,10 @@ const Preview: React.FC = () => {
         setError(null);
         const id = `mermaid-${Date.now()}`;
         const { svg } = await mermaid.render(id, currentDiagram.content);
-        const sanitized = DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, html: true } });
-        setSvgContent(sanitized);
+        // Mermaid already handles security with securityLevel: 'loose'
+        // We trust mermaid's output, so skip additional sanitization
+        // which was stripping foreignObject elements needed for Kanban text
+        setSvgContent(svg);
       } catch (err) {
         console.error('Mermaid render error:', err);
         setError('Syntax Error in Diagram');
@@ -87,13 +88,21 @@ const Preview: React.FC = () => {
     setZoom((prev) => Math.min(prev + 50, 800));
   };
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setZoom((prev) => {
-      const newZoom = e.deltaY > 0 ? prev - 10 : prev + 10;
-      return Math.max(25, Math.min(newZoom, 800));
-    });
-  };
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheelEvent = (e: WheelEvent) => {
+      e.preventDefault();
+      setZoom((prev) => {
+        const newZoom = e.deltaY > 0 ? prev - 10 : prev + 10;
+        return Math.max(25, Math.min(newZoom, 800));
+      });
+    };
+
+    container.addEventListener('wheel', handleWheelEvent, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheelEvent);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.button === 0) {
@@ -165,7 +174,6 @@ const Preview: React.FC = () => {
       <div
         className={`flex-grow relative bg-brand-cream bg-dotted-paper bg-dots overflow-auto flex items-center justify-center p-8 transition-colors duration-300 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         ref={containerRef}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

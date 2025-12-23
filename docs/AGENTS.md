@@ -29,7 +29,7 @@ npm run format          # Prettier formatting
 - `src/workers/` - Cloudflare Worker entrypoint (`/api/*` routes)
 - `.github/workflows/` - Deployment configuration
 
-**Key Dependencies**: Mermaid (diagrams), @monaco-editor/react (code editor), html2canvas (PNG export), Stripe (payments), lucide-react (icons)
+**Key Dependencies**: Mermaid (diagrams), @monaco-editor/react (code editor), native canvas (PNG export), Stripe (payments), lucide-react (icons)
 
 ## Code Style & Conventions
 

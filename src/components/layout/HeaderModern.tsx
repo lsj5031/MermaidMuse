@@ -1,11 +1,10 @@
 import React from 'react';
 import { Download, Share2, RotateCcw, Palette, Undo, Redo } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { exportMermaidAsSVG } from '@utils/exportHelpers';
+import { exportMermaidAsSVG, exportDisplayedSvgAsPNG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
 import { UserButton, SignInButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 import CreditsWidget from '@components/Credits/CreditsWidget';
-import html2canvas from 'html2canvas';
 
 const Header: React.FC = () => {
   const {
@@ -25,9 +24,14 @@ const Header: React.FC = () => {
 
   const handleExportSvg = async () => {
     try {
-      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, {
-        watermarkText: 'MermaidMuse',
-      });
+      await exportMermaidAsSVG(
+        currentDiagram.content,
+        currentDiagram.title,
+        {
+          watermarkText: 'MermaidMuse',
+        },
+        theme
+      );
       showToast('SVG downloaded');
     } catch (err) {
       console.error(err);
@@ -38,60 +42,18 @@ const Header: React.FC = () => {
   const handleExportPng = async () => {
     try {
       // Find the SVG in the preview
-      const svgElement = document.querySelector('.mermaid-output svg');
+      const svgElement = document.querySelector('.mermaid-output svg') as SVGSVGElement | null;
       if (!svgElement) {
         showToast('No diagram to export');
         return;
       }
 
-      // Clone the SVG to add watermark
-      const svgClone = svgElement.cloneNode(true) as SVGElement;
-
-      // Add watermark to SVG
-      const ns = 'http://www.w3.org/2000/svg';
-      const group = document.createElementNS(ns, 'g');
-      group.setAttribute('pointer-events', 'none');
-
-      const text = document.createElementNS(ns, 'text');
-      text.textContent = 'MermaidMuse';
-      text.setAttribute('x', '99%');
-      text.setAttribute('y', '99%');
-      text.setAttribute('text-anchor', 'end');
-      text.setAttribute('dominant-baseline', 'auto');
-      text.setAttribute('fill', '#2d2d2d');
-      text.setAttribute('opacity', '0.85');
-      text.setAttribute(
-        'style',
-        'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; paint-order: stroke; stroke: rgba(255,255,255,0.6); stroke-width: 0.5px;'
-      );
-      group.appendChild(text);
-      svgClone.appendChild(group);
-
-      // Create a temporary container
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '-9999px';
-      container.style.backgroundColor = '#ffffff';
-      container.appendChild(svgClone);
-      document.body.appendChild(container);
-
-      // Convert to canvas
-      const canvas = await html2canvas(container, {
+      await exportDisplayedSvgAsPNG(svgElement, currentDiagram.title || 'diagram', {
         backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
+        watermarkText: 'MermaidMuse',
+        scale: 4,
+        padding: 40,
       });
-
-      // Clean up
-      document.body.removeChild(container);
-
-      // Download PNG
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `${currentDiagram.title || 'diagram'}.png`;
-      link.click();
 
       showToast('PNG downloaded');
     } catch (err) {

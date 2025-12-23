@@ -18,7 +18,7 @@ This document summarizes the documentation consolidation and cleanup completed o
    - Consolidated all AI feature specifications and implementation status
    - Merged from: `SPEC_AI_DIAGRAM_GENERATION.md` + `SPEC_AI_ASSISTANT_PANEL.md` + `SPEC_AI_REFINEMENT_MODE.md`
 
-4. **[README.md](./README.md)** - Updated to be more concise and reference consolidated docs
+4. **[README.md](../README.md)** - Updated to be more concise and reference consolidated docs
 
 5. **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Updated with current project structure and AI-first workflows
 
@@ -28,8 +28,8 @@ This document summarizes the documentation consolidation and cleanup completed o
 
 The following documents have been archived with clear notices pointing to current documentation:
 
-1. **[CHANGES_SUMMARY.md](./CHANGES_SUMMARY.md)** - Historical migration summary
-2. **[IMPLEMENTATION_AI_GENERATION.md](./IMPLEMENTATION_AI_GENERATION.md)** - AI generation implementation details
+1. **CHANGES_SUMMARY.md** - Historical migration summary (Deleted)
+2. **IMPLEMENTATION_AI_GENERATION.md** - AI generation implementation details (Deleted)
 
 ### Documents Ready for Removal
 
