@@ -124,10 +124,16 @@ export async function fixMermaidSyntaxWithXai(
     if (!response.ok) {
       const errorRecord = rawRecord ? asRecord(rawRecord.error) : null;
 
-      const message =
+      // Extract error message but sanitize it to prevent information leakage
+      const rawMessage =
         (errorRecord && typeof errorRecord.message === 'string' && errorRecord.message) ||
         (rawRecord && typeof rawRecord.message === 'string' && rawRecord.message) ||
-        `OpenAPI request failed with status ${response.status}`;
+        null;
+
+      // Use generic message for clients, don't expose internal error details
+      const message = rawMessage
+        ? 'AI service request failed. Please try again.'
+        : `AI service unavailable (status ${response.status})`;
 
       return {
         ok: false,
@@ -138,7 +144,7 @@ export async function fixMermaidSyntaxWithXai(
           code: 'OPENAPI_REQUEST_FAILED',
           message,
         },
-        raw,
+        // Don't include raw response in production to prevent info leakage
       };
     }
 

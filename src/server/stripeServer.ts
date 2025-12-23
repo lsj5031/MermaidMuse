@@ -1,5 +1,38 @@
 import { getRuntimeEnv, type RuntimeEnv } from './runtimeEnv';
 
+// Allowed hosts for redirect URLs (add your production domains here)
+const ALLOWED_REDIRECT_HOSTS = [
+  'localhost',
+  '127.0.0.1',
+  'mermaid.liu.nz',
+  'mermaid-muse.pages.dev',
+  'dev.mermaid-muse.pages.dev',
+];
+
+/**
+ * Validates that a redirect URL is safe and belongs to an allowed domain.
+ * Prevents open redirect attacks via Stripe checkout.
+ */
+export function isValidRedirectUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+
+    // Only allow http/https protocols
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return false;
+    }
+
+    // Check against allowed hosts (exact match or subdomain)
+    const host = parsed.host.toLowerCase();
+    return ALLOWED_REDIRECT_HOSTS.some((allowed) => {
+      const allowedLower = allowed.toLowerCase();
+      return host === allowedLower || host.endsWith('.' + allowedLower);
+    });
+  } catch {
+    return false;
+  }
+}
+
 export type StripeCheckoutSession = {
   id: string;
   url?: string | null;
@@ -159,6 +192,9 @@ async function computeHmacSha256Hex(secret: string, payload: string): Promise<st
   return toHex(signature);
 }
 
+// Maximum allowed age for webhook events (5 minutes) to prevent replay attacks
+const WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS = 300;
+
 export async function verifyStripeWebhookSignature(
   rawBody: string,
   stripeSignatureHeader: string | null | undefined,
@@ -175,6 +211,18 @@ export async function verifyStripeWebhookSignature(
 
   if (!timestamp || !signature) return false;
 
+  // Validate timestamp to prevent replay attacks
+  const timestampNum = parseInt(timestamp, 10);
+  if (isNaN(timestampNum)) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  const age = Math.abs(now - timestampNum);
+
+  if (age > WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS) {
+    // Event is too old or has a future timestamp - reject to prevent replay attacks
+    return false;
+  }
+
   const signedPayload = `${timestamp}.${rawBody}`;
   const computed = await computeHmacSha256Hex(webhookSecret, signedPayload);
 
@@ -182,6 +230,17 @@ export async function verifyStripeWebhookSignature(
   const computedBytes = new TextEncoder().encode(computed);
 
   return timingSafeEqual(sigBytes, computedBytes);
+}
+
+/**
+ * Validates that a Stripe session ID has the correct format.
+ * Stripe checkout session IDs follow the pattern: cs_test_* or cs_live_*
+ */
+export function isValidStripeSessionId(sessionId: string): boolean {
+  if (!sessionId || typeof sessionId !== 'string') return false;
+  // Stripe checkout session IDs start with cs_test_ or cs_live_
+  // and are followed by alphanumeric characters and underscores
+  return /^cs_(test|live)_[a-zA-Z0-9_]+$/.test(sessionId);
 }
 
 export const asStripeEvent = (value: unknown): StripeEvent | null => {

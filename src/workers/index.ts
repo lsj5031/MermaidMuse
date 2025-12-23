@@ -17,9 +17,11 @@ import {
   DEFAULT_CREDITS_PACK,
   getStripeCheckoutSession,
   getStripeWebhookSecret,
+  isValidRedirectUrl,
+  isValidStripeSessionId,
   verifyStripeWebhookSignature,
 } from '../server/stripeServer';
-import { checkRateLimit } from '../server/rateLimit';
+import { checkRateLimit, checkRateLimitKV, type KVNamespace } from '../server/rateLimit';
 import { type RuntimeEnv } from '../server/runtimeEnv';
 
 type CloudflareEnv = {
@@ -29,22 +31,80 @@ type CloudflareEnv = {
   CLERK_SECRET_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  RATE_LIMIT_KV?: KVNamespace; // Optional KV binding for distributed rate limiting
+  ALLOWED_ORIGINS?: string; // Comma-separated list of allowed origins
 };
+
+// =============================================================================
+// Security Constants
+// =============================================================================
+
+// Maximum input sizes to prevent abuse
+const MAX_DIAGRAM_TEXT_LENGTH = 100000; // 100KB
+const MAX_PROMPT_LENGTH = 10000; // 10KB
+const MAX_INSTRUCTION_LENGTH = 5000; // 5KB
+
+// Default allowed origins for CORS (can be overridden via env)
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://mermaid.liu.nz',
+  'https://mermaid-muse.pages.dev',
+  'https://dev.mermaid-muse.pages.dev',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+];
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
   if (!value || typeof value !== 'object') return null;
   return value as Record<string, unknown>;
 };
 
-const json = (status: number, body: unknown, extraHeaders?: Record<string, string>): Response => {
+/**
+ * Get the allowed CORS origin for the request.
+ * Returns the origin if it's in the allowed list, otherwise returns the first allowed origin.
+ */
+const getCorsOrigin = (requestOrigin: string | null, env: CloudflareEnv): string => {
+  const allowedOrigins = env.ALLOWED_ORIGINS
+    ? env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : DEFAULT_ALLOWED_ORIGINS;
+
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    return requestOrigin;
+  }
+
+  // For development, be more lenient with localhost and Pages previews
+  if (
+    requestOrigin &&
+    (requestOrigin.startsWith('http://localhost:') ||
+      requestOrigin.startsWith('http://127.0.0.1:') ||
+      requestOrigin.endsWith('.mermaid-muse.pages.dev'))
+  ) {
+    return requestOrigin;
+  }
+
+  return allowedOrigins[0];
+};
+
+const baseJson = (
+  status: number,
+  body: unknown,
+  extraHeaders?: Record<string, string>,
+  corsOrigin: string = DEFAULT_ALLOWED_ORIGINS[0]
+): Response => {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      ...(extraHeaders ?? {}),
+      'Access-Control-Allow-Credentials': 'true',
+      ...extraHeaders,
     },
   });
 };
@@ -59,28 +119,33 @@ const parseBody = async (req: Request): Promise<unknown | null> => {
   }
 };
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
 // Rate limit configurations per endpoint (limit per minute)
-const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
-  '/api/fix': { limit: 20, windowMs: 60000 },
-  '/api/generate': { limit: 10, windowMs: 60000 },
-  '/api/analyze': { limit: 15, windowMs: 60000 },
-  '/api/refine': { limit: 20, windowMs: 60000 },
+const RATE_LIMITS: Record<string, { limit: number; windowSeconds: number }> = {
+  '/api/fix': { limit: 20, windowSeconds: 60 },
+  '/api/generate': { limit: 10, windowSeconds: 60 },
+  '/api/analyze': { limit: 15, windowSeconds: 60 },
+  '/api/refine': { limit: 20, windowSeconds: 60 },
+  '/api/stripe-create-checkout-session': { limit: 5, windowSeconds: 60 },
+  '/api/stripe-fulfill-session': { limit: 10, windowSeconds: 60 },
 };
 
-const checkEndpointRateLimit = (userId: string, endpoint: string): Response | null => {
+const checkEndpointRateLimit = async (
+  userId: string,
+  endpoint: string,
+  kv?: KVNamespace,
+  corsOrigin?: string
+): Promise<Response | null> => {
   const config = RATE_LIMITS[endpoint];
   if (!config) return null;
 
-  const result = checkRateLimit(userId, endpoint, config.limit, config.windowMs);
+  // Use KV-based rate limiting if available (production), otherwise fall back to in-memory
+  const result = kv
+    ? await checkRateLimitKV(kv, userId, endpoint, config.limit, config.windowSeconds)
+    : checkRateLimit(userId, endpoint, config.limit, config.windowSeconds * 1000);
+
   if (result.allowed) return null;
 
-  return json(
+  return baseJson(
     429,
     {
       ok: false,
@@ -93,12 +158,29 @@ const checkEndpointRateLimit = (userId: string, endpoint: string): Response | nu
       'X-RateLimit-Limit': config.limit.toString(),
       'X-RateLimit-Remaining': result.remaining.toString(),
       'X-RateLimit-Reset': result.reset.toString(),
-    }
+    },
+    corsOrigin
   );
 };
 
 export default {
   async fetch(req: Request, env: CloudflareEnv): Promise<Response> {
+    // Get CORS origin for this request
+    const requestOrigin = req.headers.get('Origin');
+    const corsOrigin = getCorsOrigin(requestOrigin, env);
+
+    // Wrapper to inject corsOrigin automatically
+    const json = (status: number, body: unknown, extraHeaders?: Record<string, string>) =>
+      baseJson(status, body, extraHeaders, corsOrigin);
+
+    // Build CORS headers for this request
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+    };
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, {
@@ -181,6 +263,14 @@ export default {
         });
       }
 
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/stripe-create-checkout-session',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
+      if (rateLimitResponse) return rateLimitResponse;
+
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
 
@@ -194,6 +284,17 @@ export default {
           error: {
             code: 'BAD_REQUEST',
             message: 'Expected JSON body with { successUrl: string, cancelUrl: string }.',
+          },
+        });
+      }
+
+      // Validate redirect URLs to prevent open redirect attacks
+      if (!isValidRedirectUrl(successUrl) || !isValidRedirectUrl(cancelUrl)) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INVALID_REDIRECT_URL',
+            message: 'Redirect URLs must be from allowed domains.',
           },
         });
       }
@@ -259,6 +360,14 @@ export default {
         });
       }
 
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/stripe-fulfill-session',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
+      if (rateLimitResponse) return rateLimitResponse;
+
       const parsed = await parseBody(req);
       const payload = asRecord(parsed);
       const sessionId = payload && typeof payload.sessionId === 'string' ? payload.sessionId : null;
@@ -267,6 +376,14 @@ export default {
         return json(400, {
           ok: false,
           error: { code: 'BAD_REQUEST', message: 'Expected JSON body with { sessionId: string }.' },
+        });
+      }
+
+      // Validate session ID format to prevent enumeration attacks
+      if (!isValidStripeSessionId(sessionId)) {
+        return json(400, {
+          ok: false,
+          error: { code: 'INVALID_SESSION_ID', message: 'Invalid session ID format.' },
         });
       }
 
@@ -422,7 +539,12 @@ export default {
         });
       }
 
-      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/fix');
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/fix',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
       if (rateLimitResponse) return rateLimitResponse;
 
       const parsed = await parseBody(req);
@@ -440,6 +562,17 @@ export default {
           error: {
             code: 'BAD_REQUEST',
             message: 'Expected JSON body with { diagramText: string }.',
+          },
+        });
+      }
+
+      // Validate input length to prevent abuse
+      if (diagramText.length > MAX_DIAGRAM_TEXT_LENGTH) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INPUT_TOO_LARGE',
+            message: `Diagram text exceeds maximum length of ${MAX_DIAGRAM_TEXT_LENGTH} characters.`,
           },
         });
       }
@@ -503,7 +636,12 @@ export default {
         });
       }
 
-      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/generate');
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/generate',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
       if (rateLimitResponse) return rateLimitResponse;
 
       const parsed = await parseBody(req);
@@ -516,6 +654,17 @@ export default {
           error: {
             code: 'BAD_REQUEST',
             message: 'Expected JSON body with { prompt: string }.',
+          },
+        });
+      }
+
+      // Validate input length to prevent abuse
+      if (prompt.length > MAX_PROMPT_LENGTH) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INPUT_TOO_LARGE',
+            message: `Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters.`,
           },
         });
       }
@@ -586,7 +735,12 @@ export default {
         });
       }
 
-      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/analyze');
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/analyze',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
       if (rateLimitResponse) return rateLimitResponse;
 
       const parsed = await parseBody(req);
@@ -598,6 +752,17 @@ export default {
         return json(400, {
           ok: false,
           error: { code: 'BAD_REQUEST', message: 'Expected { diagramText: string }.' },
+        });
+      }
+
+      // Validate input length to prevent abuse
+      if (diagramText.length > MAX_DIAGRAM_TEXT_LENGTH) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INPUT_TOO_LARGE',
+            message: `Diagram text exceeds maximum length of ${MAX_DIAGRAM_TEXT_LENGTH} characters.`,
+          },
         });
       }
 
@@ -666,7 +831,12 @@ export default {
         });
       }
 
-      const rateLimitResponse = checkEndpointRateLimit(userId, '/api/refine');
+      const rateLimitResponse = await checkEndpointRateLimit(
+        userId,
+        '/api/refine',
+        env.RATE_LIMIT_KV,
+        corsOrigin
+      );
       if (rateLimitResponse) return rateLimitResponse;
 
       const parsed = await parseBody(req);
@@ -683,6 +853,27 @@ export default {
           error: {
             code: 'BAD_REQUEST',
             message: 'Expected { diagramText: string, instruction: string }.',
+          },
+        });
+      }
+
+      // Validate input lengths to prevent abuse
+      if (diagramText.length > MAX_DIAGRAM_TEXT_LENGTH) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INPUT_TOO_LARGE',
+            message: `Diagram text exceeds maximum length of ${MAX_DIAGRAM_TEXT_LENGTH} characters.`,
+          },
+        });
+      }
+
+      if (instruction.length > MAX_INSTRUCTION_LENGTH) {
+        return json(400, {
+          ok: false,
+          error: {
+            code: 'INPUT_TOO_LARGE',
+            message: `Instruction exceeds maximum length of ${MAX_INSTRUCTION_LENGTH} characters.`,
           },
         });
       }

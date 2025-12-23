@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
 import type { MermaidConfig } from 'mermaid';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
@@ -16,43 +15,59 @@ const Preview: React.FC = () => {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [mermaidInstance, setMermaidInstance] = useState<typeof import('mermaid').default | null>(
+    null
+  );
+  const mermaidInstanceRef = useRef<typeof import('mermaid').default | null>(null);
 
   useEffect(() => {
-    // Base look to keep the app's default styling consistent.
-    const baseConfig: MermaidConfig = {
-      startOnLoad: false,
-      theme: 'base',
-      securityLevel: 'loose',
-      themeVariables: {
-        fontFamily: 'Comic Neue',
-        fontSize: '16px',
-        primaryColor: '#E6F7E5',
-        primaryBorderColor: '#2d2d2d',
-        primaryTextColor: '#2d2d2d',
-        lineColor: '#2d2d2d',
-        secondaryColor: '#FCFBF5',
-        tertiaryColor: '#fff',
-      },
+    const initMermaid = async () => {
+      const { default: mermaid } = await import('mermaid');
+
+      // Only set the instance once to avoid unnecessary re-renders
+      if (!mermaidInstanceRef.current) {
+        mermaidInstanceRef.current = mermaid;
+        setMermaidInstance(mermaid);
+      }
+
+      // Base look to keep the app's default styling consistent.
+      const baseConfig: MermaidConfig = {
+        startOnLoad: false,
+        theme: 'base',
+        securityLevel: 'loose',
+        themeVariables: {
+          fontFamily: 'Comic Neue',
+          fontSize: '16px',
+          primaryColor: '#E6F7E5',
+          primaryBorderColor: '#2d2d2d',
+          primaryTextColor: '#2d2d2d',
+          lineColor: '#2d2d2d',
+          secondaryColor: '#FCFBF5',
+          tertiaryColor: '#fff',
+        },
+      };
+
+      const themeConfig = getMermaidConfigForTheme(theme);
+      const mergedConfig = themeConfig
+        ? {
+            ...baseConfig,
+            ...themeConfig,
+            themeVariables: {
+              ...baseConfig.themeVariables,
+              ...(themeConfig.themeVariables ?? {}),
+            },
+          }
+        : baseConfig;
+
+      mermaid.initialize(mergedConfig);
     };
 
-    const themeConfig = getMermaidConfigForTheme(theme);
-    const mergedConfig = themeConfig
-      ? {
-          ...baseConfig,
-          ...themeConfig,
-          themeVariables: {
-            ...baseConfig.themeVariables,
-            ...(themeConfig.themeVariables ?? {}),
-          },
-        }
-      : baseConfig;
-
-    mermaid.initialize(mergedConfig);
+    void initMermaid();
   }, [theme]);
 
   useEffect(() => {
     const renderDiagram = async () => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || !mermaidInstance) return;
 
       try {
         setError(null);
@@ -61,10 +76,9 @@ const Preview: React.FC = () => {
           return;
         }
         const id = `mermaid-${Date.now()}`;
-        const { svg } = await mermaid.render(id, currentDiagram.content);
+        const { svg } = await mermaidInstance.render(id, currentDiagram.content);
         // Mermaid already handles security with securityLevel: 'loose'
         // We trust mermaid's output, so skip additional sanitization
-        // which was stripping foreignObject elements needed for Kanban text
         setSvgContent(svg);
       } catch (err) {
         console.error('Mermaid render error:', err);
@@ -74,7 +88,7 @@ const Preview: React.FC = () => {
 
     const timer = setTimeout(renderDiagram, 500);
     return () => clearTimeout(timer);
-  }, [currentDiagram.content, theme]);
+  }, [currentDiagram.content, theme, mermaidInstance]);
 
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom((prev) => {

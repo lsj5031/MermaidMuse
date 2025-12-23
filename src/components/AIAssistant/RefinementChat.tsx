@@ -91,7 +91,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-purple-500" />
+          <MessageSquare className="h-5 w-5 text-emerald-600" />
           <h2 className="font-semibold text-gray-800">Refine Diagram</h2>
         </div>
         <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
         {turns.map((turn) =>
           turn.role === 'user' ? (
             <div key={turn.id} className="flex justify-end">
-              <div className="bg-purple-100 text-purple-900 rounded-lg px-3 py-2 max-w-[80%] text-sm">
+              <div className="bg-emerald-100 text-emerald-900 rounded-lg px-3 py-2 max-w-[80%] text-sm">
                 {turn.instruction}
               </div>
             </div>
@@ -203,7 +203,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
         {/* Loading */}
         {isRefining && (
           <div className="flex items-center gap-2 text-gray-500 text-sm">
-            <div className="animate-spin h-4 w-4 border-2 border-purple-500 border-t-transparent rounded-full" />
+            <div className="animate-spin h-4 w-4 border-2 border-emerald-600 border-t-transparent rounded-full" />
             Refining diagram...
           </div>
         )}
@@ -229,7 +229,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
       <div className="p-4 border-t border-gray-200">
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600">
+            <button className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">
               Sign in to refine diagrams
             </button>
           </SignInButton>
@@ -239,7 +239,7 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
           {creditsBalance !== null && creditsBalance < 1 ? (
             <button
               onClick={() => void createCheckoutSession()}
-              className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
+              className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700"
             >
               Top up credits to refine
             </button>
@@ -252,12 +252,12 @@ export const RefinementChat: React.FC<RefinementChatProps> = ({ isOpen, onClose 
                 onKeyDown={(e) => e.key === 'Enter' && void handleSubmit(inputValue)}
                 placeholder="Describe your changes..."
                 disabled={isRefining || pendingResult !== null}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-50"
               />
               <button
                 onClick={() => void handleSubmit(inputValue)}
                 disabled={isRefining || !inputValue.trim() || pendingResult !== null}
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
               </button>

@@ -244,10 +244,10 @@ const Editor: React.FC = () => {
             <SignInButton mode="modal">
               <button
                 type="button"
-                className="w-full px-3 py-2 rounded text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-sm flex items-center justify-center gap-2 transition-all duration-200"
+                className="w-full px-3 py-2 rounded-md text-sm font-medium bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm flex items-center justify-center gap-2 transition-all duration-200"
                 title="Sign in to generate diagrams with AI"
               >
-                <Sparkles className="h-4 w-4 text-emerald-50" />
+                <Sparkles className="h-4 w-4" />
                 <span>Generate with AI</span>
               </button>
             </SignInButton>
@@ -258,7 +258,7 @@ const Editor: React.FC = () => {
               <button
                 type="button"
                 onClick={() => void createCheckoutSession()}
-                className="w-full px-3 py-2 rounded text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded-md text-sm font-medium bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm flex items-center justify-center gap-2 transition-all duration-200"
                 title="Top up credits to generate diagrams"
               >
                 <Sparkles className="h-4 w-4" />
@@ -268,7 +268,7 @@ const Editor: React.FC = () => {
               <button
                 onClick={() => setShowGenerateModal(true)}
                 disabled={isGenerating || isCreditsLoading || creditsBalance === null}
-                className="w-full px-3 py-2 rounded text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded-md text-sm font-medium bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-200"
                 title="Generate a diagram from natural language (costs 2 credits)"
               >
                 <Sparkles className="h-4 w-4" />

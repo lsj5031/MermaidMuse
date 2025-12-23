@@ -4,16 +4,34 @@ compatibility_date = "2024-01-15"
 
 workers_dev = true
 
+# =============================================================================
+# KV Namespace for Rate Limiting (REQUIRED for production)
+# =============================================================================
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "bae25e9d31de4082bca7dc7beaa4c158"
+
 [env.development]
 name = "diagram-maker-dev"
 
+[[env.development.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "bae25e9d31de4082bca7dc7beaa4c158"
+
 [env.development.vars]
-OPENAPI_MODEL = "gpt-4o"
-OPENAPI_BASE_URL = "https://api.openai.com/v1"
+OPENAPI_MODEL = "openai/gpt-oss-20b:free"
+OPENAPI_BASE_URL = "https://openrouter.ai/api/v1"
+ALLOWED_ORIGINS = "https://dev.mermaid-muse.pages.dev,http://localhost:5173"
 
 [env.production]
 name = "diagram-maker-prod"
 
+# Production KV namespace for rate limiting
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "bae25e9d31de4082bca7dc7beaa4c158"
+
 [env.production.vars]
-OPENAPI_MODEL = "gpt-4o"
-OPENAPI_BASE_URL = "https://api.openai.com/v1"
+OPENAPI_MODEL = "openai/gpt-oss-20b:free"
+OPENAPI_BASE_URL = "https://openrouter.ai/api/v1"
+ALLOWED_ORIGINS = "https://mermaid.liu.nz,https://mermaid-muse.pages.dev"

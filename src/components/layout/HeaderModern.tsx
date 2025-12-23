@@ -241,7 +241,19 @@ const Header: React.FC = () => {
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: 'w-9 h-9 border border-emerald-200',
+                    userButtonTrigger: 'focus:shadow-none focus:outline-none',
+                  },
+                  variables: {
+                    colorPrimary: '#059669', // Emerald 600
+                    colorText: '#374151', // Gray 700
+                  },
+                }}
+              />
             </SignedIn>
           </div>
         </div>

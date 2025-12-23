@@ -216,7 +216,11 @@ const analyzeComplexityFallback = (diagramText: string): AnalyzeResponse['comple
   const edgeCount = edges.length;
 
   const level: AnalyzeResponse['complexity']['level'] =
-    nodeCount <= 8 && edgeCount <= 10 ? 'low' : nodeCount <= 20 && edgeCount <= 30 ? 'medium' : 'high';
+    nodeCount <= 8 && edgeCount <= 10
+      ? 'low'
+      : nodeCount <= 20 && edgeCount <= 30
+        ? 'medium'
+        : 'high';
 
   return {
     level,
@@ -240,9 +244,7 @@ const normalizeSeverity = (value: unknown): Suggestion['severity'] => {
   return 'info';
 };
 
-const normalizeActionType = (
-  value: unknown
-): NonNullable<Suggestion['action']>['type'] => {
+const normalizeActionType = (value: unknown): NonNullable<Suggestion['action']>['type'] => {
   if (value === 'apply_fix' || value === 'show_example' || value === 'learn_more') {
     return value;
   }
@@ -327,10 +329,16 @@ export async function analyzeMermaidDiagram(
     if (!response.ok) {
       const errorRecord = rawRecord ? asRecord(rawRecord.error) : null;
 
-      const message =
+      // Extract error message but sanitize it to prevent information leakage
+      const rawMessage =
         (errorRecord && typeof errorRecord.message === 'string' && errorRecord.message) ||
         (rawRecord && typeof rawRecord.message === 'string' && rawRecord.message) ||
-        `OpenAPI request failed with status ${response.status}`;
+        null;
+
+      // Use generic message for clients, don't expose internal error details
+      const message = rawMessage
+        ? 'AI service request failed. Please try again.'
+        : `AI service unavailable (status ${response.status})`;
 
       return {
         ok: false,
@@ -342,7 +350,7 @@ export async function analyzeMermaidDiagram(
           code: 'OPENAPI_REQUEST_FAILED',
           message,
         },
-        raw,
+        // Don't include raw response in production to prevent info leakage
       };
     }
 
@@ -385,8 +393,10 @@ export async function analyzeMermaidDiagram(
     const edgeCountRaw = complexityRecord?.edgeCount;
     const maxDepthRaw = complexityRecord?.maxDepth;
 
-    const nodeCount = typeof nodeCountRaw === 'number' ? nodeCountRaw : complexityFallback.nodeCount;
-    const edgeCount = typeof edgeCountRaw === 'number' ? edgeCountRaw : complexityFallback.edgeCount;
+    const nodeCount =
+      typeof nodeCountRaw === 'number' ? nodeCountRaw : complexityFallback.nodeCount;
+    const edgeCount =
+      typeof edgeCountRaw === 'number' ? edgeCountRaw : complexityFallback.edgeCount;
     const maxDepth = typeof maxDepthRaw === 'number' ? maxDepthRaw : complexityFallback.maxDepth;
 
     const levelRaw = complexityRecord?.level;
@@ -408,7 +418,8 @@ export async function analyzeMermaidDiagram(
             ? {
                 label: actionRecord.label,
                 type: normalizeActionType(actionRecord.type),
-                payload: typeof actionRecord.payload === 'string' ? actionRecord.payload : undefined,
+                payload:
+                  typeof actionRecord.payload === 'string' ? actionRecord.payload : undefined,
               }
             : undefined;
 

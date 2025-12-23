@@ -362,6 +362,132 @@ Monitor these endpoints:
 
 ---
 
+## 🛡️ Security Configuration
+
+The application includes several security features that require configuration for production use.
+
+### Distributed Rate Limiting (Required for Production)
+
+In serverless environments like Cloudflare Workers, each request may hit a different isolate, making in-memory rate limiting ineffective. For production, you **must** configure Cloudflare KV for distributed rate limiting.
+
+#### 1. Create a KV Namespace
+
+```bash
+# Create the KV namespace
+wrangler kv:namespace create "RATE_LIMIT_KV"
+```
+
+This outputs something like:
+
+```
+🌀 Creating namespace with title "your-worker-RATE_LIMIT_KV"
+✨ Success!
+Add the following to your wrangler.toml:
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "abc123..."
+```
+
+#### 2. Add to wrangler.toml
+
+```toml
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "your-kv-namespace-id-here"
+```
+
+#### 3. For Production Environment
+
+Create a separate namespace for production:
+
+```bash
+wrangler kv:namespace create "RATE_LIMIT_KV" --env production
+```
+
+Add to `wrangler.toml`:
+
+```toml
+[env.production]
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "your-production-kv-namespace-id"
+```
+
+### CORS Configuration
+
+By default, CORS is restricted to these origins:
+
+- `https://mermaid.liu.nz`
+- `https://mermaid-muse.pages.dev`
+- `http://localhost:5173` (development)
+- `http://localhost:3000` (development)
+
+#### Custom Origins
+
+To add custom allowed origins, set the `ALLOWED_ORIGINS` environment variable:
+
+```bash
+# In Cloudflare Dashboard or wrangler.toml
+ALLOWED_ORIGINS=https://mermaid.liu.nz,https://mermaid-muse.pages.dev
+```
+
+### Stripe Webhook Security
+
+Webhooks include several security measures:
+
+1. **Signature Verification**: All webhooks are verified using HMAC-SHA256
+2. **Timestamp Validation**: Events older than 5 minutes are rejected to prevent replay attacks
+3. **Idempotency**: Payment sessions are tracked to prevent double-crediting
+
+#### Configure Webhook Secret
+
+1. In Stripe Dashboard, go to Developers → Webhooks
+2. Create a webhook endpoint: `https://your-app.workers.dev/api/stripe-webhook`
+3. Select events: `checkout.session.completed`
+4. Copy the signing secret
+5. Add to environment:
+   ```
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   ```
+
+### Redirect URL Validation
+
+Checkout redirect URLs are validated against an allowlist to prevent open redirect attacks.
+
+Default allowed hosts:
+
+- `localhost`
+- `127.0.0.1`
+- `mermaid.liu.nz`
+- `mermaid-muse.pages.dev`
+
+To add custom domains, update the `ALLOWED_REDIRECT_HOSTS` array in `src/server/stripeServer.ts`.
+
+### Input Size Limits
+
+The API enforces these input size limits to prevent abuse:
+
+| Input Type   | Max Length    | Endpoint                                  |
+| ------------ | ------------- | ----------------------------------------- |
+| Diagram text | 100,000 chars | `/api/fix`, `/api/analyze`, `/api/refine` |
+| Prompt       | 10,000 chars  | `/api/generate`                           |
+| Instruction  | 5,000 chars   | `/api/refine`                             |
+
+### Rate Limits
+
+Per-user rate limits (per minute):
+
+| Endpoint                              | Limit       |
+| ------------------------------------- | ----------- |
+| `/api/fix`                            | 20 requests |
+| `/api/generate`                       | 10 requests |
+| `/api/analyze`                        | 15 requests |
+| `/api/refine`                         | 20 requests |
+| `/api/stripe-create-checkout-session` | 5 requests  |
+| `/api/stripe-fulfill-session`         | 10 requests |
+
+---
+
 ## 📚 Additional Resources
 
 ### Documentation
@@ -396,11 +522,16 @@ For deployment issues:
 - [ ] Choose AI provider (Groq recommended)
 - [ ] Get API keys
 - [ ] Configure Cloudflare environment variables
+- [ ] **Create KV namespace for rate limiting** (see Security Configuration)
+- [ ] **Configure ALLOWED_ORIGINS** for your domains
+- [ ] **Set up Stripe webhook with signing secret**
 - [ ] Test locally with `npm run dev:workers`
 - [ ] Deploy Workers with `npm run deploy:workers`
 - [ ] Deploy Pages with build output
 - [ ] Test live endpoints
+- [ ] **Verify rate limiting is working** (check KV namespace has entries)
 - [ ] Set up custom domain (optional)
+- [ ] **Update ALLOWED_REDIRECT_HOSTS** for custom domain
 - [ ] Configure monitoring
 - [ ] Set up alerts for errors
 - [ ] Document your setup

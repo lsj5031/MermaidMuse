@@ -1,17 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
-import { AIAssistantPanel, RefinementChat } from '@components/AIAssistant';
-import OnboardingModal from '@components/OnboardingModal';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { ProProvider } from '@hooks/usePro';
+import { CreditsProvider } from './context/CreditsContext';
 import { savePendingReferralCode } from '@hooks/useReferral';
 import { useCredits } from '@hooks/useCredits';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import { initializeDefaultThemes } from '@theme/defaultThemes';
-import { Bot, MessageSquare } from 'lucide-react';
+import { Bot, MessageSquare, Loader2 } from 'lucide-react';
 import './App.css';
+
+// Lazy load secondary components
+const AIAssistantPanel = lazy(() =>
+  import('@components/AIAssistant').then((module) => ({ default: module.AIAssistantPanel }))
+);
+const RefinementChat = lazy(() =>
+  import('@components/AIAssistant').then((module) => ({ default: module.RefinementChat }))
+);
+const OnboardingModal = lazy(() => import('@components/OnboardingModal'));
 
 // Initialize themes on app startup
 initializeDefaultThemes();
@@ -140,15 +148,33 @@ function AppContent() {
         )}
 
         <div className={`absolute top-0 right-0 bottom-0 z-40 ${isRefinementOpen ? '' : 'hidden'}`}>
-          <RefinementChat isOpen={isRefinementOpen} onClose={() => setIsRefinementOpen(false)} />
+          <Suspense
+            fallback={
+              <div className="p-4 bg-white h-full shadow-xl w-80 flex items-center justify-center">
+                <Loader2 className="animate-spin text-gray-400" />
+              </div>
+            }
+          >
+            <RefinementChat isOpen={isRefinementOpen} onClose={() => setIsRefinementOpen(false)} />
+          </Suspense>
         </div>
 
         <div className={`absolute top-0 right-0 bottom-0 z-40 ${isAssistantOpen ? '' : 'hidden'}`}>
-          <AIAssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+          <Suspense
+            fallback={
+              <div className="p-4 bg-white h-full shadow-xl w-80 flex items-center justify-center">
+                <Loader2 className="animate-spin text-gray-400" />
+              </div>
+            }
+          >
+            <AIAssistantPanel isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />
+          </Suspense>
         </div>
       </main>
 
-      <OnboardingModal />
+      <Suspense fallback={null}>
+        <OnboardingModal />
+      </Suspense>
     </div>
   );
 }
@@ -156,9 +182,11 @@ function AppContent() {
 function App() {
   return (
     <ProProvider>
-      <DiagramProvider>
-        <AppContent />
-      </DiagramProvider>
+      <CreditsProvider>
+        <DiagramProvider>
+          <AppContent />
+        </DiagramProvider>
+      </CreditsProvider>
     </ProProvider>
   );
 }
