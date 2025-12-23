@@ -13,7 +13,7 @@ export default function Sidebar({ onToggle }: SidebarProps) {
   return (
     <aside className="w-64 bg-dark-surface border-r border-dark-border h-screen flex flex-col overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-dark-border">
-        <h2 className="font-bold text-neon-cyan">Diagram Types</h2>
+        <h2 className="font-bold text-emerald-400">Diagram Types</h2>
         <button
           onClick={onToggle}
           className="p-1 hover:bg-dark-surface2 rounded transition-colors"
@@ -30,7 +30,7 @@ export default function Sidebar({ onToggle }: SidebarProps) {
             onClick={() => updateDiagramType(value)}
             className={`w-full text-left px-4 py-2 rounded transition-all ${
               currentDiagram.type === value
-                ? 'bg-neon-cyan bg-opacity-20 border-l-2 border-neon-cyan text-neon-cyan'
+                ? 'bg-emerald-500/20 border-l-2 border-emerald-500 text-emerald-400'
                 : 'hover:bg-dark-surface2 text-gray-300'
             }`}
           >
@@ -42,7 +42,7 @@ export default function Sidebar({ onToggle }: SidebarProps) {
       <div className="border-t border-dark-border p-4 space-y-3">
         <button
           onClick={resetDiagram}
-          className="w-full px-4 py-2 bg-neon-purple hover:bg-opacity-80 text-white rounded font-semibold transition-all"
+          className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-semibold transition-all"
         >
           Reset
         </button>
@@ -51,7 +51,7 @@ export default function Sidebar({ onToggle }: SidebarProps) {
           <div className="text-xs text-gray-400">Pro</div>
           <ProGate>
             <div className="rounded border border-dark-border bg-dark-surface2 p-3">
-              <div className="text-xs font-semibold text-neon-cyan">Pro unlocked</div>
+              <div className="text-xs font-semibold text-emerald-400">Pro unlocked</div>
               <div className="mt-1 text-[11px] text-gray-400">
                 Pro is enabled (mock). Future pro-only features can be gated behind this.
               </div>

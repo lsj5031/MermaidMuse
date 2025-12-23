@@ -18,8 +18,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
         <p className="text-gray-700">
           Create beautiful diagrams with Mermaid syntax. This guide will help you get started.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded p-3">
-          <p className="text-sm text-blue-900">
+        <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
+          <p className="text-sm text-emerald-900">
             <strong>Tip:</strong> MermaidMuse is a diagram editor that lets you create flowcharts,
             sequence diagrams, state diagrams, and more.
           </p>
@@ -80,19 +80,19 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
         <p className="text-gray-700">Save and share your diagrams using the toolbar at the top:</p>
         <ul className="space-y-3 text-sm text-gray-700">
           <li className="flex items-start gap-2">
-            <Download className="w-4 h-4 mt-0.5 text-blue-600 flex-shrink-0" />
+            <Download className="w-4 h-4 mt-0.5 text-emerald-600 flex-shrink-0" />
             <span>
               <strong>SVG & PNG:</strong> Download watermarked versions of your diagram
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <Share2 className="w-4 h-4 mt-0.5 text-blue-600 flex-shrink-0" />
+            <Share2 className="w-4 h-4 mt-0.5 text-emerald-600 flex-shrink-0" />
             <span>
               <strong>Share:</strong> Generate a link with your diagram embedded in the URL
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <RotateCcw className="w-4 h-4 mt-0.5 text-blue-600 flex-shrink-0" />
+            <RotateCcw className="w-4 h-4 mt-0.5 text-emerald-600 flex-shrink-0" />
             <span>
               <strong>Reset:</strong> Start over with the default sample diagram
             </span>
@@ -116,7 +116,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <BookOpen className="w-4 h-4 mt-0.5 text-purple-600 flex-shrink-0" />
+            <BookOpen className="w-4 h-4 mt-0.5 text-emerald-600 flex-shrink-0" />
             <span>
               <strong>Real-time validation:</strong> See errors and warnings as you type
             </span>
@@ -138,8 +138,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
               <strong>✓ Free features:</strong> Creating, editing, exporting diagrams
             </p>
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded p-3">
-            <p className="text-sm text-blue-900">
+          <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
+            <p className="text-sm text-emerald-900">
               <strong>💳 New users:</strong> Get 10 free credits
             </p>
           </div>
@@ -149,8 +149,8 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
               provides a solution)
             </p>
           </div>
-          <div className="bg-purple-50 border border-purple-200 rounded p-3">
-            <p className="text-sm text-purple-900">
+          <div className="bg-emerald-50 border border-emerald-200 rounded p-3">
+            <p className="text-sm text-emerald-900">
               <strong>📦 Top up:</strong> Buy 100 credits for $10 (plus processing fees)
             </p>
           </div>
@@ -203,8 +203,8 @@ export default function OnboardingModal() {
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3 flex-1">
-            <div className="bg-blue-100 rounded-lg p-3">
-              <Icon className="w-6 h-6 text-blue-600" />
+            <div className="bg-emerald-100 rounded-lg p-3">
+              <Icon className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{step.title}</h2>
@@ -229,7 +229,7 @@ export default function OnboardingModal() {
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
               style={{
                 width: `${((currentStep + 1) / ONBOARDING_STEPS.length) * 100}%`,
               }}
@@ -259,7 +259,7 @@ export default function OnboardingModal() {
             </button>
             <button
               onClick={handleNext}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors"
+              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium transition-colors"
             >
               {isLastStep ? 'Get Started' : 'Next'}
             </button>

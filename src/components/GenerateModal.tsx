@@ -54,12 +54,14 @@ export default function GenerateModal({
       <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4">
         <div className="flex items-start justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="bg-purple-100 rounded-lg p-3">
-              <Sparkles className="w-6 h-6 text-purple-600" />
+            <div className="bg-emerald-100 rounded-lg p-3">
+              <Sparkles className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Generate Diagram with AI</h2>
-              <p className="text-sm text-gray-500 mt-1">Describe your diagram in natural language</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Describe your diagram in natural language
+              </p>
             </div>
           </div>
           <button
@@ -83,7 +85,7 @@ export default function GenerateModal({
               placeholder="Example: User signup flow with email verification, password validation, and welcome email..."
               rows={4}
               disabled={isGenerating}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -94,7 +96,7 @@ export default function GenerateModal({
                 value={diagramType}
                 onChange={(e) => setDiagramType(e.target.value)}
                 disabled={isGenerating}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {DIAGRAM_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -110,7 +112,7 @@ export default function GenerateModal({
                 value={style}
                 onChange={(e) => setStyle(e.target.value as 'concise' | 'detailed')}
                 disabled={isGenerating}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="concise">Concise</option>
                 <option value="detailed">Detailed</option>
@@ -120,8 +122,8 @@ export default function GenerateModal({
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-900">
-              <strong>💡 Tip:</strong> Be specific about what you want. Mention key steps, decisions,
-              or entities you want to include in your diagram.
+              <strong>💡 Tip:</strong> Be specific about what you want. Mention key steps,
+              decisions, or entities you want to include in your diagram.
             </p>
           </div>
         </div>
@@ -138,7 +140,7 @@ export default function GenerateModal({
             <button
               onClick={handleGenerate}
               disabled={!prompt.trim() || isGenerating}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isGenerating ? (
                 <>

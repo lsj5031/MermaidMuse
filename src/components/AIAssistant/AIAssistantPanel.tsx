@@ -156,12 +156,15 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-purple-500" />
+          <Bot className="h-5 w-5 text-emerald-600" />
           <h2 className="font-semibold text-gray-800">AI Assistant</h2>
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-gray-600 select-none" title="Auto analyze after you stop typing (costs credits)">
+          <label
+            className="flex items-center gap-2 text-xs text-gray-600 select-none"
+            title="Auto analyze after you stop typing (costs credits)"
+          >
             <input
               type="checkbox"
               checked={autoAnalyze}
@@ -181,10 +184,10 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
         {/* Complexity */}
         {complexity && (
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-            <Zap className="h-4 w-4 text-purple-500" />
+            <Zap className="h-4 w-4 text-emerald-600" />
             <span className="text-sm text-gray-700">
-              <span className="font-semibold">Complexity:</span> {complexity.level} ({complexity.nodeCount}{' '}
-              nodes)
+              <span className="font-semibold">Complexity:</span> {complexity.level} (
+              {complexity.nodeCount} nodes)
             </span>
           </div>
         )}
@@ -213,7 +216,9 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
 
           return (
             <div key={type} className="space-y-2">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase">{titleForType[type]}</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase">
+                {titleForType[type]}
+              </h3>
               {items.map((suggestion) => (
                 <div key={suggestion.id} className="p-3 bg-gray-50 rounded-lg text-sm space-y-2">
                   <div className="flex items-start gap-2">
@@ -286,7 +291,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
       <div className="p-4 border-t border-gray-200 space-y-3">
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600">
+            <button className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">
               Sign in to use AI Assistant
             </button>
           </SignInButton>
@@ -303,7 +308,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
           ) : isOutOfCredits ? (
             <button
               onClick={() => void createCheckoutSession()}
-              className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
+              className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700"
             >
               Top up credits to analyze
             </button>
@@ -311,7 +316,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ isOpen, onCl
             <button
               onClick={() => void handleAnalyze()}
               disabled={isAnalyzing || !canAnalyze}
-              className="w-full py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isAnalyzing ? (
                 <>

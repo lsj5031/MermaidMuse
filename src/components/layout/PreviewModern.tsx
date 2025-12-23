@@ -12,7 +12,7 @@ const Preview: React.FC = () => {
   const diagramRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(125);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -56,6 +56,10 @@ const Preview: React.FC = () => {
 
       try {
         setError(null);
+        if (!currentDiagram.content.trim()) {
+          setSvgContent('');
+          return;
+        }
         const id = `mermaid-${Date.now()}`;
         const { svg } = await mermaid.render(id, currentDiagram.content);
         // Mermaid already handles security with securityLevel: 'loose'
@@ -80,7 +84,7 @@ const Preview: React.FC = () => {
   };
 
   const handleResetZoom = () => {
-    setZoom(100);
+    setZoom(125);
     setPan({ x: 0, y: 0 });
   };
 
@@ -186,6 +190,14 @@ const Preview: React.FC = () => {
               <h3 className="text-red-600 font-bold mb-2">Diagram Syntax Error</h3>
               <p className="text-gray-500 text-sm">Please check your Mermaid syntax.</p>
             </div>
+          </div>
+        ) : !svgContent ? (
+          <div className="flex flex-col items-center justify-center text-gray-400 select-none pointer-events-none">
+            <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg mb-4 flex items-center justify-center">
+              <span className="text-2xl font-bold">+</span>
+            </div>
+            <p className="font-medium">Start typing to build your diagram</p>
+            <p className="text-xs mt-1 opacity-70">Use the editor on the left</p>
           </div>
         ) : (
           <div

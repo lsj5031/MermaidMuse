@@ -194,7 +194,7 @@ const Editor: React.FC = () => {
                 <SignInButton mode="modal">
                   <button
                     type="button"
-                    className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                    className="px-2 py-1 rounded text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-1 whitespace-nowrap"
                     title="Sign in to use AI fixing"
                   >
                     <Wand2 className="h-3 w-3" />
@@ -208,7 +208,7 @@ const Editor: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => void createCheckoutSession()}
-                    className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                    className="px-2 py-1 rounded text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-1 whitespace-nowrap"
                     title="Top up credits"
                   >
                     <span>Top up credits</span>
@@ -217,7 +217,7 @@ const Editor: React.FC = () => {
                   <button
                     onClick={handleFixWithAI}
                     disabled={isFixing || isCreditsLoading || creditsBalance === null}
-                    className="px-2 py-1 rounded text-xs font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap"
+                    className="px-2 py-1 rounded text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap"
                     title="Use AI to fix diagram syntax (costs 1 credit)"
                   >
                     {isFixing ? (
@@ -244,10 +244,10 @@ const Editor: React.FC = () => {
             <SignInButton mode="modal">
               <button
                 type="button"
-                className="w-full px-3 py-2 rounded text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-sm flex items-center justify-center gap-2 transition-all duration-200"
                 title="Sign in to generate diagrams with AI"
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 text-emerald-50" />
                 <span>Generate with AI</span>
               </button>
             </SignInButton>

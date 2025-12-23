@@ -132,7 +132,10 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-[#E6F7E5] shadow-sm flex items-center justify-between px-4 py-3 flex-shrink-0 z-50 border-b-2 border-gray-200 border-dashed relative overflow-visible">
-      <h1 className="text-2xl font-headline text-gray-800 tracking-wide">MermaidMuse</h1>
+      <div className="flex items-center gap-3">
+        <img src="/mermaid-logo.png" alt="MermaidMuse Logo" className="w-8 h-8 object-contain" />
+        <h1 className="text-2xl font-headline text-gray-800 tracking-wide">MermaidMuse</h1>
+      </div>
 
       <div className="flex items-center gap-4 flex-1 justify-center">
         <input

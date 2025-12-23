@@ -28,7 +28,7 @@ export default function StripeTeaser({
   if (!key) {
     return (
       <div className="rounded border border-dark-border bg-dark-surface p-4">
-        <div className="text-sm font-semibold text-neon-cyan">{title}</div>
+        <div className="text-sm font-semibold text-emerald-500">{title}</div>
         <div className="mt-2 text-xs text-gray-400">
           Stripe is not configured. Set{' '}
           <code className="text-gray-200">VITE_STRIPE_PUBLISHABLE_KEY</code> (or legacy{' '}
@@ -42,10 +42,10 @@ export default function StripeTeaser({
     <div className="rounded border border-dark-border bg-dark-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-neon-cyan">{title}</div>
+          <div className="text-sm font-semibold text-emerald-500">{title}</div>
           <div className="mt-1 text-xs text-gray-400">{description}</div>
         </div>
-        <span className="text-[10px] px-2 py-1 rounded bg-neon-purple/20 text-neon-purple border border-neon-purple/40">
+        <span className="text-[10px] px-2 py-1 rounded bg-emerald-500/20 text-emerald-500 border border-emerald-500/40">
           PRO
         </span>
       </div>
@@ -67,7 +67,7 @@ export default function StripeTeaser({
 
             window.open('https://stripe.com', '_blank', 'noopener,noreferrer');
           }}
-          className="mt-3 w-full px-3 py-2 rounded bg-neon-purple/80 hover:bg-neon-purple text-white text-xs font-semibold transition-colors"
+          className="mt-3 w-full px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors"
         >
           {ctaLabel}
         </button>

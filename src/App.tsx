@@ -106,7 +106,7 @@ function AppContent() {
               <SignInButton mode="modal">
                 <button
                   type="button"
-                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400"
+                  className="p-3 rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500"
                   title="Sign in to refine diagrams with AI"
                 >
                   <MessageSquare className="w-5 h-5" />
@@ -119,7 +119,7 @@ function AppContent() {
                 <button
                   type="button"
                   onClick={() => void createCheckoutSession()}
-                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400"
+                  className="p-3 rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500"
                   title="Top up credits to refine diagrams"
                 >
                   <MessageSquare className="w-5 h-5" />
@@ -129,7 +129,7 @@ function AppContent() {
                   type="button"
                   onClick={openRefinement}
                   disabled={isCreditsLoading || creditsBalance === null}
-                  className="p-3 rounded-full shadow-lg bg-indigo-500 hover:bg-indigo-600 text-white border border-indigo-400 disabled:opacity-50"
+                  className="p-3 rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 disabled:opacity-50"
                   title="Refine your diagram through conversation (1 credit per refinement)"
                 >
                   <MessageSquare className="w-5 h-5" />

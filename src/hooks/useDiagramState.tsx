@@ -11,6 +11,7 @@ import React, {
 import { SAMPLE_MERMAID_DIAGRAM } from '@theme/constants';
 import { type DiagramTheme, getThemeIds, hasTheme } from '@theme/themeRegistry';
 import { type ValidationResult, validateMermaidSyntax, debounce } from '@utils/validation';
+import { generateRandomName } from '@utils/nameGenerator';
 
 export interface DiagramState {
   id: string;
@@ -102,7 +103,7 @@ const getInitialDiagram = (): DiagramState => {
   const storedTitle = localStorage.getItem(STORAGE_KEYS.title);
 
   const content = shared ?? storedContent ?? SAMPLE_MERMAID_DIAGRAM;
-  const title = shared ? 'Shared Diagram' : (storedTitle ?? 'Untitled Diagram');
+  const title = shared ? 'Shared Diagram' : (storedTitle ?? generateRandomName());
 
   return {
     id: '1',
@@ -303,7 +304,7 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
 
     const next = {
       ...getInitialDiagram(),
-      title: 'Untitled Diagram',
+      title: generateRandomName(),
       content: SAMPLE_MERMAID_DIAGRAM,
     };
 
