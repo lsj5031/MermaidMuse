@@ -164,9 +164,15 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     }, 500);
   }, [validateContent]);
 
+  const debouncedSaveContent = useMemo(() => {
+    return debounce((content: string) => {
+      localStorage.setItem(STORAGE_KEYS.content, content);
+    }, 1000);
+  }, []);
+
   const updateDiagramContent = useCallback(
     (content: string) => {
-      localStorage.setItem(STORAGE_KEYS.content, content);
+      debouncedSaveContent(content);
 
       setCurrentDiagram((prev) => ({
         ...prev,
@@ -177,7 +183,7 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
 
       debouncedValidate(content);
     },
-    [debouncedValidate]
+    [debouncedValidate, debouncedSaveContent]
   );
 
   const validateDiagram = useCallback(
