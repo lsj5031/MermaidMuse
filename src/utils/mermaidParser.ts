@@ -207,8 +207,10 @@ const calculateLayout = (nodes: GraphNode[], edges: GraphEdge[], isDirected: boo
   
   roots.forEach(root => levelMap.set(root, 0));
   
-  while (queue.length > 0) {
-    const current = queue.shift()!;
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const current = queue[queueIndex];
+    queueIndex++;
     if (visited.has(current)) continue;
     visited.add(current);
     
