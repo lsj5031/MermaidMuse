@@ -87,11 +87,14 @@ const extractGraphStructure = async (content: string, theme: DiagramTheme): Prom
     /([A-Za-z0-9_]+)\s*\{\{\s*([^}]+)\s*\}\}/g
   ];
   
+  const existingIds = new Set<string>();
+
   for (const pattern of nodePatterns) {
     let match;
     while ((match = pattern.exec(content)) !== null) {
       const [, id, label] = match;
-      if (!nodes.find((n) => n.id === id)) {
+      if (!existingIds.has(id)) {
+        existingIds.add(id);
         nodes.push({
           id,
           label: label.trim(),
