@@ -44,7 +44,7 @@ export async function exportElementAsPNG(element: HTMLElement, filename: string,
     }
   }
 
-  downloadBlob(canvasToBlob(canvas), `${filename}.png`);
+  downloadBlob(await canvasToBlob(canvas), `${filename}.png`);
 }
 
 export async function exportElementAsPNGById(elementId: string, filename: string, options?: ExportPngOptions) {
@@ -63,17 +63,16 @@ export async function exportDiagramAsPNG(elementId: string, filename: string): P
   });
 }
 
-const canvasToBlob = (canvas: HTMLCanvasElement): Blob => {
-  const dataUrl = canvas.toDataURL('image/png');
-  const [header, data] = dataUrl.split(',');
-  const mime = header.match(/data:(.*);base64/)?.[1] ?? 'image/png';
-  const byteCharacters = atob(data);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: mime });
+const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error('Canvas to Blob failed'));
+      }
+    }, 'image/png');
+  });
 };
 
 export interface ExportSvgOptions {
@@ -117,7 +116,7 @@ export async function exportMermaidAsSVG(
   content: string,
   filename: string,
   options: ExportSvgOptions = {},
-  theme: DiagramTheme = 'cyber'
+  _theme: DiagramTheme = 'cyber'
 ): Promise<void> {
   const { watermarkText = 'MermaidMuse', watermarkColor } = options;
 
