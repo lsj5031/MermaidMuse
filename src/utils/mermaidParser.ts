@@ -151,12 +151,25 @@ const extractGraphStructure = async (content: string, theme: DiagramTheme): Prom
   }
   
   // Calculate bounds
-  const xs = nodes.map(n => n.x);
-  const ys = nodes.map(n => n.y);
-  const minX = xs.length > 0 ? Math.min(...xs) : 0;
-  const maxX = xs.length > 0 ? Math.max(...xs) : 1;
-  const minY = ys.length > 0 ? Math.min(...ys) : 0;
-  const maxY = ys.length > 0 ? Math.max(...ys) : 1;
+  let minX = 0;
+  let maxX = 1;
+  let minY = 0;
+  let maxY = 1;
+
+  if (nodes.length > 0) {
+    minX = nodes[0].x;
+    maxX = nodes[0].x;
+    minY = nodes[0].y;
+    maxY = nodes[0].y;
+
+    for (let i = 1; i < nodes.length; i++) {
+      const { x, y } = nodes[i];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
   
   return {
     nodes,
