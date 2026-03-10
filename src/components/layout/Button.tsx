@@ -1,20 +1,18 @@
 import React from 'react';
 
-interface ButtonProps {
+interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'icon' | 'variant'> {
   children: React.ReactNode;
   className?: string;
   variant?: 'neutral' | 'primary' | 'secondary' | 'accent';
   icon?: React.ReactNode;
-  onClick?: () => void;
-  [key: string]: any;
 }
 
-const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  className = '', 
-  variant = 'neutral', 
+const Button: React.FC<ButtonProps> = ({
+  children,
+  className = '',
+  variant = 'neutral',
   icon,
-  ...props 
+  ...props
 }) => {
   const getBgColor = () => {
     switch (variant) {

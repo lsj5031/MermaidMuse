@@ -55,7 +55,7 @@ describe('useDiagramState Performance Benchmark', () => {
     // Should be called exactly once now with the last value
     expect(localStorage.setItem).toHaveBeenCalledTimes(1);
     expect(localStorage.setItem).toHaveBeenLastCalledWith(
-      'diagramStudio.content',
+      'mermaidMuse.content',
       `content ${updates - 1}`
     );
   });

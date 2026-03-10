@@ -12,7 +12,6 @@ const Editor: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
 
-  const hasErrors = !validation.isValid && validation.errors.length > 0;
 
   const handleFixWithAI = async () => {
     if (!isConfigured) {
@@ -99,11 +98,10 @@ const Editor: React.FC = () => {
   return (
     <aside className="flex flex-col h-full bg-white border-r-2 border-gray-200 border-dashed shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
       {/* Status Bar */}
-      <div className={`px-4 py-2 flex items-center gap-2 text-sm font-medium border-b border-gray-200 flex-shrink-0 ${
-        isValidating ? 'bg-blue-50 text-blue-700' :
-        validation.isValid ? 'bg-brand-green-light text-green-800' : 
-        'bg-red-50 text-red-700'
-      }`}>
+      <div className={`px-4 py-2 flex items-center gap-2 text-sm font-medium border-b border-gray-200 flex-shrink-0 ${isValidating ? 'bg-blue-50 text-blue-700' :
+          validation.isValid ? 'bg-brand-green-light text-green-800' :
+            'bg-red-50 text-red-700'
+        }`}>
         {isValidating ? (
           <>
             <Clock className="h-4 w-4 animate-spin" />
@@ -128,11 +126,10 @@ const Editor: React.FC = () => {
             <button
               onClick={handleFixWithAI}
               disabled={isFixing}
-              className={`ml-2 flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
-                isConfigured
+              className={`ml-2 flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${isConfigured
                   ? 'bg-brand-blue text-white hover:bg-blue-600'
                   : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              } ${isFixing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isFixing ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={isConfigured ? 'Fix errors with AI' : 'Configure AI to fix'}
             >
               <Sparkles className="h-3 w-3" />

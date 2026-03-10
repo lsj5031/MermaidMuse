@@ -29,31 +29,35 @@ describe('Editor Performance', () => {
     // Initial state
     const mockState = {
       currentDiagram: {
+        id: 'test-id',
+        title: 'test-title',
+        type: 'flowchart',
+        lastModified: new Date(),
         content: largeContent,
-        validation: { isValid: true, errors: [] },
+        validation: { isValid: true, errors: [], warnings: [] },
         isValidating: false,
       },
       updateDiagramContent: vi.fn(),
     };
 
-    (useDiagramState as any).mockReturnValue(mockState);
+    vi.mocked(useDiagramState).mockReturnValue(mockState as unknown as ReturnType<typeof useDiagramState>);
 
     const start = performance.now();
 
     const { rerender } = render(<Editor />);
 
     for (let i = 0; i < ITERATIONS; i++) {
-        // Simulate a content change that doesn't change line count
-        (useDiagramState as any).mockReturnValue({
-            ...mockState,
-            currentDiagram: {
-                ...mockState.currentDiagram,
-                // Simulate typing a char
-                content: largeContent + (i % 2 === 0 ? ' ' : ''),
-            }
-        });
+      // Simulate a content change that doesn't change line count
+      vi.mocked(useDiagramState).mockReturnValue({
+        ...mockState,
+        currentDiagram: {
+          ...mockState.currentDiagram,
+          // Simulate typing a char
+          content: largeContent + (i % 2 === 0 ? ' ' : ''),
+        }
+      } as unknown as ReturnType<typeof useDiagramState>);
 
-        rerender(<Editor />);
+      rerender(<Editor />);
     }
 
     const end = performance.now();

@@ -1,8 +1,8 @@
 # Development Guide
 
-This document provides guidelines for developing the MermaidMuse application.
+This document provides extensive guidelines for setting up, developing, and deploying the MermaidMuse application.
 
-## Getting Started
+## 🚀 Getting Started
 
 1. **Install Dependencies**
 
@@ -16,13 +16,62 @@ This document provides guidelines for developing the MermaidMuse application.
    npm run dev
    ```
 
-   The application will be available at `http://localhost:5173`
+   The application will be available at `http://localhost:5173` with fast Vite Hot Module Replacement (HMR).
 
-## Development Workflow
+## 📊 Architecture & File Organization
 
-### Code Quality Checks
+**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Mermaid 11.12.2
 
-Before committing code, ensure all checks pass:
+### Key Directories
+
+- `src/components/layout/`
+  - `HeaderModern.tsx` - Top navigation with title, export, share, offline status
+  - `EditorModern.tsx` - Monaco code editor for Mermaid syntax
+  - `PreviewModern.tsx` - Diagram preview with zoom/pan
+  - `MainContent.tsx` - Main editor/preview area layout shell
+- `src/components/editor/`
+  - `EditorPanel.tsx` - Monaco editor wrapper configurations
+- `src/components/preview/`
+  - `PreviewPanel.tsx` - Pure Mermaid diagram rendering logic
+- `src/components/LLMSettingsPanel.tsx`
+  - User-configurable API layer for LLM
+- `src/hooks/`
+  - `useDiagramState.tsx` - Global diagram state management context
+  - `useLLMConfig.tsx` - LocalStorage persistent Hook for OpenAI-compatible syntax-fixing features
+- `src/theme/`
+  - `themeRegistry.ts` - Pluggable theme system API (Avocado, Kanagawa, Dracula, Solarized)
+  - `colors.ts`, `constants.ts` - Application layout and styling variables
+- `src/utils/`
+  - `exportHelpers.ts` - Export diagrams as SVG with watermarks
+  - `validationHelpers.ts` - Input sanitization
+- `src/server/` & `api/`
+  - `llmFix.ts` - Generic OpenAI HTTP proxy handler resolving CORS restrictions (`api/fix.ts` uses this logic under the hood).
+- `src/test/` - Unit tests configuration & environment (`npm run test`)
+
+## 🛠 Adding New Features
+
+### Adding a New Theme
+
+1. Navigate to `src/theme/defaultThemes.ts`
+2. Define a new theme using `registerTheme(...)`.
+3. Provide the basic palette configurations alongside Mermaid `themeVariables`. 
+4. The theme will dynamically synchronize with the UI picker, Mermaid renderer, and internal syntax.
+
+### Modifying Styling
+- Global layout heavily utilizes Tailwind CSS standard classes (`border-sketch`, `brand-green-light`, etc.).
+- Update custom plugins inside `tailwind.config.js`.
+- Make overarching CSS fixes in `src/index.css`.
+
+## 🤖 Bring-Your-Own-LLM (BYOLLM) Configuration
+
+MermaidMuse ships with an AI syntax autofixer:
+1. Powered by ANY generic OpenAI-compatible completion API (`model`, `messages[]`)
+2. Set configuration through the UI Gear-Settings dropdown on the client.
+3. Your client hits the serverless function `/api/fix` via `src/server/llmFix.ts` allowing you to securely bridge local settings to API interfaces.
+
+## 🧪 Development Workflow & Quality Assurance
+
+Before committing, run standard suite checks:
 
 ```bash
 # Type checking
@@ -33,137 +82,46 @@ npm run lint
 
 # Format checking
 npm run format:check
+
+# Testing suite
+npm run test
 ```
 
 ### Automatic Fixes
 
-To fix linting and formatting issues automatically:
+To fix formatting issues locally:
 
 ```bash
-# Fix ESLint issues
 npm run lint:fix
-
-# Format code
 npm run format
 ```
 
-## File Organization
-
-### Components
-
-- **Layout Components** (`src/components/layout/`)
-  - HeaderModern.tsx - Top navigation with title, export, share
-  - EditorModern.tsx - Monaco code editor for Mermaid syntax
-  - PreviewModern.tsx - Diagram preview with zoom/pan
-  - MainContent.tsx - Main editor/preview area
-
-- **Editor Components** (`src/components/editor/`)
-  - EditorPanel.tsx - Monaco editor wrapper
-
-- **Preview Components** (`src/components/preview/`)
-  - PreviewPanel.tsx - Mermaid diagram rendering
-
-### Hooks
-
-- **useDiagramState** (`src/hooks/useDiagramState.tsx`)
-  - Global diagram state management
-  - Provides context for all diagram operations
-
-### Utilities
-
-- **exportHelpers.ts** - Export diagrams as SVG
-- **validationHelpers.ts** - Input validation functions
-- **environmentHelpers.ts** - Environment variable access
-- **mermaidParser.ts** - Mermaid syntax parsing utilities
-
-### Theme
-
-- **themeRegistry.ts** - Pluggable theme system API
-- **defaultThemes.ts** - Built-in themes (Avocado, Kanagawa, Dracula, Solarized)
-- **colors.ts** - Color palette and shadow definitions
-- **constants.ts** - Application constants and defaults
-
-## Adding New Features
-
-### Adding a New Component
-
-1. Create component file in appropriate directory
-2. Use TypeScript and React best practices
-3. Import using path aliases: `import { Something } from '@components/...`
-4. Test with `npm run type-check` and `npm run lint`
-
-### Adding a New Theme
-
-1. Edit `src/theme/defaultThemes.ts`
-2. Use `registerTheme()` to add a new theme with Mermaid theme variables
-3. The theme will automatically be available in the theme picker
-
-### Adding Styles
-
-- Use Tailwind CSS classes in components
-- Add custom global styles to `src/index.css`
-- Reference theme colors from `src/theme/colors.ts`
-
-## Testing
-
-```bash
-npm run test            # Run tests
-npm run test:watch      # Watch mode
-```
-
-## Building for Production
+## 🔧 Building for Production
 
 ```bash
 npm run build
 ```
 
-This creates an optimized build in the `dist/` directory.
+This ensures TypeScript strict checking and Vite optimization, exporting purely static assets inside `dist/`.
 
-### Preview Production Build
-
+Test production build via:
 ```bash
 npm run preview
 ```
 
-## AI Syntax Fixing
+## 🌐 Deployment (Cloudflare Pages)
 
-The application includes an optional AI-powered syntax fixing feature via xAI/Grok:
-
-1. Set `XAI_API_KEY` in your environment
-2. The `/api/fix` endpoint will use AI to fix Mermaid syntax errors
-3. Works with both Netlify Functions and Vercel serverless functions
-
-## Deployment
-
-### Cloudflare Pages (Recommended)
-
-1. Connect your GitHub repository to Cloudflare Pages
-2. Configure build settings:
+1. Connect your repo directly to **Cloudflare Pages**.
+2. Settings:
+   - **Framework**: Vite
    - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-3. Every push to `main` automatically deploys
+   - **Output directory**: `dist`
+3. Optional: Map a custom domain.
 
-### Manual Deployment
+## 🤝 Git Workflow
 
-Deploy the `dist/` directory to any static hosting:
-- Cloudflare Pages
-- Vercel
-- Netlify
-- GitHub Pages
-
-## Resources
-
-- [Mermaid Documentation](https://mermaid.js.org)
-- [Vite Documentation](https://vitejs.dev)
-- [React Documentation](https://react.dev)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-
-## Git Workflow
-
-1. Create feature branch: `git checkout -b feature/name`
-2. Make changes and test locally
-3. Run checks: `npm run lint && npm run type-check && npm run format`
+1. `git checkout -b feature/name`
+2. Author your changes carefully and write adequate tests where needed.
+3. Validate checks: `npm run lint && npm run type-check && npm run format`
 4. Commit: `git commit -m "feat: description"`
-5. Push: `git push origin feature/name`
-6. Create pull request
+5. Push `git push origin feature/name` and create a PR to main.

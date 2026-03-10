@@ -60,12 +60,30 @@ const DEFAULT_VALIDATION: ValidationResult = {
 export type LayoutEngine = 'dagre' | 'elk';
 
 const STORAGE_KEYS = {
-  content: 'diagramStudio.content',
-  title: 'diagramStudio.title',
-  theme: 'diagramStudio.theme',
-  layoutEngine: 'diagramStudio.layoutEngine',
-  handDrawn: 'diagramStudio.handDrawn',
+  content: 'mermaidMuse.content',
+  title: 'mermaidMuse.title',
+  theme: 'mermaidMuse.theme',
+  layoutEngine: 'mermaidMuse.layoutEngine',
+  handDrawn: 'mermaidMuse.handDrawn',
 } as const;
+
+if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+  const legacyKeys = {
+    content: 'diagramStudio.content',
+    title: 'diagramStudio.title',
+    theme: 'diagramStudio.theme',
+    layoutEngine: 'diagramStudio.layoutEngine',
+    handDrawn: 'diagramStudio.handDrawn',
+  };
+
+  Object.entries(STORAGE_KEYS).forEach(([key, newKey]) => {
+    const oldKey = legacyKeys[key as keyof typeof legacyKeys];
+    const oldVal = window.localStorage.getItem(oldKey);
+    if (oldVal !== null && window.localStorage.getItem(newKey) === null) {
+      window.localStorage.setItem(newKey, oldVal);
+    }
+  });
+}
 
 const getSharedContentFromHash = (): string | null => {
   try {

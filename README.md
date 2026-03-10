@@ -1,196 +1,98 @@
-# MermaidMuse
+<div align="center">
+  <img src="public/favicon.png" alt="MermaidMuse Logo" width="128" height="128" style="border-radius: 18px;" />
+  
+  # MermaidMuse
+  
+  **A modern, minimalist Mermaid diagram editor with Bring-Your-Own-LLM (BYOLLM) AI-powered syntax fixing.**
+  
+  [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Mermaid](https://img.shields.io/badge/Mermaid-FF3670?style=for-the-badge&logo=mermaid&logoColor=white)](https://mermaid.js.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+</div>
 
-A modern, minimalist Mermaid diagram editor with AI-powered syntax fixing. Built with Vite, React, TypeScript, and Mermaid.
+---
 
-## 🚀 Features
+MermaidMuse is a lightning-fast, fully open-source environment for crafting beautiful [Mermaid](https://mermaid.js.org/) diagrams. It offers an advanced Monaco-based editor, real-time live preview (including 3D palettes), and **AI-powered syntax fixing** supported by any OpenAI-compatible API (ChatGPT, xAI/Grok, Ollama, etc.).
 
-- **Fast & Responsive**: Vite for instant HMR and lightning-fast builds
-- **Mermaid Diagrams**: All 15 diagram types supported (flowcharts, sequence, class, state, ER, Gantt, pie, mindmap, timeline, kanban, block, sankey, C4, git, user journey)
-- **Monaco Editor**: Professional code editor with syntax highlighting
-- **Interactive Preview**: Real-time diagram rendering with zoom (up to 800%), pan, and double-click zoom
-- **AI Syntax Fixing**: Optional xAI/Grok-powered diagram syntax correction
-- **Multiple Themes**: Avocado, Kanagawa, Dracula, and Solarized themes for diagram rendering
-- **Export Options**: SVG export with customizable filenames
-- **Tailwind CSS**: Modern, clean styling
-- **Type Safe**: Full TypeScript support with strict type checking
+## ✨ Features
 
-## 📋 Prerequisites
+- ⚡️ **Real-Time Interactive Preview**: Instant diagram rendering with infinite panning, double-click zoom, and up to 800% magnification.
+- 🤖 **Bring-Your-Own-LLM (BYOLLM) Syntax Fixing**: Configure your own API key (OpenAI, xAI, Anthropic via proxy, Local Ollama) to automatically fix Mermaid syntax errors directly in the editor.
+- 🎨 **Multiple Exquisite Themes**: Choose from hand-crafted themes such as Avocado (light), Kanagawa (dark), Dracula (dark), and Solarized (dark) for beautiful diagram aesthetics.
+- 📐 **Comprehensive Diagram Support**: All 15+ Mermaid diagram types are supported (Flowcharts, Sequence, Class, State, ER, Gantt, Pie, Mindmap, Timeline, Kanban, Block, Sankey, C4, Git, and User Journey).
+- 💾 **Advanced Export Options**: Export your workspace as SVG (with customizable watermarks) or grab a full workspace screenshot in PNG format.
+- 🌐 **Offline-Ready (PWA)**: Built-in Service Worker and manifest for robust offline resilience. Keep working even when your connection drops.
+- 💻 **Professional Editor Built-in**: Integrated Monaco Editor (the core of VS Code) with syntax highlighting and error-line highlighting.
 
-- Node.js 18+
-- npm or yarn
+## 🚀 Quick Start
 
-## 🔧 Installation
-
-1. Clone the repository:
+Ensure you have Node.js 18+ and npm/yarn installed.
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/lsj5031/MermaidMuse.git
 cd MermaidMuse
-```
 
-2. Install dependencies:
-
-```bash
+# 2. Install dependencies
 npm install
-```
 
-## 📖 Available Scripts
-
-### Development
-
-```bash
+# 3. Start the development server
 npm run dev
 ```
 
-Starts the development server at `http://localhost:5173`
+Visit `http://localhost:5173` to start creating!
 
-### Build
+## 🤖 Configuring AI Syntax Fixing
 
-```bash
-npm run build
-```
+MermaidMuse allows you to use **any OpenAI-compatible API** to fix syntax errors automatically. Your API keys are securely stored only in your browser's `localStorage` and act exclusively as a proxy between your client and your selected LLM endpoint.
 
-Creates an optimized production build in `dist/`
+1. Open **MermaidMuse** in your browser.
+2. Click the **Settings (Gear Icon)** in the top navigation bar.
+3. Enter your **Base URL** (e.g., `https://api.openai.com/v1` or `http://localhost:11434/v1`).
+4. Enter your **API Key** and desired **Model Name** (e.g., `gpt-4o`, `grok-beta`, or `llama3`).
+5. When a syntax error occurs, a **"Fix with AI"** button will appear in the Problems Panel to automatically correct it!
 
-### Preview
+## 📖 Available Scripts
 
-```bash
-npm run preview
-```
+- `npm run dev` - Starts the Vite dev server with HMR.
+- `npm run build` - Type-checks and builds the production bundle in `dist/`.
+- `npm run preview` - Serves the production build locally.
+- `npm run lint` / `npm run lint:fix` - Checks/fixes ESLint issues.
+- `npm run format` / `npm run format:check` - Formats code using Prettier.
+- `npm run type-check` - Validates strict TypeScript types.
+- `npm run test` / `npm run test:watch` - Runs the Vitest test suite.
 
-Serves the production build locally for testing
+## 🛠 Project Architecture
 
-### Linting & Formatting
+Engineered with React 18, TypeScript, and Vite, packaged beautifully with Tailwind CSS.
 
-```bash
-npm run lint              # Check for issues
-npm run lint:fix         # Auto-fix issues
-npm run format           # Format all files
-npm run format:check     # Check if formatting is needed
-npm run type-check       # Check TypeScript types
-```
+- **`src/components/layout/`**: Core UI shells including `HeaderModern`, `EditorModern`, and `PreviewModern`.
+- **`src/theme/`**: Extensible plugin system (`themeRegistry`) managing colors and variables for 2D/3D interactions.
+- **`src/hooks/`**: Global state management (`useDiagramState`) and LLM configuration persistence (`useLLMConfig`).
+- **`src/utils/`**: Core headless utilities (`exportHelpers`, `validationHelpers`).
+- **`src/server/`**: Serverless proxy definitions for safe, CORS-free API communications (`llmFix.ts`).
 
-### Tests
+## ☁️ Deployment
 
-```bash
-npm run test            # Run tests
-npm run test:watch      # Watch mode
-```
-
-## 🎨 Project Structure
-
-```
-src/
-├── components/
-│   ├── layout/         # Header, Editor, Preview, MainContent
-│   ├── editor/         # Monaco editor wrapper
-│   └── preview/        # Mermaid preview panel
-├── hooks/
-│   └── useDiagramState.tsx   # Global diagram state management
-├── theme/
-│   ├── themeRegistry.ts      # Pluggable theme system
-│   ├── defaultThemes.ts      # Built-in themes
-│   └── constants.ts          # App constants
-├── utils/
-│   ├── exportHelpers.ts      # Export functions (SVG)
-│   ├── environmentHelpers.ts # Environment configuration
-│   └── validationHelpers.ts  # Input validation
-├── server/
-│   └── xaiFix.ts             # AI syntax fixing backend
-├── App.tsx                   # Root component
-├── main.tsx                  # Entry point
-└── index.css                 # Global styles
-```
-
-## 🚀 Deployment
-
-### Cloudflare Pages (Recommended)
-
-The project includes a GitHub Actions workflow for automatic deployment to Cloudflare Pages.
-
-**Setup:**
-
-1. Connect your GitHub repository to Cloudflare Pages
-2. Configure build settings:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-3. Add GitHub secrets:
-   - `CLOUDFLARE_API_TOKEN` - [Generate here](https://dash.cloudflare.com/profile/api-tokens)
-   - `CLOUDFLARE_ACCOUNT_ID` - Find in Cloudflare Dashboard
-4. Every push to `main` automatically deploys
-
-See `.github/workflows/deploy.yml` for workflow configuration.
-
-### Manual Deployment
+MermaidMuse can be easily deployed to **Cloudflare Pages** (recommended with included `.github/workflows/deploy.yml`), Vercel, Netlify, or any other static hosting provider, due to its lightweight Vite build process.
 
 ```bash
 npm run build
 ```
-
-Deploy the `dist/` directory to any static hosting:
-- Cloudflare Pages
-- Vercel
-- Netlify
-- GitHub Pages
-- AWS S3 + CloudFront
-
-## 💡 Usage
-
-### Creating a Diagram
-
-1. Start dev server: `npm run dev`
-2. Edit Mermaid syntax in the left editor panel
-3. See real-time preview in the right panel
-
-### Preview Controls
-
-- **Zoom In/Out**: Click buttons or scroll wheel
-- **Double-click**: Zoom in by 50%
-- **Drag**: Pan around the diagram
-- **Reset**: Click reset button to return to 100% zoom
-
-### Sample Diagram
-
-```mermaid
-flowchart LR
-    A[Buyer] --> B[Create Order]
-    B --> C[Sign Order]
-    C --> D[Send Order to Seller]
-    D --> E[Sign Order]
-    E --> F[Send Order to Escrow]
-    F --> G[Verify Order]
-    G --> H[Release Payment]
-    H --> I[Transfer NFT]
-    I --> J[Complete Order]
-```
-
-## 📦 Key Dependencies
-
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Mermaid 11.12.2** - Diagram rendering (all 15 diagram types)
-- **@monaco-editor/react** - Code editor
-- **Tailwind CSS** - Styling
-- **html2canvas** - PNG export
-- **lucide-react** - Icons
-
-## 🔗 Useful Resources
-
-- [Mermaid Documentation](https://mermaid.js.org)
-- [Vite Documentation](https://vitejs.dev)
-- [React Documentation](https://react.dev)
-- [TypeScript Documentation](https://www.typescriptlang.org)
-- [Tailwind CSS Documentation](https://tailwindcss.com)
+Upload the compiled `dist/` directory directly to your static host.
 
 ## 🤝 Contributing
 
-1. Create a feature branch
-2. Make changes and test locally
-3. Run linting: `npm run lint && npm run type-check`
-4. Format code: `npm run format`
-5. Submit a pull request
+We welcome contributions! Please review the [Development Guide](DEVELOPMENT.md) before getting started.
+
+1. Fork & Clone
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License
+MermaidMuse is [MIT Licensed](LICENSE).

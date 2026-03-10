@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'diagram-studio-cache-v1';
+const CACHE_NAME = 'mermaid-muse-cache-v1';
 
 const CORE_ASSETS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
 
