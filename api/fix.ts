@@ -1,4 +1,4 @@
-import { fixMermaidSyntaxWithXai } from '../src/server/xaiFix';
+import { fixMermaidSyntax } from '../src/server/xaiFix';
 
 type ApiRequest = {
   method?: string;
@@ -75,6 +75,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return;
   }
 
-  const result = await fixMermaidSyntaxWithXai(diagramText);
+  // Support user-provided LLM credentials
+  const userBaseUrl = payload && typeof payload.baseUrl === 'string' ? payload.baseUrl : undefined;
+  const userApiKey = payload && typeof payload.apiKey === 'string' ? payload.apiKey : undefined;
+  const userModel = payload && typeof payload.model === 'string' ? payload.model : undefined;
+
+  const result = await fixMermaidSyntax(diagramText, {
+    baseUrl: userBaseUrl,
+    apiKey: userApiKey,
+    model: userModel,
+  });
+  
   json(res, 200, result);
 }

@@ -15,19 +15,19 @@ npm run format          # Prettier formatting
 
 ## Architecture & Structure
 
-**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Mermaid diagram library
+**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Mermaid 11.12.2
 
 **Key Directories**:
 - `src/components/` - React components (layout, UI)
 - `src/hooks/` - Custom hooks (state management: `useDiagramState`)
 - `src/utils/` - Helpers (exportHelpers, validationHelpers, environmentHelpers)
-- `src/theme/` - Design tokens (colors, constants)
+- `src/theme/` - Pluggable theme system (themeRegistry, defaultThemes, colors, constants)
 - `src/types/` - TypeScript type definitions
 - `src/test/` - Test setup & utilities
-- `api/` & `server/` - Backend API endpoints (Stripe, diagram operations)
+- `api/` & `server/` - AI syntax fixing endpoints (xAI/Grok)
 - `netlify/` & `.github/workflows/` - Deployment configuration
 
-**Key Dependencies**: Mermaid (diagrams), @monaco-editor/react (code editor), html2canvas (PNG export), Stripe (payments), lucide-react (icons)
+**Key Dependencies**: Mermaid (diagrams), @monaco-editor/react (code editor), html2canvas (PNG export), lucide-react (icons)
 
 ## Code Style & Conventions
 
@@ -44,3 +44,13 @@ npm run format          # Prettier formatting
 **Naming**: camelCase for vars/functions, PascalCase for components/types. Private functions can use underscore prefix.
 
 **Error Handling**: Validate inputs (see validationHelpers). Handle API errors gracefully.
+
+## Theme System
+
+The app uses a pluggable theme registry in `src/theme/themeRegistry.ts`:
+
+- `registerTheme(id, config)` - Register new themes
+- `getTheme(id)` - Retrieve theme config
+- `getThemeIds()` - List all registered themes
+
+Built-in themes: Avocado (light), Kanagawa (dark), Dracula (dark), Solarized (dark)

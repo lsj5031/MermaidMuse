@@ -1,6 +1,6 @@
 export interface FixSyntaxResponse {
   ok: boolean;
-  provider: 'xai' | 'fallback';
+  provider: 'llm' | 'fallback';
   fixedText: string | null;
   suggestions: string[];
   error?: {
@@ -56,7 +56,11 @@ const asRecord = (value: unknown): Record<string, unknown> | null => {
   return value as Record<string, unknown>;
 };
 
-export async function fixMermaidSyntaxWithXai(
+/**
+ * Generic LLM fix function for Mermaid syntax.
+ * Works with any OpenAI-compatible API endpoint.
+ */
+export async function fixMermaidSyntax(
   diagramText: string,
   options: FixSyntaxOptions = {}
 ): Promise<FixSyntaxResponse> {
@@ -84,10 +88,10 @@ export async function fixMermaidSyntaxWithXai(
       ok: false,
       provider: 'fallback',
       fixedText: null,
-      suggestions: ['Set XAI_API_KEY to enable AI syntax fixing.'],
+      suggestions: ['Configure your LLM endpoint in Settings to enable AI syntax fixing.'],
       error: {
         code: 'NOT_CONFIGURED',
-        message: 'XAI_API_KEY is not configured.',
+        message: 'LLM API key is not configured.',
       },
     };
   }
@@ -127,15 +131,15 @@ export async function fixMermaidSyntaxWithXai(
       const message =
         (errorRecord && typeof errorRecord.message === 'string' && errorRecord.message) ||
         (rawRecord && typeof rawRecord.message === 'string' && rawRecord.message) ||
-        `xAI request failed with status ${response.status}`;
+        `LLM request failed with status ${response.status}`;
 
       return {
         ok: false,
-        provider: 'xai',
+        provider: 'llm',
         fixedText: null,
         suggestions: [],
         error: {
-          code: 'XAI_REQUEST_FAILED',
+          code: 'LLM_REQUEST_FAILED',
           message,
         },
         raw,
@@ -155,12 +159,12 @@ export async function fixMermaidSyntaxWithXai(
     if (typeof content !== 'string' || !content.trim()) {
       return {
         ok: false,
-        provider: 'xai',
+        provider: 'llm',
         fixedText: null,
         suggestions: [],
         error: {
           code: 'EMPTY_RESPONSE',
-          message: 'xAI returned an empty response.',
+          message: 'LLM returned an empty response.',
         },
         raw,
       };
@@ -178,7 +182,7 @@ export async function fixMermaidSyntaxWithXai(
     if (!fixedText) {
       return {
         ok: true,
-        provider: 'xai',
+        provider: 'llm',
         fixedText: null,
         suggestions: suggestions.length ? suggestions : [content.trim()],
         raw,
@@ -187,7 +191,7 @@ export async function fixMermaidSyntaxWithXai(
 
     return {
       ok: true,
-      provider: 'xai',
+      provider: 'llm',
       fixedText,
       suggestions,
       raw,
@@ -197,11 +201,11 @@ export async function fixMermaidSyntaxWithXai(
 
     return {
       ok: false,
-      provider: 'xai',
+      provider: 'llm',
       fixedText: null,
       suggestions: [],
       error: {
-        code: 'XAI_NETWORK_ERROR',
+        code: 'LLM_NETWORK_ERROR',
         message,
       },
     };
@@ -209,3 +213,9 @@ export async function fixMermaidSyntaxWithXai(
     clearTimeout(timeoutId);
   }
 }
+
+/**
+ * Legacy alias for backward compatibility.
+ * @deprecated Use fixMermaidSyntax instead.
+ */
+export const fixMermaidSyntaxWithXai = fixMermaidSyntax;

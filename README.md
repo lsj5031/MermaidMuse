@@ -1,21 +1,18 @@
 # MermaidMuse
 
-A modern, minimalist diagram editor for creating beautiful Mermaid diagrams. Built with Vite, React, TypeScript, and Mermaid.
-
-## 🎯 Project Status
-
-**Frontend-only MVP**: Currently deploying the frontend to Cloudflare Pages. No backend required for basic functionality.
+A modern, minimalist Mermaid diagram editor with AI-powered syntax fixing. Built with Vite, React, TypeScript, and Mermaid.
 
 ## 🚀 Features
 
 - **Fast & Responsive**: Vite for instant HMR and lightning-fast builds
-- **Mermaid Diagrams**: Create flowcharts, sequence diagrams, and other visualizations
+- **Mermaid Diagrams**: All 15 diagram types supported (flowcharts, sequence, class, state, ER, Gantt, pie, mindmap, timeline, kanban, block, sankey, C4, git, user journey)
 - **Monaco Editor**: Professional code editor with syntax highlighting
 - **Interactive Preview**: Real-time diagram rendering with zoom (up to 800%), pan, and double-click zoom
-- **Export Options**: PNG and JSON export formats
+- **AI Syntax Fixing**: Optional xAI/Grok-powered diagram syntax correction
+- **Multiple Themes**: Avocado, Kanagawa, Dracula, and Solarized themes for diagram rendering
+- **Export Options**: SVG export with customizable filenames
 - **Tailwind CSS**: Modern, clean styling
 - **Type Safe**: Full TypeScript support with strict type checking
-- **Code Quality**: ESLint and Prettier configured
 
 ## 📋 Prerequisites
 
@@ -85,25 +82,24 @@ npm run test:watch      # Watch mode
 ```
 src/
 ├── components/
-│   ├── layout/
-│   │   ├── HeaderModern.tsx      # Top navigation bar
-│   │   ├── EditorModern.tsx      # Code editor panel
-│   │   ├── PreviewModern.tsx     # Diagram preview with zoom/pan
-│   │   └── MainContent.tsx       # Main layout container
-│   ├── ProUpsell/                # Pro feature teasers
-│   └── ...
+│   ├── layout/         # Header, Editor, Preview, MainContent
+│   ├── editor/         # Monaco editor wrapper
+│   └── preview/        # Mermaid preview panel
 ├── hooks/
-│   └── useDiagramState.tsx       # Global diagram state management
+│   └── useDiagramState.tsx   # Global diagram state management
 ├── theme/
-│   ├── colors.ts                 # Color palette
-│   └── constants.ts              # App constants
+│   ├── themeRegistry.ts      # Pluggable theme system
+│   ├── defaultThemes.ts      # Built-in themes
+│   └── constants.ts          # App constants
 ├── utils/
-│   ├── exportHelpers.ts          # Export functions (PNG, JSON)
-│   ├── environmentHelpers.ts     # Environment configuration
-│   └── validationHelpers.ts      # Input validation
-├── App.tsx                        # Root component
-├── main.tsx                       # Entry point
-└── index.css                      # Global styles
+│   ├── exportHelpers.ts      # Export functions (SVG)
+│   ├── environmentHelpers.ts # Environment configuration
+│   └── validationHelpers.ts  # Input validation
+├── server/
+│   └── xaiFix.ts             # AI syntax fixing backend
+├── App.tsx                   # Root component
+├── main.tsx                  # Entry point
+└── index.css                 # Global styles
 ```
 
 ## 🚀 Deployment
@@ -173,7 +169,7 @@ flowchart LR
 - **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool
-- **Mermaid** - Diagram rendering
+- **Mermaid 11.12.2** - Diagram rendering (all 15 diagram types)
 - **@monaco-editor/react** - Code editor
 - **Tailwind CSS** - Styling
 - **html2canvas** - PNG export
@@ -187,24 +183,6 @@ flowchart LR
 - [TypeScript Documentation](https://www.typescriptlang.org)
 - [Tailwind CSS Documentation](https://tailwindcss.com)
 
-## 🐛 Troubleshooting
-
-### Port Already in Use
-
-Vite automatically uses the next available port if 5173 is in use.
-
-### Mermaid Not Rendering
-
-- Check diagram syntax is valid
-- Clear browser cache (`Ctrl+Shift+Delete`)
-- Check browser console for errors
-
-### TypeScript Errors
-
-```bash
-npm run type-check
-```
-
 ## 🤝 Contributing
 
 1. Create a feature branch
@@ -213,20 +191,6 @@ npm run type-check
 4. Format code: `npm run format`
 5. Submit a pull request
 
-## 🎯 Planned Features
-
-- [ ] Backend API integration (when ready)
-- [ ] User authentication
-- [ ] Diagram persistence/library
-- [ ] Diagram sharing
-- [ ] Collaboration features
-- [ ] Custom theme support
-- [ ] AI-powered diagram suggestions
-
 ## 📄 License
 
 MIT License
-
----
-
-**Happy diagramming! 🎨**

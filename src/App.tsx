@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '@components/layout/HeaderModern';
 import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
 import { DiagramProvider } from '@hooks/useDiagramState';
-import { ProProvider } from '@hooks/usePro';
+import { LLMConfigProvider } from '@hooks/useLLMConfig';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { initializeDefaultThemes } from '@theme/defaultThemes';
 import './App.css';
@@ -12,7 +12,7 @@ import './App.css';
 initializeDefaultThemes();
 
 function AppContent() {
-  const { currentDiagram } = useDiagramState();
+  const { currentDiagram: _currentDiagram } = useDiagramState();
   const [leftPaneWidth, setLeftPaneWidth] = useState(33.33); // percentage
 
   const handleResize = (e: React.MouseEvent) => {
@@ -65,11 +65,11 @@ function AppContent() {
 
 function App() {
   return (
-    <ProProvider>
+    <LLMConfigProvider>
       <DiagramProvider>
         <AppContent />
       </DiagramProvider>
-    </ProProvider>
+    </LLMConfigProvider>
   );
 }
 
