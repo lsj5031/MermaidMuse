@@ -85,14 +85,14 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div data-testid="llm-settings-panel" role="dialog" aria-labelledby="llm-settings-title" className="bg-dark-surface border border-dark-border rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div data-testid="llm-settings-panel" role="dialog" aria-labelledby="llm-settings-title" className="bg-white border border-gray-300 rounded shadow-xl w-full max-w-md mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-dark-border">
-          <h2 id="llm-settings-title" className="text-lg font-semibold text-white">LLM Settings</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-[#E6F7E5]">
+          <h2 id="llm-settings-title" className="text-lg font-semibold text-gray-800">LLM Settings</h2>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-white transition-colors"
+            className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -103,7 +103,7 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
         <div className="p-4 space-y-4">
           {/* Provider Presets */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">
               Quick Presets
             </label>
             <div className="flex flex-wrap gap-2">
@@ -111,7 +111,7 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
                 <button
                   key={key}
                   onClick={() => applyPreset(key as keyof typeof LLM_PROVIDER_DEFAULTS)}
-                  className="px-3 py-1.5 text-xs font-medium bg-dark-bg border border-dark-border rounded hover:border-brand-blue hover:text-brand-blue transition-colors"
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-gray-300 rounded hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors"
                 >
                   {key.toUpperCase()}
                 </button>
@@ -123,7 +123,7 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
           <div>
             <label
               htmlFor="llm-endpoint"
-              className="block text-sm font-medium text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               API Endpoint
             </label>
@@ -133,12 +133,12 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
               placeholder="https://api.openai.com/v1"
-              className={`w-full px-3 py-2 bg-dark-bg border rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-blue ${
-                errors.baseUrl ? 'border-red-500' : 'border-dark-border'
+              className={`w-full px-3 py-2 bg-white border rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.baseUrl ? 'border-red-400' : 'border-gray-300'
               }`}
             />
             {errors.baseUrl && (
-              <p className="mt-1 text-xs text-red-400">{errors.baseUrl}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.baseUrl}</p>
             )}
           </div>
 
@@ -146,7 +146,7 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
           <div>
             <label
               htmlFor="llm-apikey"
-              className="block text-sm font-medium text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               API Key
             </label>
@@ -157,14 +157,14 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="sk-..."
-                className={`w-full px-3 py-2 pr-10 bg-dark-bg border rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-blue ${
-                  errors.apiKey ? 'border-red-500' : 'border-dark-border'
+                className={`w-full px-3 py-2 pr-10 bg-white border rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.apiKey ? 'border-red-400' : 'border-gray-300'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
                 aria-label="Toggle API key visibility"
               >
                 {showApiKey ? (
@@ -175,9 +175,9 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
               </button>
             </div>
             {errors.apiKey && (
-              <p className="mt-1 text-xs text-red-400">{errors.apiKey}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.apiKey}</p>
             )}
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-400">
               Stored locally in your browser. Never sent to our servers.
             </p>
           </div>
@@ -186,7 +186,7 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
           <div>
             <label
               htmlFor="llm-model"
-              className="block text-sm font-medium text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               Model
             </label>
@@ -196,42 +196,42 @@ export function LLMSettingsPanel({ isOpen, onClose }: LLMSettingsPanelProps) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               placeholder="gpt-4o-mini"
-              className={`w-full px-3 py-2 bg-dark-bg border rounded text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-blue ${
-                errors.model ? 'border-red-500' : 'border-dark-border'
+              className={`w-full px-3 py-2 bg-white border rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.model ? 'border-red-400' : 'border-gray-300'
               }`}
             />
             {errors.model && (
-              <p className="mt-1 text-xs text-red-400">{errors.model}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.model}</p>
             )}
           </div>
 
           {/* Status */}
           {isConfigured && (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+            <div className="flex items-center gap-2 text-green-600 text-sm">
+              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               LLM is configured and ready
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-dark-border">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
           <button
             onClick={handleClear}
-            className="px-3 py-1.5 text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
+            className="px-3 py-1.5 text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
           >
             Clear
           </button>
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-300 bg-dark-bg border border-dark-border rounded hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-white bg-brand-blue rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors"
             >
               Save
             </button>

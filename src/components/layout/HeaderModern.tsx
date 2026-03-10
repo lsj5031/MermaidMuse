@@ -1,16 +1,17 @@
 import React from 'react';
-import { Download, Share2, RotateCcw, Palette } from 'lucide-react';
+import { Download, Share2, RotateCcw, Palette, Settings } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
+import { LLMSettingsPanel } from '@components/LLMSettingsPanel';
 import html2canvas from 'html2canvas';
-import Button from './Button';
 
 const Header: React.FC = () => {
   const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
     useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
   const [showThemeMenu, setShowThemeMenu] = React.useState(false);
+  const [showSettings, setShowSettings] = React.useState(false);
 
   const handleExportSvg = async () => {
     try {
@@ -239,6 +240,14 @@ const Header: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             <span className="hidden sm:inline">Reset</span>
           </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className={actionButtonClass(true)}
+            title="Open LLM settings"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">Settings</span>
+          </button>
         </div>
       </div>
 
@@ -247,6 +256,8 @@ const Header: React.FC = () => {
           {toast}
         </div>
       )}
+
+      <LLMSettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </header>
   );
 };

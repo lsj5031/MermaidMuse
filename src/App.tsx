@@ -4,7 +4,6 @@ import Editor from '@components/layout/EditorModern';
 import Preview from '@components/layout/PreviewModern';
 import { DiagramProvider } from '@hooks/useDiagramState';
 import { LLMConfigProvider } from '@hooks/useLLMConfig';
-import { useDiagramState } from '@hooks/useDiagramState';
 import { initializeDefaultThemes } from '@theme/defaultThemes';
 import './App.css';
 
@@ -12,8 +11,7 @@ import './App.css';
 initializeDefaultThemes();
 
 function AppContent() {
-  const { currentDiagram: _currentDiagram } = useDiagramState();
-  const [leftPaneWidth, setLeftPaneWidth] = useState(33.33); // percentage
+  const [leftPaneWidth, setLeftPaneWidth] = useState(33.33);
 
   const handleResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,7 +36,7 @@ function AppContent() {
   return (
     <div className="flex flex-col h-screen font-sans">
       <Header />
-      
+
       <main className="flex-grow flex overflow-hidden relative">
         {/* Left Pane: Code Editor */}
         <div style={{ width: `${leftPaneWidth}%` }} className="flex-shrink-0 h-full relative group">
@@ -46,7 +44,7 @@ function AppContent() {
         </div>
 
         {/* Resizer Handle */}
-        <div 
+        <div
           className="w-1.5 hover:w-2 bg-gray-200 hover:bg-brand-blue cursor-col-resize z-20 flex items-center justify-center transition-all absolute"
           style={{ left: `${leftPaneWidth}%`, top: 0, bottom: 0 }}
           onMouseDown={handleResize}

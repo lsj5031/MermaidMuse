@@ -12,7 +12,7 @@ interface ProblemsPanelProps {
 
 export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
   const { currentDiagram, revealInEditor, updateDiagramContent } = useDiagramState();
-  const { isConfigured } = useLLMConfig();
+  const { config, isConfigured } = useLLMConfig();
   const { validation, isValidating } = currentDiagram;
   const [showSettings, setShowSettings] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
@@ -54,18 +54,66 @@ export default function ProblemsPanel({ isOpen, onClose }: ProblemsPanelProps) {
     setFixError(null);
 
     try {
-      const response = await fetch('/api/fix', {
+      // Call LLM API directly from client with user credentials
+      const { baseUrl, apiKey, model } = config!;
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ diagramText: currentDiagram.content }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a meticulous Mermaid syntax expert. Fix ONLY syntax errors and preserve intent. ' +
+                'Return a JSON object with keys: fixedText (string), suggestions (string[]). ' +
+                'Do not include markdown fences. Do not include any other keys.',
+            },
+            {
+              role: 'user',
+              content:
+                'Fix Mermaid syntax errors in the following diagram. Preserve formatting where possible.\n\n' +
+                currentDiagram.content,
+            },
+          ],
+        }),
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `API error: ${response.status}`);
+      }
 
-      if (result.ok && result.fixedText) {
-        updateDiagramContent(result.fixedText);
-      } else if (result.error) {
-        setFixError(result.error.message || 'Failed to fix diagram');
+      const result = await response.json();
+      const content = result.choices?.[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('Empty response from LLM');
+      }
+
+      // Extract JSON from the response
+      let parsed;
+      try {
+        parsed = JSON.parse(content.trim());
+      } catch {
+        // Try to extract JSON from within the response
+        const firstBrace = content.indexOf('{');
+        const lastBrace = content.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          parsed = JSON.parse(content.slice(firstBrace, lastBrace + 1));
+        } else {
+          throw new Error('Could not parse LLM response');
+        }
+      }
+
+      if (parsed.fixedText) {
+        updateDiagramContent(parsed.fixedText);
+      } else {
+        setFixError('LLM did not return a fixed diagram');
       }
     } catch (err) {
       setFixError(err instanceof Error ? err.message : 'Network error');

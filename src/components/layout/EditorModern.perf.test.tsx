@@ -3,9 +3,16 @@ import { vi, describe, it, expect, afterEach } from 'vitest';
 import Editor from './EditorModern';
 import { useDiagramState } from '@hooks/useDiagramState';
 
-// Mock the hook
+// Mock the hooks
 vi.mock('@hooks/useDiagramState', () => ({
   useDiagramState: vi.fn(),
+}));
+
+vi.mock('@hooks/useLLMConfig', () => ({
+  useLLMConfig: vi.fn(() => ({
+    config: null,
+    isConfigured: false,
+  })),
 }));
 
 describe('Editor Performance', () => {
