@@ -1,78 +1,13 @@
-import html2canvas from 'html2canvas';
 import mermaid from 'mermaid';
 import type { DiagramTheme } from '@theme/themeRegistry';
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   link.click();
-
   URL.revokeObjectURL(url);
-};
-
-export interface ExportPngOptions {
-  backgroundColor?: string;
-  scale?: number;
-  watermarkText?: string;
-  watermarkColor?: string;
-}
-
-export async function exportElementAsPNG(element: HTMLElement, filename: string, options: ExportPngOptions = {}) {
-  const { backgroundColor = '#0a0e27', scale = 2, watermarkText, watermarkColor } = options;
-
-  const canvas = await html2canvas(element, {
-    backgroundColor,
-    scale,
-    useCORS: true,
-  });
-
-  if (watermarkText) {
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const padding = Math.round(18 * scale);
-      ctx.save();
-      ctx.globalAlpha = 0.55;
-      ctx.fillStyle = watermarkColor ?? '#ffffff';
-      ctx.font = `${Math.round(14 * scale)}px "Comic Neue", system-ui, -apple-system, sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(watermarkText, canvas.width - padding, canvas.height - padding);
-      ctx.restore();
-    }
-  }
-
-  downloadBlob(await canvasToBlob(canvas), `${filename}.png`);
-}
-
-export async function exportElementAsPNGById(elementId: string, filename: string, options?: ExportPngOptions) {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    throw new Error(`Element with id ${elementId} not found`);
-  }
-
-  await exportElementAsPNG(element, filename, options);
-}
-
-export async function exportDiagramAsPNG(elementId: string, filename: string): Promise<void> {
-  await exportElementAsPNGById(elementId, filename, {
-    backgroundColor: '#0a0e27',
-    scale: 2,
-  });
-}
-
-const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error('Canvas to Blob failed'));
-      }
-    }, 'image/png');
-  });
 };
 
 export interface ExportSvgOptions {
@@ -145,13 +80,4 @@ export async function exportMermaidAsSVG(
   );
 
   downloadBlob(new Blob([colored], { type: 'image/svg+xml;charset=utf-8' }), `${filename}.svg`);
-}
-
-export function exportDiagramAsJSON(content: string, filename: string): void {
-  const dataStr = JSON.stringify({ content }, null, 2);
-  downloadBlob(new Blob([dataStr], { type: 'application/json' }), `${filename}.json`);
-}
-
-export function exportDiagramAsText(content: string, filename: string): void {
-  downloadBlob(new Blob([content], { type: 'text/plain' }), `${filename}.mmd`);
 }

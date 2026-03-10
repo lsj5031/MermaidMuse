@@ -95,22 +95,3 @@ const parseMermaidError = (errorMessage: string): ValidationError[] => {
   return errors;
 };
 
-// Removed - now handled inline with proper debouncing in useDiagramState
-
-export const isOfflineValidationFallback = (error: string): boolean => {
-  return error.toLowerCase().includes('network') || 
-         error.toLowerCase().includes('offline') ||
-         error.toLowerCase().includes('fetch');
-};
-
-export const getValidationStatusColor = (result: ValidationResult): string => {
-  if (result.errors.length > 0) return 'text-red-400';
-  if (result.warnings.length > 0) return 'text-yellow-400';
-  return 'text-green-400';
-};
-
-export const getValidationStatusIcon = (result: ValidationResult): string => {
-  if (result.errors.length > 0) return '⛔';
-  if (result.warnings.length > 0) return '⚠️';
-  return '✅';
-};

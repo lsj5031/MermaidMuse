@@ -5,5 +5,5 @@
 
 export type DiagramTheme = string;
 
-export { getMermaidConfigForTheme, getNodeColorForTheme } from './themeRegistry';
+export { getMermaidConfigForTheme } from './themeRegistry';
 export { getThemeIds, hasTheme, registerTheme, getTheme } from './themeRegistry';
