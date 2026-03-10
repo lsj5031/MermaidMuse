@@ -12,6 +12,7 @@ vi.mock('lucide-react', () => ({
   RotateCcw: () => <span data-testid="icon-reset">Reset</span>,
   Palette: () => <span data-testid="icon-palette">Palette</span>,
   Settings: () => <span data-testid="icon-settings">Settings</span>,
+  Pencil: () => <span data-testid="icon-pencil">Pencil</span>,
   X: () => <span data-testid="icon-x">X</span>,
   Eye: () => <span data-testid="icon-eye">Eye</span>,
   EyeOff: () => <span data-testid="icon-eye-off">EyeOff</span>,

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import mermaidElkLayout from '@mermaid-js/layout-elk';
 import type { MermaidConfig } from 'mermaid';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
@@ -7,7 +8,7 @@ import { getMermaidConfigForTheme } from '@theme/themeRegistry';
 import Button from './Button';
 
 const Preview: React.FC = () => {
-  const { currentDiagram, theme } = useDiagramState();
+  const { currentDiagram, theme, layoutEngine, handDrawn } = useDiagramState();
   const containerRef = useRef<HTMLDivElement>(null);
   const diagramRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
@@ -23,6 +24,8 @@ const Preview: React.FC = () => {
       startOnLoad: false,
       theme: 'base',
       securityLevel: 'loose',
+      layout: layoutEngine === 'elk' ? 'elk' : undefined,
+      look: handDrawn ? 'handDrawn' : 'classic',
       themeVariables: {
         fontFamily: 'Comic Neue',
         fontSize: '16px',
@@ -47,8 +50,13 @@ const Preview: React.FC = () => {
         }
       : baseConfig;
 
+    // Register ELK layout plugin if ELK is selected
+    if (layoutEngine === 'elk') {
+      mermaid.registerLayoutLoaders(mermaidElkLayout);
+    }
+
     mermaid.initialize(mergedConfig);
-  }, [theme]);
+  }, [theme, layoutEngine, handDrawn]);
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -67,7 +75,7 @@ const Preview: React.FC = () => {
 
     const timer = setTimeout(renderDiagram, 500);
     return () => clearTimeout(timer);
-  }, [currentDiagram.content, theme]);
+  }, [currentDiagram.content, theme, layoutEngine, handDrawn]);
 
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom((prev) => {

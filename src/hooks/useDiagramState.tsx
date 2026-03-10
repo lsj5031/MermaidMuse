@@ -39,6 +39,12 @@ interface DiagramContextType {
   theme: DiagramTheme;
   setTheme: (theme: DiagramTheme) => void;
 
+  layoutEngine: LayoutEngine;
+  setLayoutEngine: (engine: LayoutEngine) => void;
+
+  handDrawn: boolean;
+  setHandDrawn: (enabled: boolean) => void;
+
   registerEditorNavigationApi: (api: EditorNavigationApi | null) => void;
   revealInEditor: (lineNumber: number, column?: number) => void;
 }
@@ -51,10 +57,14 @@ const DEFAULT_VALIDATION: ValidationResult = {
   warnings: [],
 };
 
+export type LayoutEngine = 'dagre' | 'elk';
+
 const STORAGE_KEYS = {
   content: 'diagramStudio.content',
   title: 'diagramStudio.title',
   theme: 'diagramStudio.theme',
+  layoutEngine: 'diagramStudio.layoutEngine',
+  handDrawn: 'diagramStudio.handDrawn',
 } as const;
 
 const getSharedContentFromHash = (): string | null => {
@@ -90,6 +100,19 @@ const getInitialTheme = (): DiagramTheme => {
   return themeIds.length > 0 ? themeIds[0] : 'avocado';
 };
 
+const getInitialLayoutEngine = (): LayoutEngine => {
+  const stored = localStorage.getItem(STORAGE_KEYS.layoutEngine);
+  if (stored === 'elk' || stored === 'dagre') {
+    return stored;
+  }
+  return 'dagre';
+};
+
+const getInitialHandDrawn = (): boolean => {
+  const stored = localStorage.getItem(STORAGE_KEYS.handDrawn);
+  return stored === 'true';
+};
+
 const getInitialDiagram = (): DiagramState => {
   const shared = getSharedContentFromHash();
 
@@ -113,6 +136,8 @@ const getInitialDiagram = (): DiagramState => {
 export function DiagramProvider({ children }: { children: ReactNode }) {
   const [currentDiagram, setCurrentDiagram] = useState<DiagramState>(() => getInitialDiagram());
   const [theme, setThemeState] = useState<DiagramTheme>(() => getInitialTheme());
+  const [layoutEngine, setLayoutEngineState] = useState<LayoutEngine>(() => getInitialLayoutEngine());
+  const [handDrawn, setHandDrawnState] = useState<boolean>(() => getInitialHandDrawn());
 
   const editorNavApiRef = useRef<EditorNavigationApi | null>(null);
 
@@ -241,6 +266,16 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     setThemeState(nextTheme);
   }, []);
 
+  const setLayoutEngine = useCallback((engine: LayoutEngine) => {
+    localStorage.setItem(STORAGE_KEYS.layoutEngine, engine);
+    setLayoutEngineState(engine);
+  }, []);
+
+  const setHandDrawn = useCallback((enabled: boolean) => {
+    localStorage.setItem(STORAGE_KEYS.handDrawn, String(enabled));
+    setHandDrawnState(enabled);
+  }, []);
+
   useEffect(() => {
     validateDiagram();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,6 +296,12 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
 
     theme,
     setTheme,
+
+    layoutEngine,
+    setLayoutEngine,
+
+    handDrawn,
+    setHandDrawn,
 
     registerEditorNavigationApi,
     revealInEditor,

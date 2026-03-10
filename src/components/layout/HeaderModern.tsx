@@ -1,16 +1,27 @@
 import React from 'react';
-import { Download, Share2, RotateCcw, Palette, Settings } from 'lucide-react';
-import { useDiagramState } from '@hooks/useDiagramState';
+import { Download, Share2, RotateCcw, Palette, Settings, Pencil } from 'lucide-react';
+import { useDiagramState, type LayoutEngine } from '@hooks/useDiagramState';
 import { exportMermaidAsSVG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
 import { LLMSettingsPanel } from '@components/LLMSettingsPanel';
 import html2canvas from 'html2canvas';
 
 const Header: React.FC = () => {
-  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
-    useDiagramState();
+  const {
+    currentDiagram,
+    canExport,
+    resetDiagram,
+    updateDiagramTitle,
+    theme,
+    setTheme,
+    layoutEngine,
+    setLayoutEngine,
+    handDrawn,
+    setHandDrawn,
+  } = useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
   const [showThemeMenu, setShowThemeMenu] = React.useState(false);
+  const [showLayoutMenu, setShowLayoutMenu] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
 
   const handleExportSvg = async () => {
@@ -156,6 +167,18 @@ const Header: React.FC = () => {
     showToast(`Theme: ${getTheme(themeId)?.label || themeId}`);
   };
 
+  const handleLayoutChange = (engine: LayoutEngine) => {
+    setLayoutEngine(engine);
+    setShowLayoutMenu(false);
+    showToast(`Layout: ${engine.toUpperCase()}`);
+  };
+
+  const handleHandDrawnToggle = () => {
+    const newValue = !handDrawn;
+    setHandDrawn(newValue);
+    showToast(newValue ? 'Hand-drawn mode on' : 'Hand-drawn mode off');
+  };
+
   const currentThemeLabel = getTheme(theme)?.label || theme;
 
   return (
@@ -206,6 +229,42 @@ const Header: React.FC = () => {
               </div>
             )}
           </div>
+          {/* Layout Engine Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLayoutMenu(!showLayoutMenu)}
+              className={actionButtonClass(true)}
+              title="Change layout engine"
+            >
+              <span className="text-xs font-mono">{layoutEngine.toUpperCase()}</span>
+            </button>
+            {showLayoutMenu && (
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded shadow-xl z-[100] min-w-32">
+                {(['dagre', 'elk'] as LayoutEngine[]).map((engine) => (
+                  <button
+                    key={engine}
+                    onClick={() => handleLayoutChange(engine)}
+                    className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                      engine === layoutEngine
+                        ? 'bg-blue-500 text-white font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {engine.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Hand-drawn Toggle */}
+          <button
+            onClick={handleHandDrawnToggle}
+            className={`${actionButtonClass(true)} ${handDrawn ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}
+            title="Toggle hand-drawn style"
+          >
+            <Pencil className="w-4 h-4" />
+            <span className="hidden sm:inline text-xs">{handDrawn ? 'On' : 'Off'}</span>
+          </button>
           <button
             onClick={handleExportSvg}
             disabled={!canExport}
