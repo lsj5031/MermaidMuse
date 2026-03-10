@@ -51,7 +51,7 @@ const Preview: React.FC = () => {
       : baseConfig;
 
     // Register ELK layout plugin if ELK is selected
-    if (layoutEngine === 'elk') {
+    if (layoutEngine === 'elk' && mermaid.registerLayoutLoaders) {
       mermaid.registerLayoutLoaders(mermaidElkLayout);
     }
 

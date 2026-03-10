@@ -105,7 +105,7 @@ const getInitialLayoutEngine = (): LayoutEngine => {
   if (stored === 'elk' || stored === 'dagre') {
     return stored;
   }
-  return 'dagre';
+  return 'elk';
 };
 
 const getInitialHandDrawn = (): boolean => {
