@@ -28,7 +28,7 @@ MermaidMuse is a lightning-fast, fully open-source environment for crafting beau
 
 ## 🚀 Quick Start
 
-Ensure you have Node.js 18+ and npm/yarn installed.
+Ensure you have Node.js 24.22.1+ and npm/yarn installed.
 
 ```bash
 # 1. Clone the repository
