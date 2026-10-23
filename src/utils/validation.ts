@@ -1,4 +1,5 @@
-import { parse, PeleError } from 'pele';
+import { PeleError } from 'pele';
+import { renderDiagram } from './diagramRenderer';
 
 export interface ValidationError {
   line: number;
@@ -39,8 +40,9 @@ export const validateMermaidSyntax = async (content: string): Promise<Validation
   }
 
   try {
-    // Try to parse the content
-    parse(content);
+    // Parsing alone misses layout failures such as circular Sankey links.
+    // Use the same safe renderer as preview and export before enabling either.
+    renderDiagram(content);
 
     return {
       isValid: true,

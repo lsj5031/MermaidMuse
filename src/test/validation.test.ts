@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { validateMermaidSyntax } from '@utils/validation';
+
+// jsdom has no canvas; use Pele's font metrics fallback.
+vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 
 describe('validateMermaidSyntax', () => {
   it('returns isValid=true for valid Mermaid', async () => {

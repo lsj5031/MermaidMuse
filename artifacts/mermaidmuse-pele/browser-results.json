@@ -1,5 +1,20 @@
 {
   "passed": true,
+  "narrowSvg": {
+    "width": 93,
+    "height": 92,
+    "viewBox": "0 0 93 92",
+    "footer": {
+      "x": 8.96875,
+      "y": 73,
+      "width": 76.345703125,
+      "height": 14
+    }
+  },
+  "narrowPng": {
+    "width": 186,
+    "height": 184
+  },
   "pageErrors": [],
   "checks": [
     "sample preview",
@@ -8,7 +23,9 @@
     "SVG download",
     "PNG download",
     "syntax error clears preview/disables export",
+    "circular Sankey clears preview/disables both exports",
     "recovery",
+    "narrow standalone SVG footer bounds and PNG dimensions",
     "reload persistence",
     "standalone exports"
   ]

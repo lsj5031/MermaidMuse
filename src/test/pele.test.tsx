@@ -61,6 +61,19 @@ describe('Pele integration', () => {
     expect(exported.height).toBe(preview.height + 28);
     expect(exported.svg).toContain('&lt;safe &amp; text&gt;');
   });
+  it('widens narrow exports for the footer and preserves unwatermarked geometry', () => {
+    const source = 'graph TD\nA';
+    const preview = renderDiagram(source);
+    const exported = createExportSvg(source);
+    const svg = new DOMParser().parseFromString(exported.svg, 'image/svg+xml').documentElement;
+    expect(exported.width).toBeGreaterThan(preview.width);
+    expect(Number(svg.getAttribute('width'))).toBe(exported.width);
+    expect(svg.getAttribute('viewBox')).toBe(`0 0 ${exported.width} ${exported.height}`);
+    expect(Number(svg.lastElementChild?.getAttribute('x'))).toBe(exported.width - 8);
+    const plain = createExportSvg(source, { watermarkText: '' });
+    expect(plain.width).toBe(preview.width);
+    expect(plain.height).toBe(preview.height);
+  });
   it('does not inject scripts, event handlers or external links from source', () => {
     const svg = renderDiagram(
       'flowchart TD\nA["<img src=x onerror=alert(1)> & text"]\nclick A "javascript:alert(1)"'
@@ -92,47 +105,52 @@ function Controls() {
   );
 }
 
-it('restores saved source, cancels superseded previews, clears errors and exports only valid nonempty source', async () => {
-  vi.useFakeTimers();
-  localStorage.setItem('mermaidMuse.content', 'graph TD\nA[Persisted]');
-  localStorage.setItem('mermaidMuse.title', 'Saved title');
-  localStorage.setItem('mermaidMuse.layoutEngine', 'elk');
-  localStorage.setItem('mermaidMuse.handDrawn', 'true');
-  render(
-    <DiagramProvider>
-      <Controls />
-    </DiagramProvider>
-  );
-  await act(async () => {
-    vi.advanceTimersByTime(500);
-  });
-  expect(document.querySelector('.pele-output')?.textContent).toContain('Persisted');
-  fireEvent.change(screen.getByLabelText('Source'), { target: { value: 'graph TD\nA[Obsolete]' } });
-  fireEvent.change(screen.getByLabelText('Source'), { target: { value: 'graph TD\nA -->' } });
-  await act(async () => {
-    vi.advanceTimersByTime(500);
-  });
-  expect(screen.getByText('Unable to render diagram')).toBeInTheDocument();
-  expect(document.querySelector('.pele-output')).toBeNull();
-  expect(screen.getByRole('status').textContent).toBe('false');
-  fireEvent.change(screen.getByLabelText('Source'), {
-    target: { value: 'graph TD\nB[Recovered]' },
-  });
-  fireEvent.click(screen.getByText('Dark'));
-  await act(async () => {
-    vi.advanceTimersByTime(1000);
-  });
-  expect(document.querySelector('.pele-output')?.textContent).toContain('Recovered');
-  expect(document.querySelector('.pele-output svg')?.getAttribute('style')).toContain(
-    '--pele-bg:#282A36'
-  );
-  expect(localStorage.getItem('mermaidMuse.content')).toBe('graph TD\nB[Recovered]');
-  expect(localStorage.getItem('mermaidMuse.title')).toBe('Saved title');
-  expect(screen.getByRole('status').textContent).toBe('true');
-  fireEvent.change(screen.getByLabelText('Source'), { target: { value: '' } });
-  await act(async () => {
-    vi.advanceTimersByTime(500);
-  });
-  expect(screen.getByText('Empty')).toBeInTheDocument();
-  expect(screen.getByRole('status').textContent).toBe('false');
-});
+it.each(['graph TD\nA -->', 'sankey-beta\nA,B,3\nB,A,2'])(
+  'restores source, rejects invalid rendering and recovers: %s',
+  async (invalidSource) => {
+    vi.useFakeTimers();
+    localStorage.setItem('mermaidMuse.content', 'graph TD\nA[Persisted]');
+    localStorage.setItem('mermaidMuse.title', 'Saved title');
+    localStorage.setItem('mermaidMuse.layoutEngine', 'elk');
+    localStorage.setItem('mermaidMuse.handDrawn', 'true');
+    render(
+      <DiagramProvider>
+        <Controls />
+      </DiagramProvider>
+    );
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(document.querySelector('.pele-output')?.textContent).toContain('Persisted');
+    fireEvent.change(screen.getByLabelText('Source'), {
+      target: { value: 'graph TD\nA[Obsolete]' },
+    });
+    fireEvent.change(screen.getByLabelText('Source'), { target: { value: invalidSource } });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(screen.getByText('Unable to render diagram')).toBeInTheDocument();
+    expect(document.querySelector('.pele-output')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('false');
+    fireEvent.change(screen.getByLabelText('Source'), {
+      target: { value: 'graph TD\nB[Recovered]' },
+    });
+    fireEvent.click(screen.getByText('Dark'));
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(document.querySelector('.pele-output')?.textContent).toContain('Recovered');
+    expect(document.querySelector('.pele-output svg')?.getAttribute('style')).toContain(
+      '--pele-bg:#282A36'
+    );
+    expect(localStorage.getItem('mermaidMuse.content')).toBe('graph TD\nB[Recovered]');
+    expect(localStorage.getItem('mermaidMuse.title')).toBe('Saved title');
+    expect(screen.getByRole('status').textContent).toBe('true');
+    fireEvent.change(screen.getByLabelText('Source'), { target: { value: '' } });
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(screen.getByText('Empty')).toBeInTheDocument();
+    expect(screen.getByRole('status').textContent).toBe('false');
+  }
+);

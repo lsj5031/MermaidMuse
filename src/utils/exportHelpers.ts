@@ -28,19 +28,25 @@ export function createExportSvg(
     watermarkColor = getTheme(theme)?.colors.foreground ?? '#2d2d2d',
   } = options;
   if (watermarkText) {
-    // Reserve a footer so the watermark never obscures diagram content.
+    // Reserve a footer wide enough for the watermark, including narrow diagrams.
+    const context = document.createElement('canvas').getContext('2d');
+    if (context) context.font = '12px ' + DIAGRAM_FONT;
+    const textWidth = context?.measureText(watermarkText).width ?? watermarkText.length * 12;
+    const width = Math.max(result.width, Math.ceil(textWidth) + 16);
     const height = result.height + 28;
+    svg.setAttribute('width', String(width));
     svg.setAttribute('height', String(height));
-    svg.setAttribute('viewBox', '0 0 ' + result.width + ' ' + height);
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
     const text = doc.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.textContent = watermarkText;
-    text.setAttribute('x', String(result.width - 8));
+    text.setAttribute('x', String(width - 8));
     text.setAttribute('y', String(height - 8));
     text.setAttribute('text-anchor', 'end');
     text.setAttribute('fill', watermarkColor);
     text.setAttribute('font-family', DIAGRAM_FONT);
     text.setAttribute('font-size', '12');
     svg.appendChild(text);
+    result.width = width;
     result.height = height;
   }
   return { ...result, svg: new XMLSerializer().serializeToString(svg) };
