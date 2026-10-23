@@ -44,6 +44,22 @@ describe('Pele integration', () => {
     expect(result.width).toBeGreaterThan(0);
     expect(result.height).toBeGreaterThan(0);
   });
+  it.each(['avocado', 'dracula'] as const)(
+    'keeps the outer canvas transparent with opaque themed nodes: %s',
+    (theme) => {
+      for (const result of [
+        renderDiagram('graph TD\nA-->B', theme),
+        createExportSvg('graph TD\nA-->B', {}, theme),
+      ]) {
+        const svg = new DOMParser().parseFromString(result.svg, 'image/svg+xml').documentElement;
+        expect(svg.querySelector('rect[width="100%"][height="100%"]')).toBeNull();
+        expect(svg.getAttribute('style')).not.toMatch(/(?:^|;)background(?:-color)?:/);
+        expect(svg.querySelector('.pele-node rect')?.getAttribute('fill')).toBe('var(--_s)');
+        expect(svg.getAttribute('style')).toMatch(/--pele-surface:#[0-9a-f]{6}/i);
+        expect(svg.getAttribute('style')).toMatch(/--pele-bg:#[0-9a-f]{6}/i);
+      }
+    }
+  );
   it('preserves directives, frontmatter and accessible titles', () => {
     const source =
       '---\ntitle: Saved diagram\nconfig:\n  layout: elk\n---\n%%{init: {"theme":"dark"}}%%\nflowchart LR\naccTitle: Accessible diagram\nA[Saved] --> B[Source]';

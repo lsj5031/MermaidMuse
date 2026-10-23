@@ -1,3 +1,19 @@
+# Transparency and main integration verification (2026-10-23)
+
+Starting feature commit: 1175907816629cc8ac1bd07096a68eeec9b2c7bf. Applied the ponytail minimal-fix skill. Repository/ancestor AGENTS.md absent; DEVELOPMENT.md followed. User explicitly authorized direct main integration, overriding the optional PR workflow. GitHub main reports protected=false and repository rulesets are empty.
+
+Removed the integration's full-canvas rectangle. Inspected Pele 1.9.0 root output: it declares theme variables but no background paint. Kept --pele-bg and surface colors opaque because shapes and label backplates use them. Shared renderer therefore restores transparent preview, SVG and PNG without weakening node readability. README documents transparency and background-dependent contrast.
+
+Verification: 54 tests in 9 files pass, including two light/dark transparent-canvas regressions, circular Sankey shared validity and narrow watermark bounds. Lint, type-check, production build, Pele smoke check and diff whitespace check pass. Full format check retains the same 13 pre-existing unrelated failures listed below; changed files are formatted. Production bundle 870.90 kB / 316.88 kB gzip; existing bundle/Browserslist advisories remain.
+
+Both browser scripts pass against production preview. Actual downloaded Avocado and Dracula SVGs (341 × 92) and PNGs (682 × 184) were independently decoded in Chromium: every corner alpha is exactly 0, with 13,201 opaque SVG pixels / 54,872 opaque PNG pixels, proving contents remain painted. Preview computed root background is rgba(0,0,0,0); node fills are rgb(230,247,229) and rgb(68,71,90). See transparency-layout-results.json and alpha-\* downloads. Standalone SVGs were opened without application CSS and checked transparent before temporarily applying a display background for the inspection screenshot; saved SVG files remain transparent. Existing actual-download/error/recovery/watermark browser checks still pass.
+
+Compared six identical sources against isolated old-base worktree at 8b755d30f0b4a30cd900d7fa109698e5d361c21c, old app default ELK at port 5181; production Pele at port 5180. Inspected all twelve old-_/pele-_ screenshots and standalone light PNG/dark SVG. Default and dense/cyclic graphs occupy more of the preview with larger readable labels; edge routing and sibling order differ. Nested groups have stronger borders and left-aligned titles. Long labels wrap without clipping. Sequence participants/alt branches and class members/cardinalities remain readable, with more compact class boxes. No concrete label overlap or clipping was found in these fixtures, so no speculative layout overrides were added. This is fixture coverage, not ELK/Dagre equivalence or exhaustive graph quality. Dark palette lines/text can have low contrast on the cream preview paper or light external backgrounds; use a matching dark destination or a light palette. No unsupported engine controls restored.
+
+Primary checkout untouched. Detached old-base comparison worktree has only installed ignored dependencies. Integration uses normal non-force pushes after fresh origin ancestry verification; CI result and exact main SHA are reported by the completing agent rather than self-referentially embedded here. No manual deployment or secret changes.
+
+---
+
 # Pele migration verification
 
 ## Review fixes (2026-10-23)

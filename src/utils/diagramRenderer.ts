@@ -39,10 +39,7 @@ export function renderDiagram(content: string, theme: DiagramTheme = 'avocado') 
     .map(([key, value]) => '--pele-' + key + ':' + value)
     .join(';');
   svg.setAttribute('style', (svg.getAttribute('style') ?? '') + ';' + style);
-  const background = doc.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  background.setAttribute('width', '100%');
-  background.setAttribute('height', '100%');
-  background.setAttribute('fill', colors.background);
-  svg.insertBefore(background, svg.firstChild);
+  // Pele's root is transparent. Keep --pele-bg opaque for label/shape fills,
+  // but never paint a full-canvas rectangle in preview or standalone exports.
   return { ...result, svg: new XMLSerializer().serializeToString(svg) };
 }
