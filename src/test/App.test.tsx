@@ -29,20 +29,6 @@ vi.mock('@utils/exportHelpers', () => ({
   exportMermaidAsSVG: vi.fn(),
 }));
 
-// Mock html2canvas
-vi.mock('html2canvas', () => ({
-  default: vi.fn(),
-}));
-
-// Mock mermaid
-vi.mock('mermaid', () => ({
-  default: {
-    initialize: vi.fn(),
-    parse: vi.fn().mockResolvedValue(true),
-    render: vi.fn().mockResolvedValue({ svg: '<svg></svg>' }),
-  },
-}));
-
 describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -66,6 +52,6 @@ describe('App', () => {
 
     // Editor should be present (shows "Diagram is valid" or error count)
     // Preview shows "Ready" status
-    expect(screen.getByText('Ready')).toBeInTheDocument();
+    expect(screen.getByText('Rendering…')).toBeInTheDocument();
   });
 });

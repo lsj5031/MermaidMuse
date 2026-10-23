@@ -1,5 +1,3 @@
-import type { MermaidConfig } from 'mermaid';
-
 /**
  * Pluggable theme system for MermaidMuse
  * Users can define and register custom themes
@@ -9,7 +7,13 @@ export type DiagramTheme = string;
 
 export interface DiagramThemeConfig {
   label: string;
-  mermaid: MermaidConfig;
+  colors: {
+    background: string;
+    foreground: string;
+    line: string;
+    surface: string;
+    alternate: string;
+  };
 }
 
 /**
@@ -36,14 +40,6 @@ export function getTheme(id: DiagramTheme): DiagramThemeConfig | undefined {
  */
 export function getThemeIds(): string[] {
   return Array.from(themeRegistry.keys());
-}
-
-/**
- * Get mermaid config for a theme
- */
-export function getMermaidConfigForTheme(theme: DiagramTheme): MermaidConfig | null {
-  const themeConfig = themeRegistry.get(theme);
-  return themeConfig?.mermaid ?? null;
 }
 
 /**

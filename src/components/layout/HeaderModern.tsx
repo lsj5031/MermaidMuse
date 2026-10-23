@@ -1,34 +1,27 @@
 import React from 'react';
-import { Download, Share2, RotateCcw, Palette, Settings, Pencil } from 'lucide-react';
-import { useDiagramState, type LayoutEngine } from '@hooks/useDiagramState';
-import { exportMermaidAsSVG } from '@utils/exportHelpers';
+import { Download, Share2, RotateCcw, Palette, Settings } from 'lucide-react';
+import { useDiagramState } from '@hooks/useDiagramState';
+import { exportMermaidAsSVG, exportMermaidAsPNG } from '@utils/exportHelpers';
 import { getThemeIds, getTheme } from '@theme/themeRegistry';
 import { LLMSettingsPanel } from '@components/LLMSettingsPanel';
-import html2canvas from 'html2canvas';
 
 const Header: React.FC = () => {
-  const {
-    currentDiagram,
-    canExport,
-    resetDiagram,
-    updateDiagramTitle,
-    theme,
-    setTheme,
-    layoutEngine,
-    setLayoutEngine,
-    handDrawn,
-    setHandDrawn,
-  } = useDiagramState();
+  const { currentDiagram, canExport, resetDiagram, updateDiagramTitle, theme, setTheme } =
+    useDiagramState();
   const [toast, setToast] = React.useState<string | null>(null);
   const [showThemeMenu, setShowThemeMenu] = React.useState(false);
-  const [showLayoutMenu, setShowLayoutMenu] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
 
   const handleExportSvg = async () => {
     try {
-      await exportMermaidAsSVG(currentDiagram.content, currentDiagram.title, {
-        watermarkText: 'MermaidMuse',
-      });
+      await exportMermaidAsSVG(
+        currentDiagram.content,
+        currentDiagram.title,
+        {
+          watermarkText: 'MermaidMuse',
+        },
+        theme
+      );
       showToast('SVG downloaded');
     } catch (err) {
       console.error(err);
@@ -38,61 +31,7 @@ const Header: React.FC = () => {
 
   const handleExportPng = async () => {
     try {
-      // Find the SVG in the preview
-      const svgElement = document.querySelector('.mermaid-output svg');
-      if (!svgElement) {
-        showToast('No diagram to export');
-        return;
-      }
-
-      // Clone the SVG to add watermark
-      const svgClone = svgElement.cloneNode(true) as SVGElement;
-
-      // Add watermark to SVG
-      const ns = 'http://www.w3.org/2000/svg';
-      const group = document.createElementNS(ns, 'g');
-      group.setAttribute('pointer-events', 'none');
-
-      const text = document.createElementNS(ns, 'text');
-      text.textContent = 'MermaidMuse';
-      text.setAttribute('x', '99%');
-      text.setAttribute('y', '99%');
-      text.setAttribute('text-anchor', 'end');
-      text.setAttribute('dominant-baseline', 'auto');
-      text.setAttribute('fill', '#2d2d2d');
-      text.setAttribute('opacity', '0.85');
-      text.setAttribute(
-        'style',
-        'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; paint-order: stroke; stroke: rgba(255,255,255,0.6); stroke-width: 0.5px;'
-      );
-      group.appendChild(text);
-      svgClone.appendChild(group);
-
-      // Create a temporary container
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '-9999px';
-      container.style.backgroundColor = '#ffffff';
-      container.appendChild(svgClone);
-      document.body.appendChild(container);
-
-      // Convert to canvas
-      const canvas = await html2canvas(container, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-      });
-
-      // Clean up
-      document.body.removeChild(container);
-
-      // Download PNG
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `${currentDiagram.title || 'diagram'}.png`;
-      link.click();
+      await exportMermaidAsPNG(currentDiagram.content, currentDiagram.title, {}, theme);
 
       showToast('PNG downloaded');
     } catch (err) {
@@ -167,18 +106,6 @@ const Header: React.FC = () => {
     showToast(`Theme: ${getTheme(themeId)?.label || themeId}`);
   };
 
-  const handleLayoutChange = (engine: LayoutEngine) => {
-    setLayoutEngine(engine);
-    setShowLayoutMenu(false);
-    showToast(`Layout: ${engine.toUpperCase()}`);
-  };
-
-  const handleHandDrawnToggle = () => {
-    const newValue = !handDrawn;
-    setHandDrawn(newValue);
-    showToast(newValue ? 'Hand-drawn mode on' : 'Hand-drawn mode off');
-  };
-
   const currentThemeLabel = getTheme(theme)?.label || theme;
 
   return (
@@ -229,42 +156,9 @@ const Header: React.FC = () => {
               </div>
             )}
           </div>
-          {/* Layout Engine Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowLayoutMenu(!showLayoutMenu)}
-              className={actionButtonClass(true)}
-              title="Change layout engine"
-            >
-              <span className="text-xs font-mono">{layoutEngine.toUpperCase()}</span>
-            </button>
-            {showLayoutMenu && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-300 rounded shadow-xl z-[100] min-w-32">
-                {(['dagre', 'elk'] as LayoutEngine[]).map((engine) => (
-                  <button
-                    key={engine}
-                    onClick={() => handleLayoutChange(engine)}
-                    className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                      engine === layoutEngine
-                        ? 'bg-blue-500 text-white font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {engine.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Hand-drawn Toggle */}
-          <button
-            onClick={handleHandDrawnToggle}
-            className={`${actionButtonClass(true)} ${handDrawn ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}
-            title="Toggle hand-drawn style"
-          >
-            <Pencil className="w-4 h-4" />
-            <span className="hidden sm:inline text-xs">{handDrawn ? 'On' : 'Off'}</span>
-          </button>
+          <span className="text-xs text-gray-600" title="Pele layout and rendering">
+            Pele
+          </span>
           <button
             onClick={handleExportSvg}
             disabled={!canExport}

@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
-import mermaidElkLayout from '@mermaid-js/layout-elk';
-import type { MermaidConfig } from 'mermaid';
+import { renderDiagram } from '@utils/diagramRenderer';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useDiagramState } from '@hooks/useDiagramState';
-import { getMermaidConfigForTheme } from '@theme/themeRegistry';
 import Button from './Button';
 
 const Preview: React.FC = () => {
-  const { currentDiagram, theme, layoutEngine, handDrawn } = useDiagramState();
+  const { currentDiagram, theme } = useDiagramState();
   const containerRef = useRef<HTMLDivElement>(null);
   const diagramRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
@@ -19,63 +16,19 @@ const Preview: React.FC = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Base look to keep the app's default styling consistent.
-    const baseConfig: MermaidConfig = {
-      startOnLoad: false,
-      theme: 'base',
-      securityLevel: 'loose',
-      layout: layoutEngine === 'elk' ? 'elk' : undefined,
-      look: handDrawn ? 'handDrawn' : 'classic',
-      themeVariables: {
-        fontFamily: 'Comic Neue',
-        fontSize: '16px',
-        primaryColor: '#E6F7E5',
-        primaryBorderColor: '#2d2d2d',
-        primaryTextColor: '#2d2d2d',
-        lineColor: '#2d2d2d',
-        secondaryColor: '#FCFBF5',
-        tertiaryColor: '#fff',
-      },
-    };
-
-    const themeConfig = getMermaidConfigForTheme(theme);
-    const mergedConfig = themeConfig
-      ? {
-          ...baseConfig,
-          ...themeConfig,
-          themeVariables: {
-            ...baseConfig.themeVariables,
-            ...(themeConfig.themeVariables ?? {}),
-          },
-        }
-      : baseConfig;
-
-    // Register ELK layout plugin if ELK is selected
-    if (layoutEngine === 'elk' && mermaid.registerLayoutLoaders) {
-      mermaid.registerLayoutLoaders(mermaidElkLayout);
-    }
-
-    mermaid.initialize(mergedConfig);
-  }, [theme, layoutEngine, handDrawn]);
-
-  useEffect(() => {
-    const renderDiagram = async () => {
-      if (!containerRef.current) return;
-
+    // Pele is synchronous; cancelling the debounce prevents obsolete renders on edits/unmount.
+    setSvgContent('');
+    setError(null);
+    const timer = setTimeout(() => {
+      if (!currentDiagram.content.trim()) return;
       try {
-        setError(null);
-        const id = `mermaid-${Date.now()}`;
-        const { svg } = await mermaid.render(id, currentDiagram.content);
-        setSvgContent(svg);
+        setSvgContent(renderDiagram(currentDiagram.content, theme).svg);
       } catch (err) {
-        console.error('Mermaid render error:', err);
-        setError('Syntax Error in Diagram');
+        setError(err instanceof Error ? err.message : 'Unable to render diagram');
       }
-    };
-
-    const timer = setTimeout(renderDiagram, 500);
+    }, 150);
     return () => clearTimeout(timer);
-  }, [currentDiagram.content, theme, layoutEngine, handDrawn]);
+  }, [currentDiagram.content, theme]);
 
   const handleZoom = (direction: 'in' | 'out') => {
     setZoom((prev) => {
@@ -132,7 +85,13 @@ const Preview: React.FC = () => {
           </span>
           <span className="flex items-center gap-1.5 text-xs font-medium text-brand-green-dark bg-brand-green-light px-2 py-0.5 rounded-full border border-brand-green-dark/30">
             <span className="h-1.5 w-1.5 bg-brand-green-dark rounded-full animate-pulse"></span>
-            Ready
+            {error
+              ? 'Error'
+              : svgContent
+                ? 'Ready'
+                : currentDiagram.content.trim()
+                  ? 'Rendering…'
+                  : 'Empty'}
           </span>
         </div>
 
@@ -181,14 +140,14 @@ const Preview: React.FC = () => {
         {error ? (
           <div className="absolute inset-0 flex items-center justify-center bg-red-50/50">
             <div className="border-sketch bg-white p-6 text-center max-w-md">
-              <h3 className="text-red-600 font-bold mb-2">Diagram Syntax Error</h3>
-              <p className="text-gray-500 text-sm">Please check your Mermaid syntax.</p>
+              <h3 className="text-red-600 font-bold mb-2">Unable to render diagram</h3>
+              <p className="text-gray-500 text-sm">{error}</p>
             </div>
           </div>
         ) : (
           <div
             ref={diagramRef}
-            className="mermaid-output"
+            className="pele-output"
             dangerouslySetInnerHTML={{ __html: svgContent }}
             style={{
               opacity: svgContent ? 1 : 0,

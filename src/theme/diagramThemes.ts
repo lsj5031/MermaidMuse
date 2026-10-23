@@ -5,5 +5,4 @@
 
 export type DiagramTheme = string;
 
-export { getMermaidConfigForTheme } from './themeRegistry';
 export { getThemeIds, hasTheme, registerTheme, getTheme } from './themeRegistry';

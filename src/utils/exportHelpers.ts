@@ -1,5 +1,5 @@
-import mermaid from 'mermaid';
-import type { DiagramTheme } from '@theme/themeRegistry';
+import { renderDiagram, DIAGRAM_FONT } from './diagramRenderer';
+import { getTheme, type DiagramTheme } from '@theme/themeRegistry';
 
 const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -7,7 +7,7 @@ const downloadBlob = (blob: Blob, filename: string) => {
   link.href = url;
   link.download = filename;
   link.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 export interface ExportSvgOptions {
@@ -15,69 +15,80 @@ export interface ExportSvgOptions {
   watermarkColor?: string;
 }
 
-const addSvgWatermark = (svg: string, watermarkText: string, watermarkColor: string) => {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svg, 'image/svg+xml');
-    const svgEl = doc.documentElement;
-    const ns = 'http://www.w3.org/2000/svg';
-
-    const group = doc.createElementNS(ns, 'g');
-    group.setAttribute('pointer-events', 'none');
-
-    const text = doc.createElementNS(ns, 'text');
+export function createExportSvg(
+  content: string,
+  options: ExportSvgOptions = {},
+  theme: DiagramTheme = 'avocado'
+) {
+  const result = renderDiagram(content, theme);
+  const doc = new DOMParser().parseFromString(result.svg, 'image/svg+xml');
+  const svg = doc.documentElement;
+  const {
+    watermarkText = 'MermaidMuse',
+    watermarkColor = getTheme(theme)?.colors.foreground ?? '#2d2d2d',
+  } = options;
+  if (watermarkText) {
+    // Reserve a footer so the watermark never obscures diagram content.
+    const height = result.height + 28;
+    svg.setAttribute('height', String(height));
+    svg.setAttribute('viewBox', '0 0 ' + result.width + ' ' + height);
+    const text = doc.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.textContent = watermarkText;
-    text.setAttribute('x', '99%');
-    text.setAttribute('y', '99%');
+    text.setAttribute('x', String(result.width - 8));
+    text.setAttribute('y', String(height - 8));
     text.setAttribute('text-anchor', 'end');
-    text.setAttribute('dominant-baseline', 'auto');
     text.setAttribute('fill', watermarkColor);
-    text.setAttribute('opacity', '0.85');
-    text.setAttribute(
-      'style',
-      'font-family: "Comic Neue", system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: bold; paint-order: stroke; stroke: rgba(255,255,255,0.6); stroke-width: 0.5px;'
-    );
-
-    group.appendChild(text);
-    svgEl.appendChild(group);
-
-    return new XMLSerializer().serializeToString(doc);
-  } catch {
-    return svg;
+    text.setAttribute('font-family', DIAGRAM_FONT);
+    text.setAttribute('font-size', '12');
+    svg.appendChild(text);
+    result.height = height;
   }
-};
+  return { ...result, svg: new XMLSerializer().serializeToString(svg) };
+}
 
 export async function exportMermaidAsSVG(
   content: string,
   filename: string,
   options: ExportSvgOptions = {},
-  _theme: DiagramTheme = 'cyber'
+  theme: DiagramTheme = 'avocado'
 ): Promise<void> {
-  const { watermarkText = 'MermaidMuse', watermarkColor } = options;
-
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'base',
-    themeVariables: {
-      fontFamily: 'Comic Neue',
-      fontSize: '16px',
-      primaryColor: '#E6F7E5',
-      primaryBorderColor: '#2d2d2d',
-      primaryTextColor: '#2d2d2d',
-      lineColor: '#2d2d2d',
-      secondaryColor: '#FCFBF5',
-      tertiaryColor: '#fff',
-    },
-    securityLevel: 'loose',
-  });
-
-  const { svg } = await mermaid.mermaidAPI.render(`export-${Date.now()}`, content);
-
-  const colored = addSvgWatermark(
-    svg,
-    watermarkText,
-    watermarkColor ?? '#2d2d2d'
+  const { svg } = createExportSvg(content, options, theme);
+  downloadBlob(
+    new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }),
+    (filename || 'diagram') + '.svg'
   );
+}
 
-  downloadBlob(new Blob([colored], { type: 'image/svg+xml;charset=utf-8' }), `${filename}.svg`);
+export async function exportMermaidAsPNG(
+  content: string,
+  filename: string,
+  options: ExportSvgOptions = {},
+  theme: DiagramTheme = 'avocado'
+): Promise<void> {
+  const { svg, width, height } = createExportSvg(content, options, theme);
+  const scale = 2;
+  if (width * height * scale * scale > 32_000_000 || Math.max(width, height) * scale > 16384) {
+    throw new Error('Diagram too large for PNG; use SVG instead.');
+  }
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(width * scale);
+    canvas.height = Math.ceil(height * scale);
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas is unavailable');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (value) => (value ? resolve(value) : reject(new Error('PNG encoding failed'))),
+        'image/png'
+      );
+    });
+    downloadBlob(blob, (filename || 'diagram') + '.png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

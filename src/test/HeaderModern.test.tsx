@@ -23,11 +23,6 @@ vi.mock('@utils/exportHelpers', () => ({
   exportMermaidAsSVG: vi.fn(),
 }));
 
-// Mock html2canvas
-vi.mock('html2canvas', () => ({
-  default: vi.fn(),
-}));
-
 const wrapper = ({ children }: { children: ReactNode }) => (
   <LLMConfigProvider>
     <DiagramProvider>{children}</DiagramProvider>

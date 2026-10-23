@@ -20,7 +20,7 @@ This document provides extensive guidelines for setting up, developing, and depl
 
 ## 📊 Architecture & File Organization
 
-**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Mermaid 11.12.2
+**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS + Pele 1.9.0
 
 ### Key Directories
 
@@ -42,7 +42,8 @@ This document provides extensive guidelines for setting up, developing, and depl
   - `themeRegistry.ts` - Pluggable theme system API (Avocado, Kanagawa, Dracula, Solarized)
   - `colors.ts`, `constants.ts` - Application layout and styling variables
 - `src/utils/`
-  - `exportHelpers.ts` - Export diagrams as SVG with watermarks
+  - `exportHelpers.ts` - Export standalone themed SVG/PNG with watermark footers
+  - `diagramRenderer.ts` - Shared Pele rendering and embedded palette
   - `validationHelpers.ts` - Input sanitization
 - `src/server/` & `api/`
   - `llmFix.ts` - Generic OpenAI HTTP proxy handler resolving CORS restrictions (`api/fix.ts` uses this logic under the hood).
@@ -54,10 +55,11 @@ This document provides extensive guidelines for setting up, developing, and depl
 
 1. Navigate to `src/theme/defaultThemes.ts`
 2. Define a new theme using `registerTheme(...)`.
-3. Provide the basic palette configurations alongside Mermaid `themeVariables`. 
-4. The theme will dynamically synchronize with the UI picker, Mermaid renderer, and internal syntax.
+3. Provide the basic palette configurations using the typed `colors` palette.
+4. The theme will dynamically synchronize with the UI picker and the shared Pele preview/export renderer.
 
 ### Modifying Styling
+
 - Global layout heavily utilizes Tailwind CSS standard classes (`border-sketch`, `brand-green-light`, etc.).
 - Update custom plugins inside `tailwind.config.js`.
 - Make overarching CSS fixes in `src/index.css`.
@@ -65,6 +67,7 @@ This document provides extensive guidelines for setting up, developing, and depl
 ## 🤖 Bring-Your-Own-LLM (BYOLLM) Configuration
 
 MermaidMuse ships with an AI syntax autofixer:
+
 1. Powered by ANY generic OpenAI-compatible completion API (`model`, `messages[]`)
 2. Set configuration through the UI Gear-Settings dropdown on the client.
 3. Your client hits the serverless function `/api/fix` via `src/server/llmFix.ts` allowing you to securely bridge local settings to API interfaces.
@@ -105,6 +108,7 @@ npm run build
 This ensures TypeScript strict checking and Vite optimization, exporting purely static assets inside `dist/`.
 
 Test production build via:
+
 ```bash
 npm run preview
 ```

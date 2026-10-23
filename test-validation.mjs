@@ -1,31 +1,8 @@
-import mermaid from 'mermaid';
+import assert from 'node:assert/strict';
+import { parse, render, PeleError } from 'pele';
 
-mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose' });
-
-const invalidDiagram = `sequenceDiagram
-    participant Buyer
-    invalid syntax here
-    Buyer->>Seller: test`;
-
-async function test() {
-  try {
-    console.log('Testing with mermaid.parse...');
-    await mermaid.parse(invalidDiagram);
-    console.log('PARSE SUCCEEDED (no error caught)');
-  } catch (err) {
-    console.log('PARSE FAILED:', err.message);
-  }
-  
-  try {
-    console.log('\nTesting with mermaid.render...');
-    const result = await mermaid.render('test-id', invalidDiagram);
-    console.log('RENDER SUCCEEDED:', result);
-  } catch (err) {
-    console.log('RENDER FAILED');
-    console.log('Error message:', err.message);
-    console.log('Error str:', err.str);
-    console.log('Error name:', err.name);
-  }
-}
-
-test();
+const invalid = 'sequenceDiagram\nparticipant Buyer\ninvalid syntax here';
+assert.throws(() => parse(invalid), PeleError);
+assert.throws(() => render(invalid), PeleError);
+assert.match(render('flowchart LR\nA-->B').svg, /class="pele /);
+console.log('Pele parse/render smoke checks passed');

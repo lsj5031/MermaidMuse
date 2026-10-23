@@ -39,12 +39,6 @@ interface DiagramContextType {
   theme: DiagramTheme;
   setTheme: (theme: DiagramTheme) => void;
 
-  layoutEngine: LayoutEngine;
-  setLayoutEngine: (engine: LayoutEngine) => void;
-
-  handDrawn: boolean;
-  setHandDrawn: (enabled: boolean) => void;
-
   registerEditorNavigationApi: (api: EditorNavigationApi | null) => void;
   revealInEditor: (lineNumber: number, column?: number) => void;
 }
@@ -56,8 +50,6 @@ const DEFAULT_VALIDATION: ValidationResult = {
   errors: [],
   warnings: [],
 };
-
-export type LayoutEngine = 'dagre' | 'elk';
 
 const STORAGE_KEYS = {
   content: 'mermaidMuse.content',
@@ -118,19 +110,6 @@ const getInitialTheme = (): DiagramTheme => {
   return themeIds.length > 0 ? themeIds[0] : 'avocado';
 };
 
-const getInitialLayoutEngine = (): LayoutEngine => {
-  const stored = localStorage.getItem(STORAGE_KEYS.layoutEngine);
-  if (stored === 'elk' || stored === 'dagre') {
-    return stored;
-  }
-  return 'elk';
-};
-
-const getInitialHandDrawn = (): boolean => {
-  const stored = localStorage.getItem(STORAGE_KEYS.handDrawn);
-  return stored === 'true';
-};
-
 const getInitialDiagram = (): DiagramState => {
   const shared = getSharedContentFromHash();
 
@@ -154,8 +133,6 @@ const getInitialDiagram = (): DiagramState => {
 export function DiagramProvider({ children }: { children: ReactNode }) {
   const [currentDiagram, setCurrentDiagram] = useState<DiagramState>(() => getInitialDiagram());
   const [theme, setThemeState] = useState<DiagramTheme>(() => getInitialTheme());
-  const [layoutEngine, setLayoutEngineState] = useState<LayoutEngine>(() => getInitialLayoutEngine());
-  const [handDrawn, setHandDrawnState] = useState<boolean>(() => getInitialHandDrawn());
 
   const editorNavApiRef = useRef<EditorNavigationApi | null>(null);
 
@@ -170,34 +147,41 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
   const validateContent = useCallback(async (content: string) => {
     try {
       const result = await validateMermaidSyntax(content);
-      console.log('[useDiagramState] Validation result:', result);
-      setCurrentDiagram((prev) => ({
-        ...prev,
-        validation: result,
-        isValidating: false,
-      }));
+      setCurrentDiagram((prev) =>
+        prev.content !== content
+          ? prev
+          : {
+              ...prev,
+              validation: result,
+              isValidating: false,
+            }
+      );
     } catch (error) {
       console.error('[useDiagramState] Validation error:', error);
-      setCurrentDiagram((prev) => ({
-        ...prev,
-        validation: {
-          isValid: false,
-          errors: [
-            {
-              line: 1,
-              column: 1,
-              message: 'Failed to validate diagram',
-              severity: 'error',
-              startLineNumber: 1,
-              endLineNumber: 1,
-              startColumn: 1,
-              endColumn: 1,
-            },
-          ],
-          warnings: [],
-        },
-        isValidating: false,
-      }));
+      setCurrentDiagram((prev) =>
+        prev.content !== content
+          ? prev
+          : {
+              ...prev,
+              validation: {
+                isValid: false,
+                errors: [
+                  {
+                    line: 1,
+                    column: 1,
+                    message: 'Failed to validate diagram',
+                    severity: 'error',
+                    startLineNumber: 1,
+                    endLineNumber: 1,
+                    startColumn: 1,
+                    endColumn: 1,
+                  },
+                ],
+                warnings: [],
+              },
+              isValidating: false,
+            }
+      );
     }
   }, []);
 
@@ -284,23 +268,19 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
     setThemeState(nextTheme);
   }, []);
 
-  const setLayoutEngine = useCallback((engine: LayoutEngine) => {
-    localStorage.setItem(STORAGE_KEYS.layoutEngine, engine);
-    setLayoutEngineState(engine);
-  }, []);
-
-  const setHandDrawn = useCallback((enabled: boolean) => {
-    localStorage.setItem(STORAGE_KEYS.handDrawn, String(enabled));
-    setHandDrawnState(enabled);
-  }, []);
-
   useEffect(() => {
     validateDiagram();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canExport = currentDiagram.validation.isValid && !currentDiagram.isValidating;
-  const canRender = currentDiagram.validation.isValid && !currentDiagram.isValidating;
+  const canExport =
+    !!currentDiagram.content.trim() &&
+    currentDiagram.validation.isValid &&
+    !currentDiagram.isValidating;
+  const canRender =
+    !!currentDiagram.content.trim() &&
+    currentDiagram.validation.isValid &&
+    !currentDiagram.isValidating;
 
   const value: DiagramContextType = {
     currentDiagram,
@@ -314,12 +294,6 @@ export function DiagramProvider({ children }: { children: ReactNode }) {
 
     theme,
     setTheme,
-
-    layoutEngine,
-    setLayoutEngine,
-
-    handDrawn,
-    setHandDrawn,
 
     registerEditorNavigationApi,
     revealInEditor,

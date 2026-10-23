@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "pageErrors": [],
+  "checks": [
+    "sample preview",
+    "edit",
+    "Dracula theme",
+    "SVG download",
+    "PNG download",
+    "syntax error clears preview/disables export",
+    "recovery",
+    "reload persistence",
+    "standalone exports"
+  ]
+}
